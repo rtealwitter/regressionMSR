@@ -21,7 +21,7 @@ def get_hyperparameter_values(name):
 
 ablation_estimators = ['Kernel SHAP', 'Optimized Kernel SHAP', 'Leverage SHAP', 'Kernel SHAP Paired', 'Leverage SHAP wo Bernoulli', 'Leverage SHAP wo Bernoulli, Paired', 'Matrix SHAP', 'Matrix SHAP wo Bernoulli', 'Matrix SHAP wo Bernoulli, Paired', 'Permutation SHAP']
 
-ablation_estimators = ['Monte Carlo', 'Permutation SHAP', 'Optimized Kernel SHAP', 'Leverage SHAP']
+ablation_estimators = ['Monte Carlo', 'Permutation SHAP', 'Optimized Kernel SHAP', 'Leverage SHAP', 'Kernel PROB']
 
 main_estimators = ['Kernel SHAP', 'Optimized Kernel SHAP', 'Leverage SHAP']
 
@@ -41,7 +41,7 @@ if False:
             print(dataset, np.percentile(gammas[dataset], 25), np.median(gammas[dataset]), np.percentile(gammas[dataset], 75))
             
 
-kp.plot_probs([10,100,1000], folder='images/')
+#kp.plot_probs([10,100,1000], folder='images/')
 
 if False:
 
@@ -49,8 +49,8 @@ if False:
     #kp.visualize_predictions(datasets, ablation_estimators, filename='images/ablation_detailed.pdf')
 
 if False:
-    estimators = {'Monte Carlo': kp.estimators['Monte Carlo']}
-    num_runs = 100
+    estimators = {'Kernel PROB': kp.estimators['Kernel PROB']}
+    num_runs = 10#0
     for dataset in small_n + big_n:
         print(dataset)
         for hyperparameter in ['sample_size', 'noise_std']:
@@ -65,14 +65,14 @@ for y_name in ['shap_error', 'weighted_error']:
     constraints = {'noise': 0}
     results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
     kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
-    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=True)
+    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
 
     # Performance by noise level
     x_name = 'noise'
     constraints = {'sample_size': 10}
     results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
     kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
-    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=True)
+    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
 
 # Tables
 for y_name in ['shap_error', 'weighted_error']:
