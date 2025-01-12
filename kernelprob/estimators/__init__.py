@@ -3,6 +3,7 @@ from .official_shap import *
 from .regression import *
 from .matrix import *
 from .naive import *
+from .treeprob import *
 
 import numpy as np
 import xgboost as xgb
@@ -21,4 +22,5 @@ estimators = {
     'Leverage SHAP wo Bernoulli, Paired': leverage_shap_wo_bernoulli_paired,
     'Official Tree SHAP': official_tree_shap,
     'Permutation SHAP': official_permutation_shap,
+    'Tree Prob': tree_prob,
 }

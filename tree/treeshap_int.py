@@ -19,11 +19,14 @@ def calc_weight(U, V):
     """
     Shapley weighting function:
        calc_weight(U, V) = U! * (V - U - 1)! / V!
-    with boundary checks. 
     """
     num = factorial(U) * factorial(V - U - 1)
     den = factorial(V)
+    # print("num, den:", num, den)
     return num / den
+
+# print(calc_weight(-1, 10))
+# exit()
 
 class Tree:
     """
@@ -40,9 +43,9 @@ class Tree:
     """
 
     def __init__(self, children_left, children_right, features, thresholds, values, n_features):
-        self.children_left = children_left.astype(np.int32)
-        self.children_right = children_right.astype(np.int32)
-        self.features = features.astype(np.int32)
+        self.children_left = children_left
+        self.children_right = children_right
+        self.features = features
         self.thresholds = thresholds
         self.values = values
         self.n_features = n_features
@@ -107,14 +110,16 @@ def interventional_recurse(
     # print("U, V:", U, V)
     # If leaf node => compute possible contribution at leaf
     if children_left[node_index] == -1 and children_right[node_index] == -1:
+        # print("node_index, U, V:", node_index, U, V)
         vj = values[node_index]
+        # print("values", values)
         pos = 0.0
         neg = 0.0
-        if U == 0:
+        if V == 0:
             return (0.0, 0.0)
-        if U != 0:
+        else:
             pos += calc_weight(U-1, V) * vj
-        if U != V:
+        # if U != V:
             neg -= calc_weight(U, V) * vj
         # print("U, V, vj, pos, neg:", U, V, vj, pos, neg)
         return (pos, neg)
@@ -173,6 +178,7 @@ def interventional_recurse(
 
     if both_right:
         # print("both_right")
+        # print("a_j, b_j:", a_j, b_j)
         pos_ch, neg_ch = interventional_recurse(
             b_j, U, V, xlist, clist, x, c,
             children_left, children_right,
@@ -183,6 +189,7 @@ def interventional_recurse(
 
     if both_left:
         # print("both_left")
+        # print("a_j, b_j:", a_j, b_j)
         pos_ch, neg_ch = interventional_recurse(
             a_j, U, V, xlist, clist, x, c,
             children_left, children_right,
@@ -238,8 +245,10 @@ def interventional_recurse(
             phi
         )
         clist[dj] -= 1
-
+        
+        # print("posx, negc:", posx, negc)
         phi[dj] += (posx + negc)
+        # print("phi[dj]:", phi[dj])
         return (posx + posc, negx + negc)
 
     print("Should not reach here!")
@@ -258,9 +267,6 @@ class TreeInterventionalExplainer:
         """
         model : A trained RandomForestRegressor
         """
-
-        # If the model is indeed a RandomForestRegressor, 
-        # build our own list of Tree objects
         if str(type(model)).endswith("sklearn.ensemble._forest.RandomForestRegressor'>"):
             self.trees = []
             n_features = model.n_features_in_  # total # of features in data
@@ -307,8 +313,8 @@ class TreeInterventionalExplainer:
             X = X.reshape(1, -1)
 
         n_samples, n_features = X.shape
-        print("n_samples, n_features:", n_samples, n_features)
-        print("num_trees:", len(self.trees))
+        # print("n_samples, n_features:", n_samples, n_features)
+        # print("num_trees:", len(self.trees))
 
         refset = np.array(refset)
         if len(refset.shape) == 1:

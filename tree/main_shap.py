@@ -6,7 +6,7 @@ import shap
 
 from treeshap_path import TreeExplainer
 from treeshap_int import TreeInterventionalExplainer
-from exact_shap import shapley_enumerate_all_subsets
+from exact_enumerate import shapley_enumerate_all_subsets
 
 def official_tree_shap(baseline, explicand, model):
     # Suppress warning only for this function
@@ -35,34 +35,37 @@ def load_input(X, seed=None):
 def main():
     random_state = 42
 
-    X, y = shap.datasets.california(n_points=1000)
+    # X, y = shap.datasets.california(n_points=1000)
+    X, y = shap.datasets.communitiesandcrime()
     print(X.shape, y.shape)
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4, random_state=random_state)
     model.fit(X, y)
 
+    # estimator = model.estimators_[0]
+
+    # # Accessing the attributes of the estimator
+    # print("Number of nodes:", estimator.tree_.node_count)
+    # print("Thresholds:", estimator.tree_.threshold)
+    # print("Features:", estimator.tree_.feature)
+    # print("Values:", estimator.tree_.value)
+    # print("Children:", estimator.tree_.children_left, estimator.tree_.children_right)
+
     baseline, explicand = load_input(X, seed=random_state)
 
-    start_time = time.time()
-    true_shap_values = official_tree_shap(baseline, explicand, model).flatten()
-    print(f"Official Tree SHAP: {time.time() - start_time}")
+    # print(f'baseline: {baseline}')
+    # print(f'explicand: {explicand}')
 
-    # Xd = xgboost.DMatrix(X, label=y)
-    # bst = xgboost.train({"learning_rate": 0.01, "max_depth": 4}, Xd, 1000)
-
-    # start = time.time()
-    # cpred = model.predict(X)
-    # explainer = shap.TreeExplainer(model)
-    # explanation = explainer(Xd)
-    # shap_values = explanation.values
-    # print(time.time() - start)
-
-    # start = time.time()
-    # py_shap_values = TreeExplainer(model).shap_values(X.iloc[:, :])
-    # print(time.time() - start)
+    # explainer = shap.TreeExplainer(model, feature_perturbation="path_dependent")
+    # c_shap_values = explainer.shap_values(explicand)
+    # py_shap_values = TreeExplainer(model).shap_values(explicand)
 
     # print(f'c_shap_values: {c_shap_values}')
     # print(f'py_shap_values: {py_shap_values}')
 
+
+    start_time = time.time()
+    true_shap_values = official_tree_shap(baseline, explicand, model).flatten()
+    print(f"Official Tree SHAP: {time.time() - start_time}")
 
     int_explainer = TreeInterventionalExplainer(model)
 
@@ -80,6 +83,7 @@ def main():
     print(f'true_shap_values: {true_shap_values}')
     print(f'interventional_shap_values: {int_shap_values}')
     # print(f'shapley_values: {phi}')
+
 
 if __name__ == "__main__":
     main()
