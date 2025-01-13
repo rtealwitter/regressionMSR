@@ -3,7 +3,7 @@ from .official_shap import *
 from .regression import *
 from .matrix import *
 from .naive import *
-from .treeprob import *
+from .treeprob.treeprob import *
 
 import numpy as np
 import xgboost as xgb
