@@ -4,12 +4,14 @@ from .regression import *
 from .matrix import *
 from .naive import *
 from .treeprob.treeprob import *
+from .regression_prob import *
 
 import numpy as np
 import xgboost as xgb
 import scipy
 
 estimators = {
+    'Kernel PROB': kernel_prob,
     'Monte Carlo': monte_carlo,
     'Matrix SHAP': matrix_shap,
     'Matrix SHAP wo Bernoulli': matrix_shap_wo_bernoulli,

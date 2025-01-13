@@ -207,6 +207,14 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
                 'n' : n,
             }
             dict['shap_error'] = ((shap_values - true_shap_values) ** 2).mean()
+#            print('n:', n)
+#            print('difference:', dict['difference'])
+#            print('sample_size:', sample_size)
+#            print('shap error:', dict['shap_error'])
+#            print('true shap values:', true_shap_values)
+#            print('predicted shap values:', shap_values)
+#            print('true shap values / predicted shap values:', true_shap_values / shap_values)
+#            assert False 
             if is_small:
                 if small_setup == {}:
                     small_setup = run_small_setup(baseline, explicand, model, true_shap_values)
