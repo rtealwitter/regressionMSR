@@ -19,12 +19,6 @@ def get_hyperparameter_values(name):
 #log = logging.getLogger('shap')
 #logging.basicConfig(level=logging.DEBUG)
 
-ablation_estimators = ['Kernel SHAP', 'Optimized Kernel SHAP', 'Leverage SHAP', 'Kernel SHAP Paired', 'Leverage SHAP wo Bernoulli', 'Leverage SHAP wo Bernoulli, Paired', 'Matrix SHAP', 'Matrix SHAP wo Bernoulli', 'Matrix SHAP wo Bernoulli, Paired', 'Permutation SHAP']
-
-ablation_estimators = ['Monte Carlo', 'Permutation SHAP', 'Optimized Kernel SHAP', 'Leverage SHAP', 'Kernel PROB']
-
-main_estimators = ['Kernel SHAP', 'Optimized Kernel SHAP', 'Leverage SHAP']
-
 datasets = small_n + big_n
 
 if False:
@@ -48,40 +42,40 @@ if False:
     kp.visualize_predictions(datasets, main_estimators, filename='images/main_detailed.pdf')
     #kp.visualize_predictions(datasets, ablation_estimators, filename='images/ablation_detailed.pdf')
 
-if False:
-    estimators = {'Kernel PROB': kp.estimators['Kernel PROB']}
-    num_runs = 10#0
+if True:
+    estimators = {'Kernel Prob': kp.estimators['Kernel Prob']}
+    num_runs = 5
     for dataset in small_n + big_n:
         print(dataset)
         for hyperparameter in ['sample_size', 'noise_std']:
             print(hyperparameter)
-            kp.benchmark(num_runs, dataset, estimators, hyperparameter, get_hyperparameter_values(hyperparameter), silent=False)
+            kp.benchmark(num_runs, dataset, estimators, hyperparameter, get_hyperparameter_values(hyperparameter), weighting='banzhaf')
 
-# Plots
-
-for y_name in ['shap_error', 'weighted_error']:
-    # Performance by number of samples
-    x_name = 'sample_size'
-    constraints = {'noise': 0}
-    results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
-    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
-    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
-
-    # Performance by noise level
-    x_name = 'noise'
-    constraints = {'sample_size': 10}
-    results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
-    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
-    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
-
-# Tables
-for y_name in ['shap_error', 'weighted_error']:
-    results = kp.load_results(small_n + big_n, 'sample_size', y_name, {'noise': 0, 'sample_size' : 10})
-    kp.one_big_table(results, f'tables/ablation_{y_name}.tex', error_type=y_name)
-    results_main = {}
-    for dataset in results:
-        results_main[dataset] = {estimator : results[dataset][estimator] for estimator in main_estimators}
-    kp.one_big_table(results_main, f'tables/main_{y_name}.tex', error_type=y_name)
-        
-    #for dataset in results:
-    #    kp.benchmark_table(results[dataset], f'tables/{dataset}-{y_name}.tex', print_md=False)
+## Plots
+#
+#for y_name in ['shap_error', 'weighted_error']:
+#    # Performance by number of samples
+#    x_name = 'sample_size'
+#    constraints = {'noise': 0}
+#    results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
+#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
+#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
+#
+#    # Performance by noise level
+#    x_name = 'noise'
+#    constraints = {'sample_size': 10}
+#    results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
+#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
+#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
+#
+## Tables
+#for y_name in ['shap_error', 'weighted_error']:
+#    results = kp.load_results(small_n + big_n, 'sample_size', y_name, {'noise': 0, 'sample_size' : 10})
+#    kp.one_big_table(results, f'tables/ablation_{y_name}.tex', error_type=y_name)
+#    results_main = {}
+#    for dataset in results:
+#        results_main[dataset] = {estimator : results[dataset][estimator] for estimator in main_estimators}
+#    kp.one_big_table(results_main, f'tables/main_{y_name}.tex', error_type=y_name)
+#        
+#    #for dataset in results:
+#    #    kp.benchmark_table(results[dataset], f'tables/{dataset}-{y_name}.tex', print_md=False)

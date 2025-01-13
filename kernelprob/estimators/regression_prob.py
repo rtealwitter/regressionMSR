@@ -199,10 +199,6 @@ class ProbRegressionEstimator:
 
         return self.phi
 
-def kernel_prob(baseline, explicand, model, num_samples):
-    # Run with Shapley values
-    n = baseline.shape[1]
-    p = np.array([1/n * 1/scipy.special.binom(n-1, ell) for ell in range(n)])
-
+def kernel_prob(baseline, explicand, model, num_samples, p):
     estimator = ProbRegressionEstimator(model, baseline, explicand, num_samples, p=p, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True)
     return estimator.compute()

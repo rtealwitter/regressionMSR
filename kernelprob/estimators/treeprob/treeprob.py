@@ -1,8 +1,8 @@
 import numpy as np
 
-from tree import Tree
-from tree_utils import is_sklearn_random_forest, is_xgboost_model, parse_xgb_tree
-from weights import calc_weight
+from .tree import Tree
+from .tree_utils import is_sklearn_random_forest, is_xgboost_model, parse_xgb_tree
+from .weights import calc_weight
 
 #  Convenient Function
 def tree_prob(baseline, explicand, model, weighting="shapley"):

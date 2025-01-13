@@ -2,7 +2,7 @@ import xgboost
 import numpy as np
 import math
 
-from tree import Tree
+from .tree import Tree
 
 def is_sklearn_random_forest(model):
     return (

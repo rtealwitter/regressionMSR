@@ -8,33 +8,62 @@ from tqdm import tqdm
 import scipy
 
 # Every line of output files contains a dictionary with the following keys
-# 'sample_size': number of samples used to estimate SHAP values
+# 'sample_size': number of samples used to estimate values
 # 'noise': standard deviation of noise added to the labels
-# 'shap_error': mean squared error between estimated and true SHAP values
-# 'weighted_error' (optional): ||Ax- b||^2 / ||Ax* - b||^2 where x* is the true SHAP values and x is the estimated SHAP values
-# 'gamma' (optional): ||b||^2 / ||Ax||^2 where x is the estimated SHAP values
+# 'error': mean squared error between estimated and true values
+# 'weighted_error' (optional): ||Ax- b||^2 / ||Ax* - b||^2 where x* is the true values and x is the estimated values
+# 'gamma' (optional): ||b||^2 / ||Ax||^2 where x is the estimated values
 
-def build_full_linear_system(baseline, explicand, model):
-    n = baseline.shape[1]
-    binary_Z = np.zeros((2**n-2, n))
-    idx = 0
-    for s in range(1, n):
-        for indices in itertools.combinations(range(n), s):
-            binary_Z[idx, list(indices)] = 1
-            idx += 1
-    binary_Z1_norm = np.sum(binary_Z, axis=1)
-    inv_sqrt_weights = np.sqrt(binary_Z1_norm * (n - binary_Z1_norm) * scipy.special.binom(n, binary_Z1_norm))
+## # # WEIGHTED ERROR # # #
+#
+#def build_full_linear_system(baseline, explicand, model):
+#    n = baseline.shape[1]
+#    binary_Z = np.zeros((2**n-2, n))
+#    idx = 0
+#    for s in range(1, n):
+#        for indices in itertools.combinations(range(n), s):
+#            binary_Z[idx, list(indices)] = 1
+#            idx += 1
+#    binary_Z1_norm = np.sum(binary_Z, axis=1)
+#    inv_sqrt_weights = np.sqrt(binary_Z1_norm * (n - binary_Z1_norm) * scipy.special.binom(n, binary_Z1_norm))
+#
+#    Z = 1 / inv_sqrt_weights[:, np.newaxis] * binary_Z
+#    P = np.eye(n) - np.ones((n, n)) / n
+#    A = Z @ P
+#    inputs = baseline * (1 - binary_Z) + explicand * binary_Z
+#    v1 = model.predict(explicand)
+#    vz = model.predict(inputs)
+#    v0 = model.predict(baseline)
+#    y = (vz - v0) / inv_sqrt_weights
+#    b = y - Z.sum(axis=1) * (v1 - v0) / n
+#    return {'A': A, 'b': b}
+#
+#def compute_weighted_error(baseline, explicand, model, shap_values):
+#    n = baseline.shape[1]
+#    Z = np.zeros((2**n-2, n))
+#    idx = 0
+#    for s in range(1, n):
+#        for indices in itertools.combinations(range(n), s):
+#            Z[idx, list(indices)] = 1
+#            idx += 1
+#    Z1_norm = np.sum(Z, axis=1)
+#    inv_weights = Z1_norm * (n - Z1_norm) * scipy.special.binom(n, Z1_norm)
+#    weights = 1 / inv_weights
+#    inputs = baseline * (1 - Z) + explicand * Z
+#    vz = model.predict(inputs)
+#    v0 = model.predict(baseline)
+#    return np.sum(weights * (shap_values @ Z.T - (vz - v0)) ** 2)
+#
+#def run_small_setup(baseline, explicand, model, true_shap_values):
+#    linear_system = build_full_linear_system(baseline, explicand, model)
+#    best_weighted_error = np.sum((linear_system['A'] @ true_shap_values - linear_system['b'])**2)
+#    Aphi = linear_system['A'] @ true_shap_values
+#    gamma = np.sum((Aphi - linear_system['b'])**2) / np.sum((Aphi)**2)    
+#    normalized_gamma = gamma / np.sum((true_shap_values)**2)
+#    # Round to 2 significant figures
+#    normalized_gamma = float(f'{normalized_gamma:.2g}')
+#    return {'A': linear_system['A'], 'b': linear_system['b'], 'best_weighted_error': best_weighted_error, 'normalized_gamma': normalized_gamma, 'gamma': gamma}
 
-    Z = 1 / inv_sqrt_weights[:, np.newaxis] * binary_Z
-    P = np.eye(n) - np.ones((n, n)) / n
-    A = Z @ P
-    inputs = baseline * (1 - binary_Z) + explicand * binary_Z
-    v1 = model.predict(explicand)
-    vz = model.predict(inputs)
-    v0 = model.predict(baseline)
-    y = (vz - v0) / inv_sqrt_weights
-    b = y - Z.sum(axis=1) * (v1 - v0) / n
-    return {'A': A, 'b': b}
 
 def get_dataset_size(dataset):
     if 'Synthetic_' in dataset:
@@ -42,8 +71,11 @@ def get_dataset_size(dataset):
     X, y = load_dataset(dataset)
     return X.shape[1]
 
-def read_file(dataset, estimator, x_name, y_name, constraints={}):
-    filename = f'output/{dataset}_{estimator}.csv'
+def get_filename(dataset, estimator, weighting):
+    return f'output/{weighting}_{dataset}_{estimator}.csv'
+
+def read_file(dataset, estimator, x_name, y_name, weighting, constraints={}):
+    filename = get_filename(dataset, estimator, weighting)
     if not os.path.exists(filename): return {}
     results = {}
     with open(filename, 'r') as f:
@@ -72,30 +104,13 @@ def load_results(datasets, x_name, y_name, constraints, estimator_names=estimato
             constraints['sample_size'] = int(original_sample_size * n)
         results_by_estimator = {}
         for estimator_name in estimator_names:
-            if estimator_name == 'Official Tree SHAP':
-                continue
+            if estimator_name in ['Official Tree SHAP', 'Tree Prob']: continue
             results = read_file(dataset, estimator_name, x_name, y_name, constraints)
             if results != {}:
                 results_by_estimator[estimator_name] = results
         if results_by_estimator != {}:
             results_by_dataset[dataset] = results_by_estimator
     return results_by_dataset
-
-def compute_weighted_error(baseline, explicand, model, shap_values):
-    n = baseline.shape[1]
-    Z = np.zeros((2**n-2, n))
-    idx = 0
-    for s in range(1, n):
-        for indices in itertools.combinations(range(n), s):
-            Z[idx, list(indices)] = 1
-            idx += 1
-    Z1_norm = np.sum(Z, axis=1)
-    inv_weights = Z1_norm * (n - Z1_norm) * scipy.special.binom(n, Z1_norm)
-    weights = 1 / inv_weights
-    inputs = baseline * (1 - Z) + explicand * Z
-    vz = model.predict(inputs)
-    v0 = model.predict(baseline)
-    return np.sum(weights * (shap_values @ Z.T - (vz - v0)) ** 2)
 
 markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', 'P', '*', 'X', 'd', 'h', 'H', '+', 'x', '|', '_']
 
@@ -165,36 +180,38 @@ class NoisyModel:
     def get_sample_count(self):
         return self.sample_count
 
-def run_small_setup(baseline, explicand, model, true_shap_values):
-    linear_system = build_full_linear_system(baseline, explicand, model)
-    best_weighted_error = np.sum((linear_system['A'] @ true_shap_values - linear_system['b'])**2)
-    Aphi = linear_system['A'] @ true_shap_values
-    gamma = np.sum((Aphi - linear_system['b'])**2) / np.sum((Aphi)**2)    
-    normalized_gamma = gamma / np.sum((true_shap_values)**2)
-    # Round to 2 significant figures
-    normalized_gamma = float(f'{normalized_gamma:.2g}')
-    return {'A': linear_system['A'], 'b': linear_system['b'], 'best_weighted_error': best_weighted_error, 'normalized_gamma': normalized_gamma, 'gamma': gamma}
-
-def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs, current_estimators):
+def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs, current_estimators, weighting='shapley'):
     baseline, explicand = load_input(X, seed=seed, is_synthetic=dataset=='Synthetic')
     n = X.shape[1]
-    is_small = 2**n <= 1e7
-    # Compute the true SHAP values (assuming tree model)
-    true_shap_values = estimators['Official Tree SHAP'](baseline, explicand, model, sample_size).flatten()
 
-    small_setup = {}
+    # Assume tree model
+    true_values = estimators['Tree Prob'](baseline, explicand, model, weighting=weighting)
+    if weighting == 'shapley':
+        true_shap_values = estimators['Official Tree SHAP'](baseline, explicand, model, sample_size).flatten()
+        assert np.allclose(true_values, true_shap_values)
+
+    #is_small = 2**n <= 1e7
+    #small_setup = {}
      
     for estimator_name, estimator in current_estimators.items():        
-        if estimator_name in ['Official Tree SHAP']:
+        if estimator_name in ['Official Tree SHAP', 'Tree Prob']:
             continue
 
-        results = read_file(dataset, estimator_name, 'sample_size', 'shap_error', {'noise': noise_std, 'n': n})
+        results = read_file(dataset, estimator_name, 'sample_size', 'error', {'noise': noise_std, 'n': n})
         if results != {} and sample_size in results:
             if len(results[sample_size]) >= num_runs: continue
         noised_model = NoisyModel(model, noise_std)
-        shap_values = estimator(baseline, explicand, noised_model, sample_size).flatten()
+        if weighting == 'banzhaf':
+            p = banzhaf_distribution(n)
+        elif weighting == 'shapley':
+            p = shapley_distribution(n)
+        
+        if estimator_name in prob_estimators:
+            predicted = estimator(baseline, explicand, noised_model, sample_size, p=p)
+        else:
+            predicted = estimator(baseline, explicand, noised_model, sample_size, weighting=weighting)
 
-        filename = f'output/{dataset}_{estimator_name}.csv'
+        filename = get_filename(dataset, estimator_name, weighting)
         if not os.path.exists(filename):
             with open(filename, 'w') as f:
                 f.write('')
@@ -205,8 +222,8 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
                 'difference': noised_model.get_sample_count() - sample_size,
                 'noise': noise_std,
                 'n' : n,
+                'error' : ((predicted - true_values) ** 2).mean(),
             }
-            dict['shap_error'] = ((shap_values - true_shap_values) ** 2).mean()
 #            print('n:', n)
 #            print('difference:', dict['difference'])
 #            print('sample_size:', sample_size)
@@ -215,31 +232,15 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
 #            print('predicted shap values:', shap_values)
 #            print('true shap values / predicted shap values:', true_shap_values / shap_values)
 #            assert False 
-            if is_small:
-                if small_setup == {}:
-                    small_setup = run_small_setup(baseline, explicand, model, true_shap_values)
-                weighted_error = np.sum((small_setup['A'] @ shap_values - small_setup['b'])**2)
-                dict['weighted_error'] = weighted_error / small_setup['best_weighted_error'] 
+            #if is_small:
+            #    if small_setup == {}:
+            #        small_setup = run_small_setup(baseline, explicand, model, true_shap_values)
+            #    weighted_error = np.sum((small_setup['A'] @ shap_values - small_setup['b'])**2)
+            #    dict['weighted_error'] = weighted_error / small_setup['best_weighted_error'] 
             f.write(str(dict) + '\n')
 
-def compute_gamma(dataset, seed=42):
-    X, y = load_dataset(dataset)
-    n = X.shape[1]
-    is_small = 2**n <= 1e7
-    if not is_small: return {}
-    # Assuming deterministic
-    model = xgb.XGBRegressor(n_estimators=100, max_depth=4)
-    model.fit(X, y)
-    baseline, explicand = load_input(X, seed=seed, is_synthetic=dataset=='Synthetic')
-    true_shap_values = estimators['Official Tree SHAP'](baseline, explicand, model, num_samples=0).flatten()
-    small_setup = run_small_setup(baseline, explicand, model, true_shap_values)
-    return {
-        'gamma': small_setup['gamma'],
-        'normalized_gamma' : small_setup['normalized_gamma']
-    }
 
-
-def benchmark(num_runs, dataset, current_estimators, hyperparameter, hyperparameter_values, silent=False):              
+def benchmark(num_runs, dataset, current_estimators, hyperparameter, hyperparameter_values, weighting='shapley', silent=False):              
 
     X, y = load_dataset(dataset)
     n = X.shape[1]
@@ -253,122 +254,143 @@ def benchmark(num_runs, dataset, current_estimators, hyperparameter, hyperparame
             if hyperparameter == 'sample_size':
                 hyperparameter_value = int(hyperparameter_value * n)
             config[hyperparameter] = hyperparameter_value
-            run_one_iteration(X, run_idx * num_runs, dataset, model, sample_size=config['sample_size'], noise_std=config['noise_std'], num_runs=num_runs, current_estimators=current_estimators)
+            run_one_iteration(X, run_idx * num_runs, dataset, model, sample_size=config['sample_size'], noise_std=config['noise_std'], num_runs=num_runs, current_estimators=current_estimators, weighting=weighting)
 
-class SyntheticModel:
-    def __init__(self, v, correspondence):
-        self.v = v
-        self.num_samples = 0
-        self.correspondence = correspondence
-
-    def predict(self, X):
-        # X is a binary matrix
-        # Get the integer represented in each row
-        indices = np.sum(2**np.arange(X.shape[1]) * X, axis=1).astype(int)
-        # Get the corresponding index in v
-        self.num_samples += len(X)
-        return self.v[[self.correspondence[i] for i in indices]]
-    
-    def get_sample_count(self):
-        return self.num_samples
-
-def build_gamma_labels(n, alpha):
-    # Construct A
-    binary_Z = np.zeros((2**n-2, n))
-    idx = 0
-    for s in range(1, n):
-        for indices in itertools.combinations(range(n), s):
-            binary_Z[idx, list(indices)] = 1
-            idx += 1
-    # Convert all rows to their integer form
-    X = binary_Z
-    indices = np.sum(2**np.arange(X.shape[1]) * X, axis=1).astype(int)
-    correspondence = {0:0, 2**n-1:-1}
-    for i in range(2**n-2):
-        correspondence[indices[i]] = i + 1
-
-    binary_Z1_norm = np.sum(binary_Z, axis=1)
-    inv_sqrt_weights = np.sqrt(binary_Z1_norm * (n - binary_Z1_norm) * scipy.special.binom(n, binary_Z1_norm))
-    Z = 1 / inv_sqrt_weights[:, np.newaxis] * binary_Z
-    P = np.eye(n) - np.ones((n, n)) / n
-    A = Z @ P
-
-    # Perform QR decomposition of A
-    Q, R = np.linalg.qr(A)
-
-    # The last column of Q is orthogonal to all the columns of A
-    # if A has full rank and is not square
-    col_not_in_span = Q[:, -1]
-    col_not_in_span = col_not_in_span / np.linalg.norm(col_not_in_span)
-    
-    # Check that r is orthogonal to the columns of A
-    assert np.allclose(A.T @ col_not_in_span, 0)
-
-    # Construct b as (1-alpha) * a column in span of A + alpha * a column not in span of A
-#    xstar = np.random.randn(n)
-#    col_in_span = A @ xstar
-    col_in_span = A[:, 0]
-    col_in_span = col_in_span / np.linalg.norm(col_in_span)
-    b = (1 - alpha) * col_in_span + alpha * col_not_in_span
-
-    # Convert from b to y
-    v1 = 1
-    v0 = 0
-    y = b + Z.sum(axis=1) * (v1 - v0) /n 
-
-    v = np.zeros(2**n)
-    v[1:-1] = y * inv_sqrt_weights
-    v[0] = v0
-    v[-1] = v1
-
-    # True SHAP values.
-    # Solve Ax = b
-    true_shap_values = np.linalg.lstsq(A, b, rcond=None)[0]
-    best_weighted_error = np.sum((A @ true_shap_values - b)**2)
-
-    gamma = np.sum((A @ true_shap_values - b)**2) / np.sum((A @ true_shap_values)**2)
-
-    return {'v': v, 'true_shap_values': true_shap_values, 'best_weighted_error': best_weighted_error, 'correspondence': correspondence}
-
-def benchmark_gamma(num_runs, n, include_estimators, sample_size, silent=False):
-    baseline = np.zeros((1, n))
-    explicand = np.ones((1, n))
-    for run_idx in tqdm(range(num_runs), disable=silent):
-        for alpha in [.2, .3, .4, .5, .6, .7, .8]:
-            seed = run_idx * num_runs + int(alpha * 100)
-            np.random.seed(seed)
-            gamma_labels = build_gamma_labels(n, alpha)
-
-            is_small = 2**n <= 1e7
-
-            small_setup = {}
-
-            dataset = 'Synthetic_' + str(n)
-            
-            for estimator_name, estimator in estimators.items():
-                if estimator_name not in include_estimators:
-                    continue
-                model = SyntheticModel(gamma_labels['v'], gamma_labels['correspondence'])
-                results = read_file(dataset, estimator_name, 'alpha', 'shap_error', {'n': n})
-                if results != {} and alpha in results:
-                    if len(results[alpha]) >= num_runs: continue
-                shap_values = estimator(baseline, explicand, model, sample_size).flatten()
-
-                filename = f'output/{dataset}_{estimator_name}.csv'
-
-                with open(filename, 'a') as f:
-                    dict = {
-                        'sample_size': sample_size,
-                        'difference': model.get_sample_count() - sample_size,
-                        'noise': 0,
-                        'n' : n,
-                        'alpha' : alpha,
-                    }
-                    dict['shap_error'] = ((shap_values - gamma_labels['true_shap_values']) ** 2).mean()
-                    if is_small:
-                        if small_setup == {}:
-                            small_setup = run_small_setup(baseline, explicand, model, gamma_labels['true_shap_values'])
-                        weighted_error = np.sum((small_setup['A'] @ shap_values - small_setup['b'])**2)
-                        dict['weighted_error'] = weighted_error / gamma_labels['best_weighted_error'] 
-                        dict['gamma'] = small_setup['gamma']
-                    f.write(str(dict) + '\n')
+## # # GAMMA # # #
+#
+#class SyntheticModel:
+#    def __init__(self, v, correspondence):
+#        self.v = v
+#        self.num_samples = 0
+#        self.correspondence = correspondence
+#
+#    def predict(self, X):
+#        # X is a binary matrix
+#        # Get the integer represented in each row
+#        indices = np.sum(2**np.arange(X.shape[1]) * X, axis=1).astype(int)
+#        # Get the corresponding index in v
+#        self.num_samples += len(X)
+#        return self.v[[self.correspondence[i] for i in indices]]
+#    
+#    def get_sample_count(self):
+#        return self.num_samples
+#
+#
+#def compute_gamma(dataset, seed=42):
+#    X, y = load_dataset(dataset)
+#    n = X.shape[1]
+#    is_small = 2**n <= 1e7
+#    if not is_small: return {}
+#    # Assuming deterministic
+#    model = xgb.XGBRegressor(n_estimators=100, max_depth=4)
+#    model.fit(X, y)
+#    baseline, explicand = load_input(X, seed=seed, is_synthetic=dataset=='Synthetic')
+#    true_shap_values = estimators['Official Tree SHAP'](baseline, explicand, model, num_samples=0).flatten()
+#    small_setup = run_small_setup(baseline, explicand, model, true_shap_values)
+#    return {
+#        'gamma': small_setup['gamma'],
+#        'normalized_gamma' : small_setup['normalized_gamma']
+#    }
+#
+#
+#
+#def build_gamma_labels(n, alpha):
+#    # Construct A
+#    binary_Z = np.zeros((2**n-2, n))
+#    idx = 0
+#    for s in range(1, n):
+#        for indices in itertools.combinations(range(n), s):
+#            binary_Z[idx, list(indices)] = 1
+#            idx += 1
+#    # Convert all rows to their integer form
+#    X = binary_Z
+#    indices = np.sum(2**np.arange(X.shape[1]) * X, axis=1).astype(int)
+#    correspondence = {0:0, 2**n-1:-1}
+#    for i in range(2**n-2):
+#        correspondence[indices[i]] = i + 1
+#
+#    binary_Z1_norm = np.sum(binary_Z, axis=1)
+#    inv_sqrt_weights = np.sqrt(binary_Z1_norm * (n - binary_Z1_norm) * scipy.special.binom(n, binary_Z1_norm))
+#    Z = 1 / inv_sqrt_weights[:, np.newaxis] * binary_Z
+#    P = np.eye(n) - np.ones((n, n)) / n
+#    A = Z @ P
+#
+#    # Perform QR decomposition of A
+#    Q, R = np.linalg.qr(A)
+#
+#    # The last column of Q is orthogonal to all the columns of A
+#    # if A has full rank and is not square
+#    col_not_in_span = Q[:, -1]
+#    col_not_in_span = col_not_in_span / np.linalg.norm(col_not_in_span)
+#    
+#    # Check that r is orthogonal to the columns of A
+#    assert np.allclose(A.T @ col_not_in_span, 0)
+#
+#    # Construct b as (1-alpha) * a column in span of A + alpha * a column not in span of A
+##    xstar = np.random.randn(n)
+##    col_in_span = A @ xstar
+#    col_in_span = A[:, 0]
+#    col_in_span = col_in_span / np.linalg.norm(col_in_span)
+#    b = (1 - alpha) * col_in_span + alpha * col_not_in_span
+#
+#    # Convert from b to y
+#    v1 = 1
+#    v0 = 0
+#    y = b + Z.sum(axis=1) * (v1 - v0) /n 
+#
+#    v = np.zeros(2**n)
+#    v[1:-1] = y * inv_sqrt_weights
+#    v[0] = v0
+#    v[-1] = v1
+#
+#    # True SHAP values.
+#    # Solve Ax = b
+#    true_shap_values = np.linalg.lstsq(A, b, rcond=None)[0]
+#    best_weighted_error = np.sum((A @ true_shap_values - b)**2)
+#
+#    gamma = np.sum((A @ true_shap_values - b)**2) / np.sum((A @ true_shap_values)**2)
+#
+#    return {'v': v, 'true_shap_values': true_shap_values, 'best_weighted_error': best_weighted_error, 'correspondence': correspondence}
+#
+#def benchmark_gamma(num_runs, n, include_estimators, sample_size, silent=False):
+#    baseline = np.zeros((1, n))
+#    explicand = np.ones((1, n))
+#    for run_idx in tqdm(range(num_runs), disable=silent):
+#        for alpha in [.2, .3, .4, .5, .6, .7, .8]:
+#            seed = run_idx * num_runs + int(alpha * 100)
+#            np.random.seed(seed)
+#            gamma_labels = build_gamma_labels(n, alpha)
+#
+#            is_small = 2**n <= 1e7
+#
+#            small_setup = {}
+#
+#            dataset = 'Synthetic_' + str(n)
+#            
+#            for estimator_name, estimator in estimators.items():
+#                if estimator_name not in include_estimators:
+#                    continue
+#                model = SyntheticModel(gamma_labels['v'], gamma_labels['correspondence'])
+#                results = read_file(dataset, estimator_name, 'alpha', 'shap_error', {'n': n})
+#                if results != {} and alpha in results:
+#                    if len(results[alpha]) >= num_runs: continue
+#                shap_values = estimator(baseline, explicand, model, sample_size).flatten()
+#
+#                filename = f'output/{dataset}_{estimator_name}.csv'
+#
+#                with open(filename, 'a') as f:
+#                    dict = {
+#                        'sample_size': sample_size,
+#                        'difference': model.get_sample_count() - sample_size,
+#                        'noise': 0,
+#                        'n' : n,
+#                        'alpha' : alpha,
+#                    }
+#                    dict['shap_error'] = ((shap_values - gamma_labels['true_shap_values']) ** 2).mean()
+#                    if is_small:
+#                        if small_setup == {}:
+#                            small_setup = run_small_setup(baseline, explicand, model, gamma_labels['true_shap_values'])
+#                        weighted_error = np.sum((small_setup['A'] @ shap_values - small_setup['b'])**2)
+#                        dict['weighted_error'] = weighted_error / gamma_labels['best_weighted_error'] 
+#                        dict['gamma'] = small_setup['gamma']
+#                    f.write(str(dict) + '\n')
