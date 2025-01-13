@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.special import gamma
+from scipy.special import beta as beta_function
 import numba
 
 def calc_weight(U, V, weighting="banzhaf"):
@@ -61,9 +61,9 @@ def factorial(n):
     return result
 
 
-def beta_function(a, b):
-    """Helper: Calculate the Beta function."""
-    return gamma(a) * gamma(b) / gamma(a + b)
+# def beta_function(a, b):
+#     """Helper: Calculate the Beta function."""
+#     return gamma(a) * gamma(b) / gamma(a + b)
 
 
 def w_shapley(V, U):
