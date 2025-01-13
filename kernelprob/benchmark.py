@@ -185,9 +185,11 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
     n = X.shape[1]
 
     # Assume tree model
-    true_values = estimators['Tree Prob'](baseline, explicand, model, weighting=weighting)
+    true_values = estimators['Tree Prob'](baseline, explicand, model, weighting=weighting).flatten()
     if weighting == 'shapley':
         true_shap_values = estimators['Official Tree SHAP'](baseline, explicand, model, sample_size).flatten()
+        print('True SHAP values:', true_shap_values)
+        print('True values:', true_values)
         assert np.allclose(true_values, true_shap_values)
 
     #is_small = 2**n <= 1e7

@@ -43,13 +43,16 @@ if False:
     #kp.visualize_predictions(datasets, ablation_estimators, filename='images/ablation_detailed.pdf')
 
 if True:
-    estimators = {'Kernel Prob': kp.estimators['Kernel Prob']}
+    estimators = {
+        'Kernel Prob': kp.estimators['Kernel Prob'],
+        'Leverage SHAP': kp.estimators['Leverage SHAP'],
+    }
     num_runs = 5
     for dataset in small_n + big_n:
         print(dataset)
         for hyperparameter in ['sample_size', 'noise_std']:
             print(hyperparameter)
-            kp.benchmark(num_runs, dataset, estimators, hyperparameter, get_hyperparameter_values(hyperparameter), weighting='banzhaf')
+            kp.benchmark(num_runs, dataset, estimators, hyperparameter, get_hyperparameter_values(hyperparameter), weighting='shapley')
 
 ## Plots
 #
