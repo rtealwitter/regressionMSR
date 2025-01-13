@@ -141,38 +141,55 @@ def weighted_banzhaf_distribution(n, weight):
     k = np.arange(n)
 
     # w(k,n) = p_weight^(k-1) * (1 - p_weight)^(n - k)
-    p_k = weight ** (k - 1) * (1 - weight) ** (n - k)
+    p_k = weight ** k * (1 - weight) ** (n - k - 1)
 
     return p_k
+
+
+def check_sum_is_one(p, n, tol=1e-8):
+    if len(p) != n:
+        raise ValueError(f"Length of p ({len(p)}) does not match n ({n}).")
+
+    binom_coeffs = scipy_comb(n - 1, np.arange(n))
+    sum_value = np.dot(binom_coeffs, p)
+
+    is_valid = np.abs(sum_value - 1.0) <= tol
+    return is_valid, sum_value
 
 
 # Test
 if __name__ == "__main__":
     n = 5
-    print("Example: random_probabilistic_distribution(n=5):")
+
+    print("1. Random Probabilistic Distribution (n=5):")
     p_rand = random_probabilistic_distribution(n, random_state=42)
     print("p_rand =", p_rand)
-    print("Check sum of binom(n-1,k)*p_k =", np.dot(scipy_comb(n-1, np.arange(n)), p_rand))
+    is_valid, sum_val = check_sum_is_one(p_rand, n)
+    print(f"Sum of binom(n-1,k)*p_k = {sum_val:.10f} | Valid: {is_valid}\n")
 
-    print("\nShapley distribution (n=5):")
+    print("2. Shapley Distribution (n=5):")
     p_shap = shapley_distribution(n)
     print("Shapley p =", p_shap)
-    print("Check sum of binom(n-1,k)*p_k =", np.dot(scipy_comb(n-1, np.arange(n)), p_shap))
+    is_valid, sum_val = check_sum_is_one(p_shap, n)
+    print(f"Sum of binom(n-1,k)*p_k = {sum_val:.10f} | Valid: {is_valid}\n")
 
-    print("\nBanzhaf distribution (n=5):")
+    print("3. Banzhaf Distribution (n=5):")
     p_bz = banzhaf_distribution(n)
     print("Banzhaf p =", p_bz)
-    print("Check sum of binom(n-1,k)*p_k =", np.dot(scipy_comb(n-1, np.arange(n)), p_bz))
+    is_valid, sum_val = check_sum_is_one(p_bz, n)
+    print(f"Sum of binom(n-1,k)*p_k = {sum_val:.10f} | Valid: {is_valid}\n")
 
     alpha_val = 1.0
-    beta_val = 4.0
-    print(f"\nBeta Shapley distribution (n=5, alpha={alpha_val}, beta={beta_val}):")
+    beta_val = 2.0
+    print(f"4. Beta Shapley Distribution (n=5, alpha={alpha_val}, beta={beta_val}):")
     p_beta = beta_shapley_distribution(n, alpha_val, beta_val)
     print("Beta Shapley p =", p_beta)
-    print("Check sum of binom(n-1,k)*p_k =", np.dot(scipy_comb(n-1, np.arange(n)), p_beta))
+    is_valid, sum_val = check_sum_is_one(p_beta, n)
+    print(f"Sum of binom(n-1,k)*p_k = {sum_val:.10f} | Valid: {is_valid}\n")
 
-    weight = 0.5
-    print(f"\nWeighted Banzhaf distribution (n=5, p={weight}):")
+    weight = 0.25
+    print(f"5. Weighted Banzhaf Distribution (n=5, p={weight}):")
     p_wbz = weighted_banzhaf_distribution(n, weight)
     print("Weighted Banzhaf p =", p_wbz)
-    print("Check sum of binom(n-1,k)*p_k =", np.dot(scipy_comb(n-1, np.arange(n)), p_wbz))
+    is_valid, sum_val = check_sum_is_one(p_wbz, n)
+    print(f"Sum of binom(n-1,k)*p_k = {sum_val:.10f} | Valid: {is_valid}\n")

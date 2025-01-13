@@ -88,4 +88,4 @@ def w_banzhaf(V):
 
 def w_weighted_banzhaf(V, U, weight):
     """Calculate the weight of weighted Banzhaf value."""
-    return (weight ** (U - 1)) * ((1 - weight) ** (V - U))
+    return (weight ** U) * ((1 - weight) ** (V - U - 1))
