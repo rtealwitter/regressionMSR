@@ -22,6 +22,8 @@ def monte_carlo(baseline, explicand, model, num_samples):
             sign[2*S_idx] = -1
         model_input = baseline * (1-model_input) + explicand * model_input
         model_output = model.predict(model_input)
+
+        # DEBUG: this should not be the mean, should / samples_per_group, which gives twice the mean
         phi[:, i] = np.mean(model_output * sign)
 
     return phi

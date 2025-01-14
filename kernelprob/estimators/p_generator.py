@@ -187,7 +187,7 @@ if __name__ == "__main__":
     is_valid, sum_val = check_sum_is_one(p_beta, n)
     print(f"Sum of binom(n-1,k)*p_k = {sum_val:.10f} | Valid: {is_valid}\n")
 
-    weight = 0.25
+    weight = 0.5
     print(f"5. Weighted Banzhaf Distribution (n=5, p={weight}):")
     p_wbz = weighted_banzhaf_distribution(n, weight)
     print("Weighted Banzhaf p =", p_wbz)

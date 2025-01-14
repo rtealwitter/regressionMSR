@@ -6,6 +6,9 @@ import xgboost as xgb
 import os
 from tqdm import tqdm
 import scipy
+import sklearn.ensemble
+import warnings
+
 
 # Every line of output files contains a dictionary with the following keys
 # 'sample_size': number of samples used to estimate values
@@ -243,11 +246,13 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
 
 
 def benchmark(num_runs, dataset, current_estimators, hyperparameter, hyperparameter_values, weighting='shapley', silent=False):              
-
+    warnings.filterwarnings("ignore", message=".*does not have valid feature names.*")
+    
     X, y = load_dataset(dataset)
     n = X.shape[1]
     # Assuming deterministic
-    model = xgb.XGBRegressor(n_estimators=100, max_depth=4)
+    # model = xgb.XGBRegressor(n_estimators=100, max_depth=4)
+    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4)
     model.fit(X, y)
 
     config = {'sample_size': 10*n, 'noise_std' : 0}

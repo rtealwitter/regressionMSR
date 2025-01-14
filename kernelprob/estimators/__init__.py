@@ -6,6 +6,9 @@ from .naive import *
 from .treeprob.treeprob import *
 from .regression_prob import *
 from .p_generator import *
+from .baselines.kernel_banzhaf import *
+from .baselines.mc import *
+from .baselines.msr import *
 
 import numpy as np
 import xgboost as xgb
@@ -33,13 +36,21 @@ shap_estimators = {
 
 # # # Banzhaf estimators # # #
 # TODO: Kernel Banzhaf, MSR
-banzhaf_estimators = {}
+banzhaf_estimators = {
+    "Kernel Banzhaf": kernel_banzhaf,
+    "MSR": msr,
+}
+
+# # # Monte Carlo estimators # # #
+mc_estimators = {
+    "Monte Carlo": monte_carlo,
+}
 
 
 # # # All estimators # # #
 # Combine estimators
 estimators = {}
-for estimator_dic in [prob_estimators, shap_estimators]:
+for estimator_dic in [prob_estimators, shap_estimators, banzhaf_estimators, mc_estimators]:
     for key, val in estimator_dic.items():
         estimators[key] = val
 
