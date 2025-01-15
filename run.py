@@ -3,6 +3,8 @@ import numpy as np
 
 small_n = ['IRIS', 'California', 'Diabetes', 'Adult']
 
+small_n = ['Adult']
+
 big_n = ['Correlated', 'Independent', 'NHANES', 'Communities']
 
 def get_hyperparameter_values(name):
@@ -59,7 +61,7 @@ if True:
     num_runs = 5
     for dataset in small_n + big_n:
         print(dataset)
-        for hyperparameter in ['sample_size', 'noise_std']:
+        for hyperparameter in ['sample_size']:#, 'noise_std']:
             print(hyperparameter)
             kp.benchmark(num_runs, dataset, estimators, hyperparameter, get_hyperparameter_values(hyperparameter), weighting=weighting)
 

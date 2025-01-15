@@ -183,6 +183,8 @@ class ConstrainedRegression:
 
         self.phi = PZSSZP_inv_PZSSb 
 
+        assert np.allclose(np.sum(self.phi), 0)
+
         # Estimate constant term = 1/n sum_i phi_i
         # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
         # Compute probability each set size was sampled
