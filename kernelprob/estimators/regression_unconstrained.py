@@ -43,7 +43,7 @@ def combination_generator(gen, n, s, num_samples):
         for _ in range(num_samples):
             yield gen.choice(n, s, replace=False)
 
-class ProbRegressionEstimator:
+class UnconstrainedRegression:
     def __init__(self, model, baseline, explicand, num_samples, p, paired_sampling=False, leverage_sampling=False, bernoulli_sampling=False):
         self.model = model
         self.baseline = baseline
@@ -199,6 +199,6 @@ class ProbRegressionEstimator:
 
         return self.phi
 
-def kernel_prob(baseline, explicand, model, num_samples, p):
-    estimator = ProbRegressionEstimator(model, baseline, explicand, num_samples, p=p, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True)
+def regression_unconstrained(baseline, explicand, model, num_samples, p):
+    estimator = UnconstrainedRegression(model, baseline, explicand, num_samples, p=p, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True)
     return estimator.compute()

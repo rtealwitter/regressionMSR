@@ -1,10 +1,11 @@
 import scipy.special
 from .official_shap import *
-from .regression import *
+from .regression_shapley import *
 from .matrix import *
 from .naive import *
 from .treeprob.treeprob import *
-from .regression_prob import *
+from .regression_unconstrained import *
+from .regression_constrained import *
 from .p_generator import *
 from .baselines.kernel_banzhaf import *
 from .baselines.mc import *
@@ -19,8 +20,9 @@ import scipy
 # TODO: One for all, Monte Carlo
 
 prob_estimators = {
-    'Kernel Prob': kernel_prob,
+    'Unconstrained Regression': regression_unconstrained,
     'Tree Prob': tree_prob,
+    'Constrained Regression': constrained_regression,
 }
 
 # # # SHAP estimators # # #

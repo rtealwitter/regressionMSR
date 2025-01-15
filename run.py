@@ -49,8 +49,9 @@ if True:
     #     'Leverage SHAP': kp.estimators['Leverage SHAP'],
     # }
     estimators = {
-        'Kernel Prob': kp.estimators['Kernel Prob'],
+        'Constrained Regression': kp.estimators['Constrained Regression'],
         'Kernel Banzhaf': kp.estimators['Kernel Banzhaf'],
+        'Unconstrained Regression': kp.estimators['Unconstrained Regression'],
     }
     weighting = 'banzhaf'
     
