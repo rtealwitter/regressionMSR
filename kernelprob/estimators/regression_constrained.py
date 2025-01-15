@@ -60,7 +60,8 @@ class ConstrainedRegression:
 
         #self.sample_weight = lambda s : 1 / (s * (self.n - s)) if not leverage_sampling else np.ones_like(s)
         def leverage_score(s):
-            return (self.p[s] + self.p[s-1]) * s * (self.n - s)
+            score = (self.p[s] + self.p[s-1]) * s * (self.n - s)
+            return score
         self.sample_weight = lambda s : leverage_score(s) * scipy.special.binom(self.n, s)
 #        self.reweight = lambda s : 1 / (self.sample_weight(s) * (s * (self.n - s)))
         self.kernel_weights = []
@@ -109,14 +110,14 @@ class ConstrainedRegression:
         L = 1 / 2**self.n
         R = scipy.special.binom(self.n, self.n // 2) * 4 ** self.n
         while round(expected_samples(C)) != m:
-            print(f'Expected samples: {expected_samples(C)}')
-            print(f'Left constraint: {L}')
-            print(f'Right constraint: {R}')
-            print(f'Constraint: {m}')
+            #print(f'Expected samples: {expected_samples(C)}')
+            #print(f'Left constraint: {L}')
+            #print(f'Right constraint: {R}')
+            #print(f'Constraint: {m}')
             if expected_samples(C) < m: L = C
             else: R = C
             C = (L + R) / 2
-        self.C = round(C)
+        self.C = C
     
     def sample_without_replacement(self):
         self.find_constant_for_bernoulli()
@@ -194,7 +195,7 @@ class ConstrainedRegression:
         #print('prob_sampled * weighting shape:', (prob_sampled * weighting).shape)
         sum_phi = prob_sampled * weighting @ Sb
         sum_phi = 1/self.n * (sum_phi + (v1-v0)*self.p[-1]*self.n)
-        print('sum_phi:', sum_phi)
+        #print('sum_phi:', sum_phi)
 
         self.phi += sum_phi
 

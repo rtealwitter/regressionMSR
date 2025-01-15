@@ -52,8 +52,9 @@ if True:
         'Constrained Regression': kp.estimators['Constrained Regression'],
         'Kernel Banzhaf': kp.estimators['Kernel Banzhaf'],
         'Unconstrained Regression': kp.estimators['Unconstrained Regression'],
+        'Leverage SHAP' : kp.estimators['Leverage SHAP'],
     }
-    weighting = 'banzhaf'
+    weighting = 'shapley'
     
     num_runs = 5
     for dataset in small_n + big_n:

@@ -214,7 +214,7 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
         if estimator_name in prob_estimators:
             predicted = estimator(baseline, explicand, noised_model, sample_size, p=p)
         else:
-            predicted = estimator(baseline, explicand, noised_model, sample_size, weighting=weighting)
+            predicted = estimator(baseline, explicand, noised_model, sample_size)
 
         filename = get_filename(dataset, estimator_name, weighting)
         if not os.path.exists(filename):
