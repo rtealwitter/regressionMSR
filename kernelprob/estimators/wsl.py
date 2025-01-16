@@ -12,27 +12,13 @@ class WSLEstimator(BaseEstimator):
     various weighting schemes (shapley, banzhaf, beta_shapley, weighted_banzhaf).
     Paired sampling is always used.
     
-    Parameters
-    ----------
-    model : callable or sklearn-like object
-        Must have `predict()` that takes shape (n_samples, n_features).
-    baseline : np.ndarray of shape (n_features,)
-        The baseline point for feature perturbations.
-    weighting : str
-        The type of probabilistic value to estimate.
-        Options:
-            - "shapley"
-            - "banzhaf"
-            - "beta_shapley_alpha_beta" (e.g., "beta_shapley_1_16")
-            - "weighted_banzhaf_p_weight" (e.g., "weighted_banzhaf_0.3")
+    Additional Parameters
     nue_avg : int
         Total number of samples to draw for the estimator.
     nue_track_avg : int, default=10
         Number of samples to aggregate before updating the trajectory.
     nue_per_proc : int
         Number of samples per processing batch (used internally).
-    estimator_seed : int, default=42
-        Seed for reproducible random sampling.
     """
 
     def __init__(
@@ -49,7 +35,6 @@ class WSLEstimator(BaseEstimator):
         self.nue_avg = 0        # Total number of samples
         self.nue_track_avg = 10
         self.nue_per_proc = 1000
-        self.estimator_seed = 42
 
         # Number of players (features)
         self.num_player = self.baseline.size
@@ -167,17 +152,17 @@ class WSLEstimator(BaseEstimator):
         elif weighting_str.startswith("beta_shapley_"):
             # e.g., "beta_shapley_2_5"
             parts = weighting_str.split("_")
-            if len(parts) != 3:
+            if len(parts) != 4:
                 raise ValueError(f"Invalid beta_shapley format: '{weighting_str}', expected 'beta_shapley_alpha_beta'.")
-            alpha = float(parts[2 - 1])  # Correcting index to match alpha and beta
-            beta_ = float(parts[3 - 1])
-            return ("beta_shapley", (alpha, beta_))
+            alpha = float(parts[2])
+            beta = float(parts[3])
+            return ("beta_shapley", (alpha, beta))
         elif weighting_str.startswith("weighted_banzhaf_"):
             # e.g., "weighted_banzhaf_0.3"
             parts = weighting_str.split("_")
-            if len(parts) != 2:
+            if len(parts) != 3:
                 raise ValueError(f"Invalid weighted_banzhaf format: '{weighting_str}', expected 'weighted_banzhaf_p'.")
-            p = float(parts[2 - 1])  # Correcting index
+            p = float(parts[2])
             return ("weighted_banzhaf", p)
         else:
             raise ValueError(f"Unknown weighting: '{weighting_str}'")
@@ -213,7 +198,6 @@ class WSLEstimator(BaseEstimator):
             A batch of sampled subsets of shape (batch_size, num_player - 1).
         """
         self._init_indiv()
-        np.random.seed(self.estimator_seed)
 
         count = 0
         for _ in range(self.num_sample):

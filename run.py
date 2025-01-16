@@ -6,21 +6,25 @@ import logging
 import sklearn.ensemble
 
 from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
-from utils.datasets import load_dataset, load_input
-from yurong.utils.run_utils import *
-from kernelprob.gt.treeprob import tree_prob
+from kernelprob.utils.datasets import load_dataset, load_input
+from kernelprob.utils.run_utils import *
+from kernelprob.exact.treeprob import tree_prob
 
-def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, true_values: np.ndarray):
+def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str):
+    n = baseline.shape[1]
     estimator_class_name = exp_cfg["estimator_class"]
+    experiment_name = exp_cfg["name"]
     estimator_cls = ESTIMATOR_FACTORY[estimator_class_name]
     if estimator_cls is None:
         logging.error(f"Estimator class '{estimator_class_name}' not found. Skipping.")
         return
     
-    weighting = exp_cfg.get("weighting", "shapley")
+    weighting = exp_cfg.get("weighting", None)
+    if weighting is None:
+        logging.error(f"Weighting not specified for '{experiment_name}'. Skipping.")
     true_values = tree_prob(baseline, explicands, model, weighting)
 
-    for noise_std in VARIABLES[variable][noise_std]:
+    for noise_std in VARIABLES[variable]["noise_std"]:
         noised_model = NoisyModel(model, noise_std)
         try:
             if estimator_class_name == "OFA":
@@ -41,12 +45,12 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
             logging.error(f"Error instantiating '{estimator_class_name}': {e}. Skipping.")
             return
         
-        for sample_size in VARIABLES[variable][sample_size]:
+        for sample_size in VARIABLES[variable]["sample_size"]:
             for idx, explicand in enumerate(explicands):
             # for bn in VARIABLES[variable]["bn"]:
-                predicted = estimator.explain(explicand, sample_size)
+                predicted = estimator.explain(explicand, sample_size * n)
 
-                filename = get_filename(dataset, estimator_class_name, weighting)
+                filename = f"output/{dataset}_{experiment_name}.csv"
                 if not os.path.exists(filename):
                     with open(filename, 'w') as f:
                         f.write('')
@@ -65,6 +69,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
 def run_debug():
     dataset = load_dataset("California")
     X, y = dataset
+    n = X.shape[1]
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8)
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
@@ -75,17 +80,16 @@ def run_debug():
     wsl_estimator = ESTIMATOR_FACTORY["WSL"](model, baseline, weighting="shapley")
 
     true_values = tree_prob(baseline, explicands, model, "shapley")
-    print(f"true_values: {true_values}")
 
     for sample_size in [5, 10, 20]:
         for explicand in explicands:
             # ofa_a_phi = ofa_a_estimator.explain(explicand, sample_size)
             # print(f"ofa_a l2_error: {((ofa_a_phi - true_values) ** 2).mean()}")
-            ofa_s_phi = ofa_s_estimator.explain(explicand, sample_size)
+            ofa_s_phi = ofa_s_estimator.explain(explicand, sample_size * n)
             print(f"ofa_s l2_error: {((ofa_s_phi - true_values) ** 2).mean()}")
             # kernel_banzhaf_phi = kernel_banzhaf_estimator.explain(explicand, sample_size)
             # print(f"kernel_banzhaf l2_error: {((kernel_banzhaf_phi - true_values) ** 2).mean()}")
-            wsl_phi = wsl_estimator.explain(explicand, sample_size)
+            wsl_phi = wsl_estimator.explain(explicand, sample_size * n)
             print(f"wsl l2_error: {((wsl_phi - true_values) ** 2).mean()}")
 
 
@@ -126,6 +130,8 @@ def main():
         run_debug()
         exit()
 
+    if not os.path.exists("output"):
+        os.makedirs("output")
     experiments = generate_experiment_configs(variable)
     datasets = DATASETS["small_n"] + DATASETS["big_n"]
 
@@ -135,7 +141,9 @@ def main():
         model.fit(X, y)
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
         for exp_cfg in experiments:
+            print(f"Running experiment: {exp_cfg['name']} on {dataset}")
             run_experiment(exp_cfg, baseline, explicands, model, variable, dataset)
+        exit()
 
 if __name__ == "__main__":
     main()

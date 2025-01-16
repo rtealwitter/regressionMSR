@@ -11,8 +11,8 @@ from ..estimators.kb import KernelBanzhafEstimator
 from ..estimators.ofa import OFAEstimator
 from ..estimators.wsl import WSLEstimator
 
-from ..gt.treeprob import TreeProbExplainer
-from ..gt.enumeration import EnumerationExplainer
+from ..exact.treeprob import TreeProbExplainer
+from ..exact.enumeration import EnumerationExplainer
 
 def generate_experiment_configs(variable: str) -> List[Dict[str, Any]]:
     """
@@ -27,24 +27,37 @@ def generate_experiment_configs(variable: str) -> List[Dict[str, Any]]:
 
     for estimator_name, params in estimators_config.items():
         weighting_categories = params.get("weightings", [])
-        modes = params.get("modes", []) if estimator_name == "OFAEstimator" else [None]
 
         applicable_weightings = []
         for category in weighting_categories:
             category_weightings = weightings_config.get(category, [])
             applicable_weightings.extend(category_weightings)
 
-        if estimator_name == "OFAEstimator":
+        if "modes" in params: # OFAEstimator
+            modes = params.get("modes", [])
             # Create Cartesian product for OFAEstimator
             for weighting, mode in itertools.product(applicable_weightings, modes):
                 experiments.append({
-                    "name": f"{estimator_name}_mode{mode}_{weighting}",
+                    "name": f"{estimator_name}_{mode}_{weighting}",
                     "estimator_class": estimator_name,
                     "weighting": weighting,
                     "mode": mode,
                 })
+        elif "paired_sampling" in params:
+            paired_sampling = params.get("paired_sampling", [])
+            leverage_sampling = params.get("leverage_sampling", [])
+            bernoulli_sampling = params.get("bernoulli_sampling", [])
+            for weighting, paired, leverage, bernoulli in itertools.product(applicable_weightings, paired_sampling, leverage_sampling, bernoulli_sampling):
+                experiments.append({
+                    "name": f"{estimator_name}_{weighting}_paired-{paired}_leverage-{leverage}_bernoulli-{bernoulli}",
+                    "estimator_class": estimator_name,
+                    "weighting": weighting,
+                    "paired_sampling": paired,
+                    "leverage_sampling": leverage,
+                    "bernoulli_sampling": bernoulli,
+                })
         else:
-            for weighting in itertools.product(applicable_weightings):
+            for weighting in applicable_weightings:
                 experiments.append({
                     "name": f"{estimator_name}_{weighting}",
                     "estimator_class": estimator_name,
@@ -58,11 +71,12 @@ def load_config(path: str) -> Dict[str, Any]:
         config = yaml.safe_load(f)
     return config
 
-config_path = "estimators.yml"
+config_path = "kernelprob/configs/estimators.yaml"
 
 ESTIMATOR_FACTORY = {
     # ground truth
     "TreeProb": TreeProbExplainer,
+    "Enumeration": EnumerationExplainer, # For random p distribution
     # estimators
     "KernelProbC": KernelProbCEstimator,
     "KernelProbU": KernelProbUEstimator,
@@ -76,14 +90,16 @@ ESTIMATOR_FACTORY = {
 }
 
 DATASETS = {
-    "small_n": ['IRIS', 'California', 'Diabetes', 'Adult'],
+    # "small_n": ['IRIS', 'California', 'Diabetes', 'Adult'],
+    "small_n": ['California'],
     "big_n": ['Correlated', 'Independent', 'NHANES', 'Communities']
 }
 
 VARIABLES = {
     "sample_size":
         {
-            "sample_size": [5, 10, 20, 40, 80, 160],
+            # "sample_size": [5, 10, 20, 40, 80, 160],
+            "sample_size": [5, 10],
             "noise_std": [0]
         },
     "noise_std":
@@ -93,4 +109,4 @@ VARIABLES = {
         }
 }
 
-NUM_RUNS = 5
+NUM_RUNS = 1

@@ -214,13 +214,13 @@ class TreeProbExplainer:
         if "beta" in weighting:
             if len(weighting_list) == 2:
                 print("No (alpha,beta) specified, defaulting to (1,1). You can do e.g. 'beta_shapley_4_1'.")
-            else:
-                print(f"Using Beta Shapley with alpha={weighting_list[-2]}, beta={weighting_list[-1]}.")
+            # else:
+                # print(f"Using Beta Shapley with alpha={weighting_list[-2]}, beta={weighting_list[-1]}.")
         elif "weighted" in weighting:
             if len(weighting_list) == 2:
                 print("No weight specified, defaulting to 0.5. You can do e.g. 'weighted_banzhaf_0.3'.")
-            else:
-                print(f"Using Weighted Banzhaf with weight={weighting_list[-1]}.")
+            # else:
+                # print(f"Using Weighted Banzhaf with weight={weighting_list[-1]}.")
     
 
     def prob_values(self, explicand, **kwargs):

@@ -1,16 +1,20 @@
 weightings:
+  shapley:
+    - shapley
+  banzhaf:
+    - banzhaf
   beta_shapley:
-    - beta_1_16
-    - beta_1_4
-    - beta_1_1
-    - beta_4_1
-    - beta_16_1
+    - beta_shapley_1_16
+    - beta_shapley_1_4
+    - beta_shapley_1_1
+    - beta_shapley_4_1
+    - beta_shapley_16_1
   weighted_banzhaf:
-    - weighted_0.1
-    - weighted_0.3
-    - weighted_0.5
-    - weighted_0.7
-    - weighted_0.9
+    - weighted_banzhaf_0.1
+    - weighted_banzhaf_0.3
+    - weighted_banzhaf_0.5
+    - weighted_banzhaf_0.7
+    - weighted_banzhaf_0.9
   random:
     - random_42
     - random_27
@@ -19,56 +23,76 @@ weightings:
     - random_16
 
 estimators:
-  ConstraintKernelProb:
+  # KernelProbC:
+  #   weightings:
+  #     - shapley
+  #     - banzhaf
+  #     - beta_shapley
+  #     - weighted_banzhaf
+  #     # - random
+  #   paired_sampling:
+  #     - True
+  #     - False
+  #   leverage_sampling:
+  #     - True
+  #     - False
+  #   bernoulli_sampling:
+  #     - True
+  #     - False
+
+  # KernelProbU:
+  #   weightings:
+  #     - shapley
+  #     - banzhaf
+  #     - beta_shapley
+  #     - weighted_banzhaf
+  #     # - random
+  #   paired_sampling:
+  #     - True
+  #     - False
+  #   leverage_sampling:
+  #     - True
+  #     - False
+  #   bernoulli_sampling:
+  #     - True
+  #     - False
+
+  # OFA:
+  #   weightings:
+  #     - shapley
+  #     - banzhaf
+  #     - beta_shapley
+  #     - weighted_banzhaf
+  #     # - random
+  #   modes:
+  #     - A
+  #     - S
+
+  WSL:
     weightings:
       - shapley
       - banzhaf
       - beta_shapley
       - weighted_banzhaf
-      - random
 
-  UnconstrainedKernelProb:
+  LeverageSHAP:
     weightings:
       - shapley
-      - banzhaf
-      - beta_shapley
-      - weighted_banzhaf
-      - random
+    paired_sampling:
+      - True
+      - False
+    leverage_sampling:
+      - True
+      - False
+    bernoulli_sampling:
+      - True
+      - False
 
-  OFAEstimator:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - weighted_banzhaf
-      - random
-    modes:
-      - A
-      - S
-
-  WSLEstimator:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - weighted_banzhaf
-
-  ARMEstimator:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - weighted_banzhaf
-
-  LeverageSHAPEstimator:
-    weightings:
-      - shapley
-
-  # MonteCarloEstimator:
+  # MonteCarlo:
   #   weightings:
   #     - shapley
   #     - banzhaf
 
-  # KernelBanzhafEstimator:
+  # KernelBanzhaf:
   #   weightings:
   #     - banzhaf
