@@ -1,0 +1,74 @@
+weightings:
+  beta_shapley:
+    - beta_1_16
+    - beta_1_4
+    - beta_1_1
+    - beta_4_1
+    - beta_16_1
+  weighted_banzhaf:
+    - weighted_0.1
+    - weighted_0.3
+    - weighted_0.5
+    - weighted_0.7
+    - weighted_0.9
+  random:
+    - random_42
+    - random_27
+    - random_91
+    - random_58
+    - random_16
+
+estimators:
+  ConstraintKernelProb:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      - random
+
+  UnconstrainedKernelProb:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      - random
+
+  OFAEstimator:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      - random
+    modes:
+      - A
+      - S
+
+  WSLEstimator:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+
+  ARMEstimator:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+
+  LeverageSHAPEstimator:
+    weightings:
+      - shapley
+
+  # MonteCarloEstimator:
+  #   weightings:
+  #     - shapley
+  #     - banzhaf
+
+  # KernelBanzhafEstimator:
+  #   weightings:
+  #     - banzhaf

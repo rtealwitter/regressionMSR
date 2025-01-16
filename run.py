@@ -1,93 +1,141 @@
-import kernelprob as kp
 import numpy as np
+from typing import Any, Dict
+from sklearn.linear_model import LogisticRegression
+import argparse
+import logging
+import sklearn.ensemble
 
-small_n = ['IRIS', 'California', 'Diabetes', 'Adult']
+from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
+from utils.datasets import load_dataset, load_input
+from yurong.utils.run_utils import *
+from kernelprob.gt.treeprob import tree_prob
 
-big_n = ['Correlated', 'Independent', 'NHANES', 'Communities']
-
-def get_hyperparameter_values(name):
-    if name == 'noise_std': return [0]
-    if name == 'noise_std':
-        return [0, .5 * 1e-3, 1e-3, .5 * 1e-2, 1e-2, .5 * 1e-1, 1e-1, .5, 1]
-    elif name == 'sample_size':
-        return [5, 10, 20, 40, 80, 160]
-    else:
-        raise ValueError(f'Unknown hyperparameter {name}')
-
-# Debugging access to official SHAP estimators
-#import logging
-#log = logging.getLogger('shap')
-#logging.basicConfig(level=logging.DEBUG)
-
-datasets = small_n + big_n
-
-if False:
-    gammas = {x : [] for x in small_n}
-    for seed in range(100):
-        for dataset in small_n:
-            gamma_run = kp.compute_gamma(dataset, seed=seed)
-            gammas[dataset].append(gamma_run['gamma'])
-
-        if seed % 10 != 0: continue
-        print()
-        for dataset in small_n:
-            # print dataset name, 1st quartile, median, 3rd quartile
-            print(dataset, np.percentile(gammas[dataset], 25), np.median(gammas[dataset]), np.percentile(gammas[dataset], 75))
-            
-
-#kp.plot_probs([10,100,1000], folder='images/')
-
-if False:
-
-    kp.visualize_predictions(datasets, main_estimators, filename='images/main_detailed.pdf')
-    #kp.visualize_predictions(datasets, ablation_estimators, filename='images/ablation_detailed.pdf')
-
-if True:
-    # weighting = 'shapley'
-    # estimators = {
-    #     'Kernel Prob': kp.estimators['Kernel Prob'],
-    #     'Leverage SHAP': kp.estimators['Leverage SHAP'],
-    # }
-    estimators = {
-        'Constrained Regression': kp.estimators['Constrained Regression'],
-        'Kernel Banzhaf': kp.estimators['Kernel Banzhaf'],
-        'Unconstrained Regression': kp.estimators['Unconstrained Regression'],
-        'Leverage SHAP' : kp.estimators['Leverage SHAP'],
-    }
-    weighting = 'shapley'
+def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, true_values: np.ndarray):
+    estimator_class_name = exp_cfg["estimator_class"]
+    estimator_cls = ESTIMATOR_FACTORY[estimator_class_name]
+    if estimator_cls is None:
+        logging.error(f"Estimator class '{estimator_class_name}' not found. Skipping.")
+        return
     
-    num_runs = 5
-    for dataset in small_n + big_n:
-        print(dataset)
-        for hyperparameter in ['sample_size', 'noise_std']:
-            print(hyperparameter)
-            kp.benchmark(num_runs, dataset, estimators, hyperparameter, get_hyperparameter_values(hyperparameter), weighting=weighting)
+    weighting = exp_cfg.get("weighting", "shapley")
+    true_values = tree_prob(baseline, explicands, model, weighting)
 
-## Plots
-#
-#for y_name in ['shap_error', 'weighted_error']:
-#    # Performance by number of samples
-#    x_name = 'sample_size'
-#    constraints = {'noise': 0}
-#    results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
-#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
-#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
-#
-#    # Performance by noise level
-#    x_name = 'noise'
-#    constraints = {'sample_size': 10}
-#    results = kp.load_results(small_n + big_n, x_name, y_name, constraints)
-#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/main_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=main_estimators, plot_mean=False)
-#    kp.plot_with_subplots(results, x_name, y_name, filename=f'images/ablation_{x_name}-{y_name}.pdf', log_x=True, log_y=y_name == 'shap_error', include_estimators=ablation_estimators, plot_mean=False)
-#
-## Tables
-#for y_name in ['shap_error', 'weighted_error']:
-#    results = kp.load_results(small_n + big_n, 'sample_size', y_name, {'noise': 0, 'sample_size' : 10})
-#    kp.one_big_table(results, f'tables/ablation_{y_name}.tex', error_type=y_name)
-#    results_main = {}
-#    for dataset in results:
-#        results_main[dataset] = {estimator : results[dataset][estimator] for estimator in main_estimators}
-#    kp.one_big_table(results_main, f'tables/main_{y_name}.tex', error_type=y_name)
-#        
-#    #for dataset in results:
-#    #    kp.benchmark_table(results[dataset], f'tables/{dataset}-{y_name}.tex', print_md=False)
+    for noise_std in VARIABLES[variable][noise_std]:
+        noised_model = NoisyModel(model, noise_std)
+        try:
+            if estimator_class_name == "OFA":
+                mode = exp_cfg.get("mode", "A")
+                estimator = estimator_cls(
+                    model=noised_model,
+                    baseline=baseline,
+                    weighting=weighting,
+                    mode=mode
+                )
+            else:
+                estimator = estimator_cls(
+                    model=noised_model,
+                    baseline=baseline,
+                    weighting=weighting
+                )
+        except Exception as e:
+            logging.error(f"Error instantiating '{estimator_class_name}': {e}. Skipping.")
+            return
+        
+        for sample_size in VARIABLES[variable][sample_size]:
+            for idx, explicand in enumerate(explicands):
+            # for bn in VARIABLES[variable]["bn"]:
+                predicted = estimator.explain(explicand, sample_size)
+
+                filename = get_filename(dataset, estimator_class_name, weighting)
+                if not os.path.exists(filename):
+                    with open(filename, 'w') as f:
+                        f.write('')
+
+                with open(filename, 'a') as f:
+                    dict = {
+                        'sample_size': sample_size,
+                        'difference': noised_model.get_sample_count() - sample_size,
+                        'noise': noise_std,
+                        'n' : explicand.shape[0],
+                        'error' : ((predicted - true_values[idx]) ** 2).mean(),
+                    }
+                    f.write(str(dict) + '\n')
+
+
+def run_debug():
+    dataset = load_dataset("California")
+    X, y = dataset
+    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8)
+    model.fit(X, y)
+    baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
+
+    # ofa_a_estimator = ESTIMATOR_FACTORY["OFA"](model, baseline, weighting="banzhaf", mode="A")
+    ofa_s_estimator = ESTIMATOR_FACTORY["OFA"](model, baseline, weighting="shapley", mode="S")
+    # kernel_banzhaf_estimator = ESTIMATOR_FACTORY["KernelBanzhaf"](model, baseline, weighting="banzhaf")
+    wsl_estimator = ESTIMATOR_FACTORY["WSL"](model, baseline, weighting="shapley")
+
+    true_values = tree_prob(baseline, explicands, model, "shapley")
+    print(f"true_values: {true_values}")
+
+    for sample_size in [5, 10, 20]:
+        for explicand in explicands:
+            # ofa_a_phi = ofa_a_estimator.explain(explicand, sample_size)
+            # print(f"ofa_a l2_error: {((ofa_a_phi - true_values) ** 2).mean()}")
+            ofa_s_phi = ofa_s_estimator.explain(explicand, sample_size)
+            print(f"ofa_s l2_error: {((ofa_s_phi - true_values) ** 2).mean()}")
+            # kernel_banzhaf_phi = kernel_banzhaf_estimator.explain(explicand, sample_size)
+            # print(f"kernel_banzhaf l2_error: {((kernel_banzhaf_phi - true_values) ** 2).mean()}")
+            wsl_phi = wsl_estimator.explain(explicand, sample_size)
+            print(f"wsl l2_error: {((wsl_phi - true_values) ** 2).mean()}")
+
+
+    
+def parse_args():
+    parser = argparse.ArgumentParser(description="Run experiments.")
+    parser.add_argument(
+       "--variable",
+        type=str,
+        default="sample_size",
+        help="sample_size, noise, or bn"
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug mode"
+    )
+    return parser.parse_args()
+
+def setup_logging():
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    console.setFormatter(formatter)
+    logging.getLogger('').addHandler(console)
+
+def main():
+    setup_logging()
+
+    args = parse_args()
+    variable, debug = args.variable, args.debug
+
+    if debug:
+        run_debug()
+        exit()
+
+    experiments = generate_experiment_configs(variable)
+    datasets = DATASETS["small_n"] + DATASETS["big_n"]
+
+    for dataset in datasets:
+        X, y = load_dataset(dataset)
+        model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8)
+        model.fit(X, y)
+        baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
+        for exp_cfg in experiments:
+            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset)
+
+if __name__ == "__main__":
+    main()

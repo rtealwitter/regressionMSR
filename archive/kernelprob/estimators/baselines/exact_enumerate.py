@@ -7,8 +7,34 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from estimators.treeprob.weights import factorial, w_beta_shapley, w_weighted_banzhaf
+from ..treeprob.weights import factorial, w_beta_shapley, w_weighted_banzhaf
 
+
+def enumerate_all_subsets(baseline, explicand, model, weighting="banzhaf"):
+    weighting_list = weighting.split('_')
+    if "beta" in weighting:
+        if len(weighting_list) == 2:
+            alpha, beta = (1, 1)
+        else:
+            alpha_str, beta_str = weighting_list[-2], weighting_list[-1]
+            alpha, beta = (float(alpha_str), float(beta_str))
+        weighting = "beta_shapley"
+    elif "weighted" in weighting:
+        if len(weighting_list) == 2:
+            p = 0.5
+        else:
+            p = float(weighting_list[-1])
+        weighting = "weighted_banzhaf"
+    if weighting == "shapley":
+        return shapley_enumerate_all_subsets(model, explicand, baseline)
+    elif weighting == "banzhaf":
+        return banzhaf_enumerate_all_subsets(model, explicand, baseline)
+    elif weighting == "beta_shapley":
+        return beta_shapley_enumerate_all_subsets(model, explicand, baseline, alpha, beta)
+    elif weighting == "weighted_banzhaf":
+        return weighted_banzhaf_enumerate_all_subsets(model, explicand, baseline, p)
+    else:
+        raise ValueError(f"Unknown weighting method: {weighting}")
 
 def shapley_enumerate_all_subsets(model, explicand, baseline):
     """
