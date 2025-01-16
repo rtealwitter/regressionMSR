@@ -14,7 +14,7 @@ from ..estimators.wsl import WSLEstimator
 from ..exact.treeprob import TreeProbExplainer
 from ..exact.enumeration import EnumerationExplainer
 
-def generate_experiment_configs(variable: str) -> List[Dict[str, Any]]:
+def generate_experiment_configs() -> List[Dict[str, Any]]:
     """
     Generate a list of experiment configurations by creating the Cartesian product
     of parameters for each estimator.

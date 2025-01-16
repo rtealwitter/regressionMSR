@@ -6,13 +6,13 @@ weightings:
   beta_shapley:
     - beta_shapley_1_16
     - beta_shapley_1_4
-    - beta_shapley_1_1
+    - beta_shapley_1_1 # Same as Shapley
     - beta_shapley_4_1
     - beta_shapley_16_1
   weighted_banzhaf:
     - weighted_banzhaf_0.1
     - weighted_banzhaf_0.3
-    - weighted_banzhaf_0.5
+    - weighted_banzhaf_0.5 # Same as Banzhaf
     - weighted_banzhaf_0.7
     - weighted_banzhaf_0.9
   random:
@@ -32,13 +32,13 @@ estimators:
   #     # - random
   #   paired_sampling:
   #     - True
-  #     - False
+  #     # - False
   #   leverage_sampling:
   #     - True
-  #     - False
+  #     # - False
   #   bernoulli_sampling:
   #     - True
-  #     - False
+  #     # - False
 
   # KernelProbU:
   #   weightings:
@@ -49,13 +49,13 @@ estimators:
   #     # - random
   #   paired_sampling:
   #     - True
-  #     - False
+  #     # - False
   #   leverage_sampling:
   #     - True
-  #     - False
+  #     # - False
   #   bernoulli_sampling:
   #     - True
-  #     - False
+  #     # - False
 
   # OFA:
   #   weightings:

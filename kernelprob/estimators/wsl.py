@@ -1,4 +1,3 @@
-import warnings
 import numpy as np
 from typing import Optional, Union, Tuple
 from scipy import special
@@ -67,35 +66,12 @@ class WSLEstimator(BaseEstimator):
         # Precompute "WSL" distribution weights if not shapley
         self.is_wsl = (self.semivalue != "shapley")
 
-        if self.semivalue == "banzhaf":
-            # Special "WSL_banzhaf" logic: override distribution_cardinality
-            vs = self.distribution_cardinality()
-            tmp = 2 ** (self.num_player - 1)
-            self.weights = np.array([
-                tmp / special.binom(self.num_player - 1, s) * vs[s]
-                for s in range(self.num_player)
-            ], dtype=np.float64)
+        # Multiply by num_player if it's WSL
+        vs = self.distribution_cardinality()
+        if self.is_wsl:
+            self.weights = vs * self.num_player
         else:
-            # For shapley, weighted_banzhaf, beta_shapley 
-            # Multiply by num_player if it's WSL
-            vs = self.distribution_cardinality()
-            if self.is_wsl:
-                self.weights = vs * self.num_player
-            else:
-                self.weights = None  # Shapley does not require weighting
-
-        # Sanity checks
-        if self.nue_track_avg % 2 != 0 or self.nue_avg % 2 != 0:
-            warnings.warn("Typically expect even nue_track_avg and nue_avg for paired sampling.")
-
-        if self.semivalue == "beta_shapley":
-            alpha, beta = self.semivalue_param
-            if alpha != beta:
-                warnings.warn("For beta_shapley, it is recommended that alpha equals beta for symmetry.")
-
-        if self.semivalue == "weighted_banzhaf":
-            if self.semivalue_param == 0.5:
-                warnings.warn("weighted_banzhaf with p_weight=0.5 behaves like the standard Banzhaf.")
+            self.weights = None  # Shapley does not require weighting
 
     def distribution_cardinality(self) -> np.ndarray:
         """
@@ -148,7 +124,7 @@ class WSLEstimator(BaseEstimator):
         if weighting_str == "shapley":
             return ("shapley", None)
         elif weighting_str == "banzhaf":
-            return ("banzhaf", None)
+            return ("weighted_banzhaf", 0.5)
         elif weighting_str.startswith("beta_shapley_"):
             # e.g., "beta_shapley_2_5"
             parts = weighting_str.split("_")
@@ -183,8 +159,6 @@ class WSLEstimator(BaseEstimator):
         """
         if self.semivalue == "beta_shapley":
             alpha, beta_ = self.semivalue_param
-            if alpha != beta_:
-                warnings.warn("For beta_shapley, it is recommended that alpha equals beta for symmetry.")
 
     # Sampling generator (always paired)
     def sampling(self):
@@ -376,7 +350,7 @@ class WSLEstimator(BaseEstimator):
         self._explicand = np.asarray(explicand, dtype=float)
 
         # Update sampling parameters based on num_samples
-        self.nue_avg = num_samples
+        self.nue_avg = num_samples // self.num_player
         self.num_sample = self.nue_avg // 2  # Paired sampling: half the samples
 
         # Reset aggregator

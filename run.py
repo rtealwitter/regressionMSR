@@ -1,6 +1,4 @@
-import numpy as np
 from typing import Any, Dict
-from sklearn.linear_model import LogisticRegression
 import argparse
 import logging
 import sklearn.ensemble
@@ -46,9 +44,10 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
             return
         
         for sample_size in VARIABLES[variable]["sample_size"]:
+            actual_sample_size = sample_size * n
             for idx, explicand in enumerate(explicands):
             # for bn in VARIABLES[variable]["bn"]:
-                predicted = estimator.explain(explicand, sample_size * n)
+                predicted = estimator.explain(explicand, actual_sample_size)
 
                 filename = f"output/{dataset}_{experiment_name}.csv"
                 if not os.path.exists(filename):
@@ -57,13 +56,14 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
 
                 with open(filename, 'a') as f:
                     dict = {
-                        'sample_size': sample_size,
-                        'difference': noised_model.get_sample_count() - sample_size,
+                        'sample_size': actual_sample_size,
+                        'difference': noised_model.get_sample_count() - actual_sample_size,
                         'noise': noise_std,
-                        'n' : explicand.shape[0],
+                        'n' : n,
                         'error' : ((predicted - true_values[idx]) ** 2).mean(),
                     }
                     f.write(str(dict) + '\n')
+                noised_model.reset_sample_count()
 
 
 def run_debug():
@@ -132,7 +132,7 @@ def main():
 
     if not os.path.exists("output"):
         os.makedirs("output")
-    experiments = generate_experiment_configs(variable)
+    experiments = generate_experiment_configs()
     datasets = DATASETS["small_n"] + DATASETS["big_n"]
 
     for dataset in datasets:

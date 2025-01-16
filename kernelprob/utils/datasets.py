@@ -69,7 +69,5 @@ def load_input(X, num_runs, is_synthetic=False):
                 explicand_idx = np.random.choice(X.shape[0])
                 explicand[0,i] = X.iloc[explicand_idx, i]
         explicands.append(explicand)
-    
-    explicands = np.vstack(explicands)
 
     return baseline, explicands

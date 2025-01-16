@@ -19,6 +19,9 @@ class NoisyModel:
     
     def get_sample_count(self):
         return self.sample_count
+    
+    def reset_sample_count(self):
+        self.sample_count = 0
 
 
 def get_filename(dataset, estimator, weighting):
