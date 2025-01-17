@@ -14,9 +14,6 @@ class MonteCarloEstimator(BaseEstimator):
         baseline: np.ndarray,
         weighting: str = "shapley",
     ):
-        """
-        Generic Monte Carlo estimator
-        """
         super().__init__(
             model=model,
             baseline=baseline,

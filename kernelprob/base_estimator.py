@@ -16,7 +16,7 @@ class BaseEstimator(ABC):
             The baseline point for feature perturbations.
         weighting : str
             The type of probabilistic value to estimate.
-            Options: {"shapley", "banzhaf", "beta_shapley_[alpha]_[beta]", "weighted_banzhaf_[p_weight]"}.
+            Options: {"shapley", "banzhaf", "beta_shapley_[alpha]_[beta]", "weighted_banzhaf_[p_weight], random_[seed]"}
         """
         warnings.filterwarnings("ignore", message=".*does not have valid feature names.*")
         self.model = model

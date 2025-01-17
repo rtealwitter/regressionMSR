@@ -3,7 +3,7 @@ import math
 from typing import Callable, Tuple
 
 from ..base_estimator import BaseEstimator
-from ..p_generator import get_p
+from ..utils.p_generator import get_p
 
 class OFAEstimator(BaseEstimator):
     """
@@ -34,6 +34,7 @@ class OFAEstimator(BaseEstimator):
         phi : np.ndarray of shape (num_features,)
         """
         num_features = explicand.shape[1]
+        num_samples = num_samples - 2 * num_features - 2
 
         p = get_p(num_features, self.weighting) # np.ndarray of shape (num_features,) - semivalue weights
         if p.shape[0] != num_features:

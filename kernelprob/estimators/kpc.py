@@ -4,7 +4,7 @@ import scipy.special
 import math
 
 from ..base_estimator import BaseEstimator
-from ..p_generator import get_p
+from ..utils.p_generator import get_p
 from .est_utils import combination_generator
 
 class KernelProbCEstimator(BaseEstimator):

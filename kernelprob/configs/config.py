@@ -12,6 +12,7 @@ from ..estimators.lshap import LeverageSHAPEstimator
 from ..estimators.kshap import KernelSHAPEstimator
 from ..estimators.pshap import PermutationSHAPEstimator
 from ..estimators.kb import KernelBanzhafEstimator
+from ..estimators.msr import MSREstimator
 from ..estimators.mc import MonteCarloEstimator
 
 from ..exact.treeprob import TreeProbExplainer
@@ -34,18 +35,19 @@ ESTIMATOR_FACTORY = {
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,
     "KernelBanzhaf": KernelBanzhafEstimator,
+    "MSR": MSREstimator,
     "MonteCarlo": MonteCarloEstimator, 
 }
 
 DATASETS = {
-    "small_n": ['IRIS', 'California', 'Adult', 'Breast Cancer'],
+    "small_n": ['California', 'Adult', 'Breast Cancer'],
     "big_n": ['Correlated', 'Independent', 'NHANES', 'Communities']
 }
 
 VARIABLES = {
     "sample_size":
         {
-            "sample_size": [5, 10, 20, 40, 80, 160],
+            "sample_size": [6, 10, 20, 40, 80, 160],
             "noise_std": [0]
         },
     "noise_std":
@@ -53,9 +55,10 @@ VARIABLES = {
             "sample_size": [10],
             "noise_std": [0, .5 * 1e-3, 1e-3, .5 * 1e-2, 1e-2, .5 * 1e-1, 1e-1, .5, 1]
         }
+    # "bn": TODO
 }
 
-NUM_RUNS = 5
+NUM_RUNS = 50
 
 def generate_experiment_configs() -> List[Dict[str, Any]]:
     """

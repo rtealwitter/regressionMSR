@@ -129,7 +129,6 @@ class WSLEstimator(BaseEstimator):
         elif weighting_str == "banzhaf":
             return ("weighted_banzhaf", 0.5)
         elif weighting_str.startswith("beta_shapley_"):
-            # e.g., "beta_shapley_2_5"
             parts = weighting_str.split("_")
             if len(parts) != 4:
                 raise ValueError(f"Invalid beta_shapley format: '{weighting_str}', expected 'beta_shapley_alpha_beta'.")
@@ -137,7 +136,6 @@ class WSLEstimator(BaseEstimator):
             beta = float(parts[3])
             return ("beta_shapley", (alpha, beta))
         elif weighting_str.startswith("weighted_banzhaf_"):
-            # e.g., "weighted_banzhaf_0.3"
             parts = weighting_str.split("_")
             if len(parts) != 3:
                 raise ValueError(f"Invalid weighted_banzhaf format: '{weighting_str}', expected 'weighted_banzhaf_p'.")

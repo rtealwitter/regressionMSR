@@ -2,7 +2,7 @@ import itertools
 import numpy as np
 import warnings
 
-from ..p_generator import get_p
+from ..utils.p_generator import get_p
 
 def enumeration_prob(baseline, explicands, model, weighting="shapley"):
     warnings.filterwarnings("ignore", category=RuntimeWarning, message="invalid value encountered in scalar multiply")

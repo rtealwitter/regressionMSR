@@ -7,7 +7,7 @@ from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FAC
 from kernelprob.utils.datasets import load_dataset, load_input
 from kernelprob.utils.run_utils import *
 from kernelprob.exact.treeprob import tree_prob
-from kernelprob.kernelprob.exact.treeshap import tree_shap
+from kernelprob.exact.treeshap import tree_shap
 from kernelprob.exact.enumeration import enumeration_prob
 
 def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str):
@@ -26,8 +26,22 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     if "random" in weighting:
         print("Using enumeration for random p distribution.")
         true_values = enumeration_prob(baseline, explicands, model, weighting)
+    # TODO: remove if treeprob is good enough :)
+    elif weighting == "shapley":
+        true_values = tree_shap(baseline, explicands, model)
     else:
         true_values = tree_prob(baseline, explicands, model, weighting)
+    
+    # # Discrepancy check
+    # official_tree_shap = tree_shap(baseline, explicands, model)
+    # for idx, true_value in enumerate(true_values):
+    #     if np.allclose(true_value, official_tree_shap[idx], rtol=1e-6, atol=1e-8):
+    #         print("Agrees with official tree SHAP.")
+    #     else:
+    #         print("Does not agree with official tree SHAP.")
+    #         print(f"True value: {true_value}")
+    #         print(f"Official tree SHAP: {official_tree_shap[idx]}")
+    # exit()
 
     for noise_std in VARIABLES[variable]["noise_std"]:
         noised_model = NoisyModel(model, noise_std)
@@ -65,7 +79,6 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
         for sample_size in VARIABLES[variable]["sample_size"]:
             actual_sample_size = sample_size * n
             for idx, explicand in enumerate(explicands):
-                print(explicand)
             # for bn in VARIABLES[variable]["bn"]:
                 predicted = estimator.explain(explicand, actual_sample_size)
                 filename = f"output/{dataset}_{experiment_name}.csv"
@@ -79,32 +92,35 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                         'difference': noised_model.get_sample_count() - actual_sample_size,
                         'noise': noise_std,
                         'n' : n,
-                        'error' : ((predicted - true_values[idx]) ** 2).mean(),
+                        'error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2
                     }
                     f.write(str(dict) + '\n')
                 noised_model.reset_sample_count()
 
 
 def run_debug():
-    dataset = load_dataset("California")
+    dataset = load_dataset("Communities")
     X, y = dataset
     n = X.shape[1]
-    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42)
+    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4, random_state=42, max_features=n)
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
 
-    ofa_s_estimator = ESTIMATOR_FACTORY["OFA"](model, baseline, weighting="shapley", mode="S")
-    wsl_estimator = ESTIMATOR_FACTORY["WSL"](model, baseline, weighting="shapley")
+    cshap = ESTIMATOR_FACTORY["KernelProbC"](model, baseline, weighting="shapley", paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True)
+    oshap = ESTIMATOR_FACTORY["KernelSHAP"](model, baseline, weighting="shapley")
+    pshap = ESTIMATOR_FACTORY["PermutationSHAP"](model, baseline, weighting="shapley")
 
     true_values = tree_prob(baseline, explicands, model, "shapley")
+    print(f"True values: {true_values}")
 
-    for sample_size in [5, 10, 20]:
-        for explicand in explicands:
-            ofa_s_phi = ofa_s_estimator.explain(explicand, sample_size * n)
-            print(f"ofa_s l2_error: {((ofa_s_phi - true_values) ** 2).mean()}")
-            wsl_phi = wsl_estimator.explain(explicand, sample_size * n)
-            print(f"wsl l2_error: {((wsl_phi - true_values) ** 2).mean()}")
-
+    for sample_size in [5, 10]:
+        for idx, explicand in enumerate(explicands):
+            cshap_phi = cshap.explain(explicand, sample_size * n)
+            oshap_phi = oshap.explain(explicand, sample_size * n)
+            pshap_phi = pshap.explain(explicand, sample_size * n)
+            print(f"kernelprob l2_error: {((np.sum(cshap_phi) - np.sum(true_values[idx])) ** 2).mean()}")
+            print(f"kernelshap l2_error: {((np.sum(oshap_phi) - np.sum(true_values[idx])) ** 2).mean()}")
+            print(f"permutation l2_error: {((np.sum(pshap_phi) - np.sum(true_values[idx])) ** 2).mean()}")
 
     
 def parse_args():
@@ -139,9 +155,9 @@ def main():
     args = parse_args()
     variable, debug = args.variable, args.debug
 
-    # if debug:
-    #     run_debug()
-    #     exit()
+    if debug:
+        run_debug()
+        exit()
 
     if not os.path.exists("output"):
         os.makedirs("output")
@@ -150,7 +166,8 @@ def main():
 
     for dataset in datasets:
         X, y = load_dataset(dataset)
-        model = sklearn.ensemble.RandomForestRegressor(n_estimators=50, max_depth=4, random_state=42)
+        n = X.shape[1]
+        model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4, random_state=42, max_features=n)
         model.fit(X, y)
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
         for exp_cfg in experiments:
