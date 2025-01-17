@@ -12,9 +12,9 @@ class KernelProbUEstimator(BaseEstimator):
         model,
         baseline,
         weighting,
-        paired_sampling=False,
-        leverage_sampling=False,
-        bernoulli_sampling=False
+        paired_sampling=True,
+        leverage_sampling=True,
+        bernoulli_sampling=True
     ):
         """
         Additional Parameters
@@ -44,6 +44,7 @@ class KernelProbUEstimator(BaseEstimator):
         self.bn = sum2 / self.an
 
         def leverage_score(s):
+            # exit()
             first_term = 0 # |S| p_{|S|-1}^2 + (n-|S|) p_{|S|}^2
             second_term = 0 # (|S| p_{|S|-1} - (n-|S|) p_{|S|})^2
             if s > 0:
@@ -153,6 +154,8 @@ class KernelProbUEstimator(BaseEstimator):
         self.explicand = explicand
         # Ensure num_samples is even
         self.num_samples = int((num_samples) // 2) * 2
+        self.kernel_weights = []
+
         # Sample
         self.sample()
         # x* = (A^T A)^-1 A^T v

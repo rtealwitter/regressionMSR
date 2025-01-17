@@ -13,9 +13,9 @@ class KernelProbCEstimator(BaseEstimator):
         model,
         baseline,
         weighting,
-        paired_sampling=False,
-        leverage_sampling=False,
-        bernoulli_sampling=False,
+        paired_sampling=True,
+        leverage_sampling=True,
+        bernoulli_sampling=True,
     ):
         """
         Additional Parameters
@@ -44,10 +44,10 @@ class KernelProbCEstimator(BaseEstimator):
         self.sample_weight = lambda s : leverage_score(s) * scipy.special.binom(self.n, s)
 #        self.reweight = lambda s : 1 / (self.sample_weight(s) * (s * (self.n - s)))
         self.kernel_weights = []
-        self.sample = self._sample_with_replacement if not bernoulli_sampling else self._sample_without_replacement
+        self.sample = self.sample_with_replacement if not bernoulli_sampling else self.sample_without_replacement
         #self.used_indices = set()
     
-    def _add_one_sample(self, idx, indices, weight):
+    def add_one_sample(self, idx, indices, weight):
         #indices = sorted(indices)
         #if tuple(indices) in self.used_indices: return
         #self.used_indices.add(tuple(indices))
@@ -62,7 +62,7 @@ class KernelProbCEstimator(BaseEstimator):
             self.kernel_weights.append(weight)
 
     
-    def _sample_with_replacement(self):
+    def sample_with_replacement(self):
         self.SZ_binary = np.zeros((self.num_samples, self.n))
         valid_sizes = np.array(list(range(1, self.n)))
         prob_sizes = self.sample_weight(valid_sizes)
@@ -73,9 +73,9 @@ class KernelProbCEstimator(BaseEstimator):
             indices = self.gen.choice(self.n, s, replace=False)
             # weight = Pr(sampling this set) * w(s)
             weight = 1 / (self.sample_weight(s) * s * (self.n - s))
-            self._add_one_sample(idx, indices, weight=weight)
+            self.add_one_sample(idx, indices, weight=weight)
     
-    def _find_constant_for_bernoulli(self, max_C = 1e10):
+    def find_constant_for_bernoulli(self, max_C = 1e10):
         # Choose C so that sampling without replacement from min(1, C*prob) gives the same expected number of samples
         C = 1 # Assume at least n - 1 samples
         m = min(self.num_samples, 2**self.n-2) # Maximum number of samples is 2^n -2
@@ -98,8 +98,8 @@ class KernelProbCEstimator(BaseEstimator):
             C = (L + R) / 2
         self.C = C
     
-    def _sample_without_replacement(self):
-        self._find_constant_for_bernoulli()
+    def sample_without_replacement(self):
+        self.find_constant_for_bernoulli()
         m_s_all = []
         for s in range(1, self.n):
             # Sample from Binomial distribution with (n choose s) trials and probability min(1, C*sample_weight(s) / (n choose s))
@@ -129,17 +129,19 @@ class KernelProbCEstimator(BaseEstimator):
                 # based on whether the combination contains n-1
                 combo_gen = combination_generator(self.gen, self.n - 1, s-1, m_s)
                 for indices in combo_gen:
-                    self._add_one_sample(idx, list(indices) + [self.n-1], weight = weight)
+                    self.add_one_sample(idx, list(indices) + [self.n-1], weight = weight)
                     idx += 1
             else:
                 combo_gen = combination_generator(self.gen, self.n, s, m_s)
                 for indices in combo_gen:
-                    self._add_one_sample(idx, list(indices), weight = weight)
+                    self.add_one_sample(idx, list(indices), weight = weight)
                     idx += 1
     
     def explain(self, explicand, num_samples):
         self.explicand = explicand
         self.num_samples = int((num_samples -2 ) // 2) * 2
+        self.kernel_weights = []
+        
         # Sample
         self.sample()
         # A = Z P
@@ -151,9 +153,18 @@ class KernelProbCEstimator(BaseEstimator):
         SZ_binary = self.SZ_binary[np.sum(self.SZ_binary, axis=1) != 0]
         v0, v1 = self.model.predict(self.baseline), self.model.predict(self.explicand)
         inputs = self.baseline * (1 - SZ_binary) + self.explicand * SZ_binary
-        Sb = self.model.predict(inputs) - v0
+        Sv = self.model.predict(inputs) - v0
+
+       # Estimate constant term = 1/n sum_i phi_i
+        # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
+        # Compute probability each set size was sampled
+        row_sum = np.sum(SZ_binary, axis=1).astype(int)
+        prob_sampled = self.kernel_weights / ((self.p[row_sum] + self.p[row_sum-1]) * row_sum * (self.n - row_sum))
+        weighting = -self.p[row_sum] * (self.n - row_sum) + self.p[row_sum-1] * row_sum
+        sum_phi = prob_sampled * weighting @ Sv
+        sum_phi = sum_phi + (v1-v0)*self.p[-1]*self.n
         
-#        Sb = Sy - (v1 - v0) * SZ_binary1 / self.n
+        Sb = Sv - row_sum * sum_phi / self.n
 
         # Projection matrix
         P = np.eye(self.n) - 1/self.n * np.ones((self.n, self.n))
@@ -163,21 +174,6 @@ class KernelProbCEstimator(BaseEstimator):
         PZSSZP_inv_PZSSb = np.linalg.lstsq(PZSSZP, PZSSb, rcond=None)[0]
 
         self.phi = PZSSZP_inv_PZSSb 
-
-        # Estimate constant term = 1/n sum_i phi_i
-        # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
-        # Compute probability each set size was sampled
-        row_sum = np.sum(SZ_binary, axis=1).astype(int)
-        prob_sampled = self.kernel_weights / ((self.p[row_sum] + self.p[row_sum-1]) * row_sum * (self.n - row_sum))
-        weighting = -self.p[row_sum] * (self.n - row_sum) + self.p[row_sum-1] * row_sum
-        #print('weighting.shape:', weighting.shape)
-        #print('Sb.shape:', Sb.shape)
-        #print('prob_sampled.shape:', prob_sampled.shape)
-        #print('prob_sampled * weighting shape:', (prob_sampled * weighting).shape)
-        sum_phi = prob_sampled * weighting @ Sb
-        sum_phi = 1/self.n * (sum_phi + (v1-v0)*self.p[-1]*self.n)
-        #print('sum_phi:', sum_phi)
-
-        self.phi += sum_phi
+        self.phi += sum_phi / self.n
 
         return self.phi

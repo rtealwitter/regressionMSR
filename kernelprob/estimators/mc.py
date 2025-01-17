@@ -54,7 +54,7 @@ class MonteCarloEstimator(BaseEstimator):
             model_input = self.baseline * (1 - model_input) + explicand * model_input
 
             # Model prediction
-            model_output = self.model(model_input)
+            model_output = self.model.predict(model_input)
 
             # Aggregate attributions
             phi[:, i] = np.sum(model_output * sign) / samples_per_feature

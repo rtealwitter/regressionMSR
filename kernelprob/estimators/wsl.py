@@ -30,10 +30,14 @@ class WSLEstimator(BaseEstimator):
 
         self.semivalue, self.semivalue_param = self._parse_weighting(weighting)
 
-        # Aggregator / sampling logic parameters
-        self.nue_avg = 0        # Total number of samples
-        self.nue_track_avg = 10
-        self.nue_per_proc = 1000
+        # the number of utility evaluations used to do estimation on average (divided by the number of players)
+        self.nue_avg = 0
+
+        # record the estimates of all players after using nue_track_avg, 2*nue_track_avg, ..., utility evaluations on average.
+        self.nue_track_avg = 200
+
+        # the number of utility evaluations each process will run in one batch.
+        self.nue_per_proc = 500
 
         # Number of players (features)
         self.num_player = self.baseline.size
@@ -54,7 +58,6 @@ class WSLEstimator(BaseEstimator):
         self.buffer = np.empty((self.buffer_size, self.num_player), dtype=np.float64)
         self.samples = np.empty((self.batch_size, self.num_player - 1), dtype=bool)
 
-        # Paired sampling: always set lock_switch to False to allow toggling
         self.lock_switch = False
         self.switch_state = False  # Initial switch state
 
@@ -332,24 +335,8 @@ class WSLEstimator(BaseEstimator):
 
 
     def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
-        """
-        Compute the attributions/feature importances for the given explicand.
-        
-        Parameters
-        ----------
-        explicand : np.ndarray
-            The instance to be explained, of shape (num_player,).
-        num_samples : int
-            Total number of samples to draw for the estimator.
-        
-        Returns
-        -------
-        phi : np.ndarray
-            The final attributions for each feature, of shape (num_player,).
-        """
         self._explicand = np.asarray(explicand, dtype=float)
 
-        # Update sampling parameters based on num_samples
         self.nue_avg = num_samples // self.num_player
         self.num_sample = self.nue_avg // 2  # Paired sampling: half the samples
 

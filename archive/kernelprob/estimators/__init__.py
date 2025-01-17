@@ -10,7 +10,6 @@ from .p_generator import *
 from .baselines.kernel_banzhaf import *
 from .baselines.mc import *
 from .baselines.msr import *
-from .baselines.exact_enumerate import *
 
 import numpy as np
 import xgboost as xgb
@@ -24,7 +23,6 @@ prob_estimators = {
     'Unconstrained Regression': regression_unconstrained,
     'Tree Prob': tree_prob,
     'Constrained Regression': constrained_regression,
-    'Exact Enumerate': enumerate_all_subsets
 }
 
 # # # SHAP estimators # # #

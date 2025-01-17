@@ -3,12 +3,14 @@ import numpy as np
 from .tree import Tree
 from .tree_utils import is_sklearn_random_forest, is_xgboost_model, parse_xgb_tree
 from .weights import calc_weight
+import warnings
 
 def tree_prob(baseline, explicands, model, weighting="shapley"):
+    warnings.filterwarnings("ignore", category=RuntimeWarning, message="invalid value encountered in scalar multiply")
     true_values = []
     explainer = TreeProbExplainer(model=model, baseline=baseline, weighting=weighting)
     for explicand in explicands:
-        true_values.append(explainer.prob_values(explicand))
+        true_values.append(explainer.explain(explicand))
     return true_values
 
 
@@ -41,8 +43,10 @@ def prob_recurse(
         if V == 0:
             return (0.0, 0.0)
         else:
-            pos = calc_weight(U-1, V, weighting) * vj
-            neg = -calc_weight(U, V, weighting) * vj
+            pos_weight = calc_weight(U-1, V, weighting)
+            pos = pos_weight * vj
+            neg_weight = calc_weight(U, V, weighting)
+            neg = -neg_weight * vj if not np.isnan(neg_weight) else 0.0
             return (pos, neg)
 
     # Internal node
@@ -223,7 +227,7 @@ class TreeProbExplainer:
                 # print(f"Using Weighted Banzhaf with weight={weighting_list[-1]}.")
     
 
-    def prob_values(self, explicand, **kwargs):
+    def explain(self, explicand, **kwargs):
         """
         Calculate interventional prob values for each row in X,
         averaged over all reference vectors in baseline

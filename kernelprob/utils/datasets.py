@@ -4,6 +4,7 @@ import numpy as np
 import scipy
 import itertools
 import pandas as pd
+from sklearn.datasets import load_breast_cancer
 
 def synthetic(num_features=15):
     binary = np.zeros((2**num_features-2, num_features))
@@ -31,6 +32,9 @@ def synthetic(num_features=15):
     y = pd.Series(ystar + noise, name='Target')
     return X, y
 
+def breast_cancer():
+    return load_breast_cancer(return_X_y=True, as_frame=True)
+
 dataset_loaders = {
     'Adult' : shap.datasets.adult,
     'California' : shap.datasets.california,
@@ -41,6 +45,7 @@ dataset_loaders = {
     'IRIS' : shap.datasets.iris,
     'NHANES' : shap.datasets.nhanesi,
     'Synthetic' : synthetic,
+    "Breast Cancer": breast_cancer
 }
 
 def load_dataset(dataset_name):

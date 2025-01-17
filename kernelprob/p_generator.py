@@ -23,10 +23,10 @@ def get_p(n, weighting="shapley"):
         weighting = "weighted_banzhaf"
         return weighted_banzhaf_distribution(n, p_weight)
 
-    elif weighting == "random":
+    elif "random" in weighting:
         random_state = weighting_list[-1] if len(weighting_list) == 2 else 42
         weighting = "random"
-        return random_probabilistic_distribution(n, random_state)
+        return random_probabilistic_distribution(n, int(random_state))
     
     if weighting == "shapley":
         return shapley_distribution(n)

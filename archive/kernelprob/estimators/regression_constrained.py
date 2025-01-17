@@ -170,9 +170,18 @@ class ConstrainedRegression:
         SZ_binary = self.SZ_binary[np.sum(self.SZ_binary, axis=1) != 0]
         v0, v1 = self.model.predict(self.baseline), self.model.predict(self.explicand)
         inputs = self.baseline * (1 - SZ_binary) + self.explicand * SZ_binary
-        Sb = self.model.predict(inputs) - v0
+        Sv = self.model.predict(inputs) - v0
+
+       # Estimate constant term = 1/n sum_i phi_i
+        # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
+        # Compute probability each set size was sampled
+        row_sum = np.sum(SZ_binary, axis=1).astype(int)
+        prob_sampled = self.kernel_weights / ((self.p[row_sum] + self.p[row_sum-1]) * row_sum * (self.n - row_sum))
+        weighting = -self.p[row_sum] * (self.n - row_sum) + self.p[row_sum-1] * row_sum
+        sum_phi = prob_sampled * weighting @ Sv
+        sum_phi = sum_phi + (v1-v0)*self.p[-1]*self.n
         
-#        Sb = Sy - (v1 - v0) * SZ_binary1 / self.n
+        Sb = Sv - row_sum * sum_phi / self.n
 
         # Projection matrix
         P = np.eye(self.n) - 1/self.n * np.ones((self.n, self.n))
@@ -182,22 +191,7 @@ class ConstrainedRegression:
         PZSSZP_inv_PZSSb = np.linalg.lstsq(PZSSZP, PZSSb, rcond=None)[0]
 
         self.phi = PZSSZP_inv_PZSSb 
-
-        # Estimate constant term = 1/n sum_i phi_i
-        # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
-        # Compute probability each set size was sampled
-        row_sum = np.sum(SZ_binary, axis=1).astype(int)
-        prob_sampled = self.kernel_weights / ((self.p[row_sum] + self.p[row_sum-1]) * row_sum * (self.n - row_sum))
-        weighting = -self.p[row_sum] * (self.n - row_sum) + self.p[row_sum-1] * row_sum
-        #print('weighting.shape:', weighting.shape)
-        #print('Sb.shape:', Sb.shape)
-        #print('prob_sampled.shape:', prob_sampled.shape)
-        #print('prob_sampled * weighting shape:', (prob_sampled * weighting).shape)
-        sum_phi = prob_sampled * weighting @ Sb
-        sum_phi = 1/self.n * (sum_phi + (v1-v0)*self.p[-1]*self.n)
-        #print('sum_phi:', sum_phi)
-
-        self.phi += sum_phi
+        self.phi += sum_phi / self.n
 
         return self.phi
 

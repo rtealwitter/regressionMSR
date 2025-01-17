@@ -7,6 +7,8 @@ from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FAC
 from kernelprob.utils.datasets import load_dataset, load_input
 from kernelprob.utils.run_utils import *
 from kernelprob.exact.treeprob import tree_prob
+from kernelprob.kernelprob.exact.treeshap import tree_shap
+from kernelprob.exact.enumeration import enumeration_prob
 
 def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str):
     n = baseline.shape[1]
@@ -20,7 +22,12 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     weighting = exp_cfg.get("weighting", None)
     if weighting is None:
         logging.error(f"Weighting not specified for '{experiment_name}'. Skipping.")
-    true_values = tree_prob(baseline, explicands, model, weighting)
+
+    if "random" in weighting:
+        print("Using enumeration for random p distribution.")
+        true_values = enumeration_prob(baseline, explicands, model, weighting)
+    else:
+        true_values = tree_prob(baseline, explicands, model, weighting)
 
     for noise_std in VARIABLES[variable]["noise_std"]:
         noised_model = NoisyModel(model, noise_std)
@@ -32,6 +39,18 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                     baseline=baseline,
                     weighting=weighting,
                     mode=mode
+                )
+            elif estimator_class_name in ["KernelProbC", "KernelProbU", "LeverageSHAP"]:
+                paired_sampling = exp_cfg.get("paired_sampling", True)
+                leverage_sampling = exp_cfg.get("leverage_sampling", True)
+                bernoulli_sampling = exp_cfg.get("bernoulli_sampling", True)
+                estimator = estimator_cls(
+                    model=noised_model,
+                    baseline=baseline,
+                    weighting=weighting,
+                    paired_sampling=paired_sampling,
+                    leverage_sampling=leverage_sampling,
+                    bernoulli_sampling=bernoulli_sampling
                 )
             else:
                 estimator = estimator_cls(
@@ -46,9 +65,9 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
         for sample_size in VARIABLES[variable]["sample_size"]:
             actual_sample_size = sample_size * n
             for idx, explicand in enumerate(explicands):
+                print(explicand)
             # for bn in VARIABLES[variable]["bn"]:
                 predicted = estimator.explain(explicand, actual_sample_size)
-
                 filename = f"output/{dataset}_{experiment_name}.csv"
                 if not os.path.exists(filename):
                     with open(filename, 'w') as f:
@@ -70,25 +89,19 @@ def run_debug():
     dataset = load_dataset("California")
     X, y = dataset
     n = X.shape[1]
-    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8)
+    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42)
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
 
-    # ofa_a_estimator = ESTIMATOR_FACTORY["OFA"](model, baseline, weighting="banzhaf", mode="A")
     ofa_s_estimator = ESTIMATOR_FACTORY["OFA"](model, baseline, weighting="shapley", mode="S")
-    # kernel_banzhaf_estimator = ESTIMATOR_FACTORY["KernelBanzhaf"](model, baseline, weighting="banzhaf")
     wsl_estimator = ESTIMATOR_FACTORY["WSL"](model, baseline, weighting="shapley")
 
     true_values = tree_prob(baseline, explicands, model, "shapley")
 
     for sample_size in [5, 10, 20]:
         for explicand in explicands:
-            # ofa_a_phi = ofa_a_estimator.explain(explicand, sample_size)
-            # print(f"ofa_a l2_error: {((ofa_a_phi - true_values) ** 2).mean()}")
             ofa_s_phi = ofa_s_estimator.explain(explicand, sample_size * n)
             print(f"ofa_s l2_error: {((ofa_s_phi - true_values) ** 2).mean()}")
-            # kernel_banzhaf_phi = kernel_banzhaf_estimator.explain(explicand, sample_size)
-            # print(f"kernel_banzhaf l2_error: {((kernel_banzhaf_phi - true_values) ** 2).mean()}")
             wsl_phi = wsl_estimator.explain(explicand, sample_size * n)
             print(f"wsl l2_error: {((wsl_phi - true_values) ** 2).mean()}")
 
@@ -126,9 +139,9 @@ def main():
     args = parse_args()
     variable, debug = args.variable, args.debug
 
-    if debug:
-        run_debug()
-        exit()
+    # if debug:
+    #     run_debug()
+    #     exit()
 
     if not os.path.exists("output"):
         os.makedirs("output")
@@ -137,7 +150,7 @@ def main():
 
     for dataset in datasets:
         X, y = load_dataset(dataset)
-        model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8)
+        model = sklearn.ensemble.RandomForestRegressor(n_estimators=50, max_depth=4, random_state=42)
         model.fit(X, y)
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
         for exp_cfg in experiments:

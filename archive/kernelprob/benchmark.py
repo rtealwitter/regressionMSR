@@ -189,6 +189,8 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
 
     # Assume tree model
     true_values = estimators['Tree Prob'](baseline, explicand, model, weighting=weighting).flatten()
+#    print('True values:', true_values)
+#    print('True values sum:', np.sum(true_values))
     if weighting == 'shapley':
         true_shap_values = estimators['Official Tree SHAP'](baseline, explicand, model, sample_size).flatten()
         print('True SHAP values:', true_shap_values)
@@ -228,6 +230,7 @@ def run_one_iteration(X, seed, dataset, model, sample_size, noise_std, num_runs,
                 'noise': noise_std,
                 'n' : n,
                 'error' : ((predicted - true_values) ** 2).mean(),
+                'sum_error' : (np.sum(predicted) - np.sum(true_values)) ** 2
             }
 #            print('n:', n)
 #            print('difference:', dict['difference'])

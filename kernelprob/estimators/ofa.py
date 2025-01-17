@@ -33,7 +33,7 @@ class OFAEstimator(BaseEstimator):
         -------
         phi : np.ndarray of shape (num_features,)
         """
-        num_features = explicand.shape[0]
+        num_features = explicand.shape[1]
 
         p = get_p(num_features, self.weighting) # np.ndarray of shape (num_features,) - semivalue weights
         if p.shape[0] != num_features:
@@ -44,7 +44,7 @@ class OFAEstimator(BaseEstimator):
         p = p * np.array([
             math.comb(num_features - 1, i) for i in range(num_features)
         ], dtype=np.float64)
-
+    
         if num_features < 4:
             raise ValueError("OFA expects num_features >= 4.")
 

@@ -23,50 +23,50 @@ weightings:
     - random_16
 
 estimators:
-  # KernelProbC:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
-  #     - beta_shapley
-  #     - weighted_banzhaf
-  #     # - random
-  #   paired_sampling:
-  #     - True
-  #     # - False
-  #   leverage_sampling:
-  #     - True
-  #     # - False
-  #   bernoulli_sampling:
-  #     - True
-  #     # - False
-
-  # KernelProbU:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
-  #     - beta_shapley
-  #     - weighted_banzhaf
-  #     # - random
-  #   paired_sampling:
-  #     - True
-  #     # - False
-  #   leverage_sampling:
-  #     - True
-  #     # - False
-  #   bernoulli_sampling:
-  #     - True
+  KernelProbC:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      - random
+    paired_sampling:
+      - True
+      # - False
+    leverage_sampling:
+      - True
+      # - False
+    bernoulli_sampling:
+      - True
   #     # - False
 
-  # OFA:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
-  #     - beta_shapley
-  #     - weighted_banzhaf
-  #     # - random
-  #   modes:
-  #     - A
-  #     - S
+  KernelProbU:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      # - random
+    paired_sampling:
+      - True
+      # - False
+    leverage_sampling:
+      - True
+      # - False
+    bernoulli_sampling:
+      - True
+      # - False
+
+  OFA:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      - random
+    modes:
+      - A
+      - S
 
   WSL:
     weightings:
@@ -88,11 +88,19 @@ estimators:
       - True
       - False
 
-  # MonteCarlo:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
+  KernelSHAP:
+    weightings:
+      - shapley
+   
+  PermutationSHAP:
+    weightings:
+      - shapley
 
-  # KernelBanzhaf:
-  #   weightings:
-  #     - banzhaf
+  KernelBanzhaf:
+    weightings:
+      - banzhaf
+
+  MonteCarlo:
+    weightings:
+      - shapley
+      - banzhaf

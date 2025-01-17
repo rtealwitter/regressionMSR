@@ -1,7 +1,6 @@
 import numpy as np
 import scipy
 import scipy.special
-import math
 
 from ..base_estimator import BaseEstimator
 from .est_utils import combination_generator
@@ -13,9 +12,9 @@ class LeverageSHAPEstimator(BaseEstimator):
         model,
         baseline,
         weighting,
-        paired_sampling=False,
-        leverage_sampling=False,
-        bernoulli_sampling=False
+        paired_sampling=True,
+        leverage_sampling=True,
+        bernoulli_sampling=True
     ):
         """
         Additional Parameters
@@ -128,6 +127,8 @@ class LeverageSHAPEstimator(BaseEstimator):
         self.explicand = explicand
         # Subtract 2 for the baseline and explicand and ensure num_samples is even
         self.num_samples = int((num_samples -2 ) // 2) * 2
+        self.kernel_weights = []
+
         # Sample
         self.sample()
         # A = Z P
