@@ -92,36 +92,41 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                         'difference': noised_model.get_sample_count() - actual_sample_size,
                         'noise': noise_std,
                         'n' : n,
-                        'error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2
+                        'error' : np.mean((predicted - true_values[idx]) ** 2),
+                        'sum_error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2,
                     }
                     f.write(str(dict) + '\n')
                 noised_model.reset_sample_count()
 
 
 def run_debug():
-    dataset = load_dataset("Communities")
+    dataset = load_dataset("California")
     X, y = dataset
     n = X.shape[1]
-    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4, random_state=42, max_features=n)
+    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
 
-    cshap = ESTIMATOR_FACTORY["KernelProbC"](model, baseline, weighting="shapley", paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True)
-    oshap = ESTIMATOR_FACTORY["KernelSHAP"](model, baseline, weighting="shapley")
-    pshap = ESTIMATOR_FACTORY["PermutationSHAP"](model, baseline, weighting="shapley")
+    weighting = "beta_shapley_1_6"       
 
-    true_values = tree_prob(baseline, explicands, model, "shapley")
+    estimators = {
+        "KernelProbC": ESTIMATOR_FACTORY["KernelProbC"](model, baseline, weighting=weighting, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True),
+        #"KernelSHAP": ESTIMATOR_FACTORY["KernelSHAP"](model, baseline, weighting=weighting),
+        #"PermutationSHAP": ESTIMATOR_FACTORY["PermutationSHAP"](model, baseline, weighting=weighting)
+        'OFA S' : ESTIMATOR_FACTORY["OFA"](model, baseline, weighting=weighting, mode='S'),
+    }
+
+    true_values = tree_prob(baseline, explicands, model, weighting)
     print(f"True values: {true_values}")
 
     for sample_size in [5, 10]:
         for idx, explicand in enumerate(explicands):
-            cshap_phi = cshap.explain(explicand, sample_size * n)
-            oshap_phi = oshap.explain(explicand, sample_size * n)
-            pshap_phi = pshap.explain(explicand, sample_size * n)
-            print(f"kernelprob l2_error: {((np.sum(cshap_phi) - np.sum(true_values[idx])) ** 2).mean()}")
-            print(f"kernelshap l2_error: {((np.sum(oshap_phi) - np.sum(true_values[idx])) ** 2).mean()}")
-            print(f"permutation l2_error: {((np.sum(pshap_phi) - np.sum(true_values[idx])) ** 2).mean()}")
-
+            results = {}
+            for estimator_name, estimator in estimators.items():
+                results[estimator_name] = estimator.explain(explicand, sample_size * n)
+            
+            for estimator_name, result in results.items():
+                print(f"Estimator: {estimator_name} \t Error: {((np.sum(result) - np.sum(true_values[idx])) ** 2).mean()}")
     
 def parse_args():
     parser = argparse.ArgumentParser(description="Run experiments.")

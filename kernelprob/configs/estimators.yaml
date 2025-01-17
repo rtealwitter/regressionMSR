@@ -23,22 +23,22 @@ weightings:
     - random_16
 
 estimators:
-  # KernelProbC:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
-  #     - beta_shapley
-  #     - weighted_banzhaf
-  #     - random
-  #   paired_sampling:
-  #     - True
+  KernelProbC:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      - random
+    paired_sampling:
+      - True
+      # - False
+    leverage_sampling:
+      - True
+      # - False
+    bernoulli_sampling:
+      - True
   #     # - False
-  #   leverage_sampling:
-  #     - True
-  #     # - False
-  #   bernoulli_sampling:
-  #     - True
-  # #     # - False
 
   # KernelProbU:
   #   weightings:

@@ -13,9 +13,9 @@ class KernelProbCEstimator(BaseEstimator):
         model,
         baseline,
         weighting,
-        paired_sampling=True,
-        leverage_sampling=True,
-        bernoulli_sampling=True,
+        paired_sampling=True, # only paired sampling
+        leverage_sampling=True, # only leverage score
+        bernoulli_sampling=True, # only bernoulli sampling
     ):
         """
         Additional Parameters
@@ -33,19 +33,17 @@ class KernelProbCEstimator(BaseEstimator):
         self.baseline = baseline
         self.paired_sampling = paired_sampling
         self.n = self.baseline.shape[1] # Number of features
-
         self.gen = np.random.Generator(np.random.PCG64())
-        # Sampling weight for each set size i.e., sampling weight for each row times (n choose s)
 
-        #self.sample_weight = lambda s : 1 / (s * (self.n - s)) if not leverage_sampling else np.ones_like(s)
-        def leverage_score(s):
-            score = (self.p[s] + self.p[s-1]) * s * (self.n - s)
-            return score
-        self.sample_weight = lambda s : leverage_score(s) * scipy.special.binom(self.n, s)
-#        self.reweight = lambda s : 1 / (self.sample_weight(s) * (s * (self.n - s)))
-        self.kernel_weights = []
-        self.sample = self.sample_with_replacement if not bernoulli_sampling else self.sample_without_replacement
-        #self.used_indices = set()
+        self.leverage_score = lambda s : (self.p[s] + self.p[s-1]) * s * (self.n - s) 
+    
+    def get_row_prob(self, s):
+        # Convert s to int
+        total_leverage_score = self.leverage_score(s) + self.leverage_score(self.n-s)
+        return min(1, self.C * total_leverage_score)
+    
+    def expected_samples(self):
+        return np.sum([scipy.special.binom(self.n, s) * self.get_row_prob(s) for s in range(1, self.n)])
     
     def add_one_sample(self, idx, indices, weight):
         #indices = sorted(indices)
@@ -63,47 +61,42 @@ class KernelProbCEstimator(BaseEstimator):
 
     
     def sample_with_replacement(self):
-        self.SZ_binary = np.zeros((self.num_samples, self.n))
-        valid_sizes = np.array(list(range(1, self.n)))
-        prob_sizes = self.sample_weight(valid_sizes)
-        prob_sizes = prob_sizes / np.sum(prob_sizes)
-        num_sizes = self.num_samples if not self.paired_sampling else self.num_samples // 2
-        sampled_sizes = self.gen.choice(valid_sizes, num_sizes, p=prob_sizes)
-        for idx, s in enumerate(sampled_sizes):
-            indices = self.gen.choice(self.n, s, replace=False)
-            # weight = Pr(sampling this set) * w(s)
-            weight = 1 / (self.sample_weight(s) * s * (self.n - s))
-            self.add_one_sample(idx, indices, weight=weight)
+        # Not implemented
+        pass 
+        #self.SZ_binary = np.zeros((self.num_samples, self.n))
+        #valid_sizes = np.array(list(range(1, self.n)))
+        #prob_sizes = self.sample_weight(valid_sizes)
+        #prob_sizes = prob_sizes / np.sum(prob_sizes)
+        #num_sizes = self.num_samples if not self.paired_sampling else self.num_samples // 2
+        #sampled_sizes = self.gen.choice(valid_sizes, num_sizes, p=prob_sizes)
+        #for idx, s in enumerate(sampled_sizes):
+        #    indices = self.gen.choice(self.n, s, replace=False)
+        #    # weight = Pr(sampling this set) * w(s)
+        #    weight = 1 / (self.sample_weight(s) * s * (self.n - s))
+        #    self.add_one_sample(idx, indices, weight=weight)
     
-    def find_constant_for_bernoulli(self, max_C = 1e10):
+    def find_constant_for_bernoulli(self):
         # Choose C so that sampling without replacement from min(1, C*prob) gives the same expected number of samples
-        C = 1 # Assume at least n - 1 samples
+        self.C = 1/2**self.n # Assume at least n - 1 samples
         m = min(self.num_samples, 2**self.n-2) # Maximum number of samples is 2^n -2
-        def expected_samples(C):
-            expected = [min(scipy.special.binom(self.n, s), 2* C * self.sample_weight(s)) for s in range(1, self.n)]
-            #print(f'Expected samples: {np.sum(expected)}')
-            #print(f'Constraint: {m}')
-            #print(f'C: {C}')
-            return np.sum(expected)
         # Efficiently find C with binary search
         L = 1 / 2**self.n
         R = scipy.special.binom(self.n, self.n // 2) * 4 ** self.n
-        while round(expected_samples(C)) != m:
-            #print(f'Expected samples: {expected_samples(C)}')
-            #print(f'Left constraint: {L}')
-            #print(f'Right constraint: {R}')
-            #print(f'Constraint: {m}')
-            if expected_samples(C) < m: L = C
-            else: R = C
-            C = (L + R) / 2
-        self.C = C
+        expected = self.expected_samples()
+        while round(expected) != m:
+            if expected < m: L = self.C
+            else: R = self.C
+            self.C = (L + R) / 2
+            expected = self.expected_samples()
     
     def sample_without_replacement(self):
         self.find_constant_for_bernoulli()
         m_s_all = []
+        expected = 0
         for s in range(1, self.n):
-            # Sample from Binomial distribution with (n choose s) trials and probability min(1, C*sample_weight(s) / (n choose s))
-            prob = min(1, 2*self.C * self.sample_weight(s) / scipy.special.binom(self.n, s))
+            expected += scipy.special.binom(self.n, s) * self.get_row_prob(s)
+            # Sample from Binomial distribution with (n choose s) trials and probability min(1, 2*C*sample_weight(s) / (n choose s))
+            prob = self.get_row_prob(s)
             try:
                 m_s = self.gen.binomial(int(scipy.special.binom(self.n, s)), prob)
             except OverflowError: # If the number of samples is too large, assume the number of samples is the expected number
@@ -121,9 +114,9 @@ class KernelProbCEstimator(BaseEstimator):
         idx = 0
         for s, m_s in enumerate(m_s_all):
             s += 1
-            prob = min(1, 2*self.C * self.sample_weight(s) / scipy.special.binom(self.n, s))
+            prob = self.get_row_prob(s)
             # weight = 1/ prob * weighting in regression problem
-            weight = 1 / prob * (self.p[s] + self.p[s-1]) * s * (self.n - s)
+            weight = 1 / prob * (self.p[s] + self.p[s-1])# * s * (self.n - s)
             if self.paired_sampling and s == self.n // 2 and self.n % 2 == 0:
                 # Partition the all middle sets into two
                 # based on whether the combination contains n-1
@@ -143,7 +136,7 @@ class KernelProbCEstimator(BaseEstimator):
         self.kernel_weights = []
         
         # Sample
-        self.sample()
+        self.sample_without_replacement()
         # A = Z P
         # b = v(z) - v0
         # (A^T S^T S A)^-1 A^T S^T S b + (v1 - v0) / n
@@ -159,9 +152,9 @@ class KernelProbCEstimator(BaseEstimator):
         # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
         # Compute probability each set size was sampled
         row_sum = np.sum(SZ_binary, axis=1).astype(int)
-        prob_sampled = self.kernel_weights / ((self.p[row_sum] + self.p[row_sum-1]) * row_sum * (self.n - row_sum))
-        weighting = -self.p[row_sum] * (self.n - row_sum) + self.p[row_sum-1] * row_sum
-        sum_phi = prob_sampled * weighting @ Sv
+        prob_sampled = self.kernel_weights / (self.p[row_sum] + self.p[row_sum-1])
+        sum_weighting = -self.p[row_sum] * (self.n - row_sum) + self.p[row_sum-1] * row_sum
+        sum_phi = prob_sampled * sum_weighting @ Sv
         sum_phi = sum_phi + (v1-v0)*self.p[-1]*self.n
         
         Sb = Sv - row_sum * sum_phi / self.n
