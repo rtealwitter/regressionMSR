@@ -5,25 +5,25 @@ weightings:
     - banzhaf
   beta_shapley:
     - beta_shapley_1_16
-    - beta_shapley_1_4
-    - beta_shapley_1_1 # Same as Shapley
-    - beta_shapley_4_1
-    - beta_shapley_16_1
-  weighted_banzhaf:
-    - weighted_banzhaf_0.1
-    - weighted_banzhaf_0.3
-    - weighted_banzhaf_0.5 # Same as Banzhaf
-    - weighted_banzhaf_0.7
-    - weighted_banzhaf_0.9
-  random:
-    - random_42
-    - random_27
-    - random_91
-    - random_58
-    - random_16
+  #  - beta_shapley_1_4
+  #  - beta_shapley_1_1 # Same as Shapley
+  #  - beta_shapley_4_1
+  #  - beta_shapley_16_1
+  #weighted_banzhaf:
+  #  - weighted_banzhaf_0.1
+  #  - weighted_banzhaf_0.3
+  #  - weighted_banzhaf_0.5 # Same as Banzhaf
+  #  - weighted_banzhaf_0.7
+  #  - weighted_banzhaf_0.9
+  #random:
+  #  - random_42
+  #  - random_27
+  #  - random_91
+  #  - random_58
+  #  - random_16
 
 estimators:
-  KernelProbC:
+  UniversalConstrained:
     weightings:
       - shapley
       - banzhaf
@@ -32,30 +32,20 @@ estimators:
       - random
     paired_sampling:
       - True
-      # - False
-    leverage_sampling:
-      - True
-      # - False
     bernoulli_sampling:
       - True
-  #     # - False
 
-  # KernelProbU:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
-  #     - beta_shapley
-  #     - weighted_banzhaf
-  #     # - random
-  #   paired_sampling:
-  #     - True
-  #     # - False
-  #   leverage_sampling:
-  #     - True
-  #     # - False
-  #   bernoulli_sampling:
-  #     - True
-  #     # - False
+  UniversalUnconstrained:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      - random
+    paired_sampling:
+      - True
+    bernoulli_sampling:
+      - True
 
   # OFA:
   #   weightings:
@@ -79,9 +69,6 @@ estimators:
   #   weightings:
   #     - shapley
   #   paired_sampling:
-  #     - True
-  #     - False
-  #   leverage_sampling:
   #     - True
   #     - False
   #   bernoulli_sampling:

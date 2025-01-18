@@ -14,7 +14,10 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     n = baseline.shape[1]
     estimator_class_name = exp_cfg["estimator_class"]
     experiment_name = exp_cfg["name"]
-    estimator_cls = ESTIMATOR_FACTORY[estimator_class_name]
+    if "Universal" in estimator_class_name:
+        estimator_cls = ESTIMATOR_FACTORY["Universal"]
+    else:
+        estimator_cls = ESTIMATOR_FACTORY[estimator_class_name]
     if estimator_cls is None:
         logging.error(f"Estimator class '{estimator_class_name}' not found. Skipping.")
         return
@@ -54,17 +57,24 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                     weighting=weighting,
                     mode=mode
                 )
-            elif estimator_class_name in ["KernelProbC", "KernelProbU", "LeverageSHAP"]:
+            elif estimator_class_name in ["LeverageSHAP"]:
                 paired_sampling = exp_cfg.get("paired_sampling", True)
-                leverage_sampling = exp_cfg.get("leverage_sampling", True)
                 bernoulli_sampling = exp_cfg.get("bernoulli_sampling", True)
                 estimator = estimator_cls(
                     model=noised_model,
                     baseline=baseline,
                     weighting=weighting,
                     paired_sampling=paired_sampling,
-                    leverage_sampling=leverage_sampling,
                     bernoulli_sampling=bernoulli_sampling
+                )
+            elif 'Universal' in estimator_class_name:
+                estimator = ESTIMATOR_FACTORY['Universal'](
+                    model=noised_model,
+                    baseline=baseline,
+                    prob_weight=weighting,
+                    pair_sampling= exp_cfg.get("paired_sampling", True),
+                    with_replace = not exp_cfg.get("bernoulli_sampling", True),
+                    constrain_reg = 'Unconstrained' not in estimator_class_name
                 )
             else:
                 estimator = estimator_cls(
@@ -105,15 +115,16 @@ def run_debug():
     n = X.shape[1]
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
     model.fit(X, y)
-    baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
+    baseline, explicands = load_input(X, num_runs=10, is_synthetic=False)
 
     weighting = "beta_shapley_1_6"       
 
     estimators = {
         "KernelProbC": ESTIMATOR_FACTORY["KernelProbC"](model, baseline, weighting=weighting, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True),
         #"KernelSHAP": ESTIMATOR_FACTORY["KernelSHAP"](model, baseline, weighting=weighting),
-        #"PermutationSHAP": ESTIMATOR_FACTORY["PermutationSHAP"](model, baseline, weighting=weighting)
-        'OFA S' : ESTIMATOR_FACTORY["OFA"](model, baseline, weighting=weighting, mode='S'),
+        #"PermutationSHAP": ESTIMATOR_FACTORY["PermutationSHAP"](model, baseline, weighting=weighting),
+        #"OFA S" : ESTIMATOR_FACTORY["OFA"](model, baseline, weighting=weighting, mode='S'),
+        "Universal": ESTIMATOR_FACTORY["Universal"](model, baseline, prob_weight=weighting, pair_sampling=False, with_replace=False,constrain_reg=True)
     }
 
     true_values = tree_prob(baseline, explicands, model, weighting)

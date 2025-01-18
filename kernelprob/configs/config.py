@@ -4,6 +4,7 @@ import yaml
 
 from ..estimators.kpc import KernelProbCEstimator
 from ..estimators.kpu import KernelProbUEstimator
+from ..estimators.reg import UniversalRegression
 
 from ..estimators.ofa import OFAEstimator
 from ..estimators.wsl import WSLEstimator
@@ -25,8 +26,9 @@ ESTIMATOR_FACTORY = {
     "TreeProb": TreeProbExplainer,
     "Enumeration": EnumerationExplainer, # For random p distribution
     # estimators
-    "KernelProbC": KernelProbCEstimator,
-    "KernelProbU": KernelProbUEstimator,
+    "Universal" : UniversalRegression,
+#    "KernelProbC": KernelProbCEstimator,
+#    "KernelProbU": KernelProbUEstimator,
     "OFA": OFAEstimator, # OFA is the general version of MSR
     "WSL": WSLEstimator, # WSL is the general version of MC
     # ARM has "worst" performance in OFA so we exclude it
@@ -58,7 +60,7 @@ VARIABLES = {
     # "bn": TODO
 }
 
-NUM_RUNS = 50
+NUM_RUNS = 5
 
 def generate_experiment_configs() -> List[Dict[str, Any]]:
     """
@@ -91,15 +93,13 @@ def generate_experiment_configs() -> List[Dict[str, Any]]:
                 })
         elif "paired_sampling" in params:
             paired_sampling = params.get("paired_sampling", [])
-            leverage_sampling = params.get("leverage_sampling", [])
             bernoulli_sampling = params.get("bernoulli_sampling", [])
-            for weighting, paired, leverage, bernoulli in itertools.product(applicable_weightings, paired_sampling, leverage_sampling, bernoulli_sampling):
+            for weighting, paired, bernoulli in itertools.product(applicable_weightings, paired_sampling, bernoulli_sampling):
                 experiments.append({
-                    "name": f"{estimator_name}_{weighting}_paired-{paired}_leverage-{leverage}_bernoulli-{bernoulli}",
+                    "name": f"{estimator_name}_{weighting}_paired-{paired}_bernoulli-{bernoulli}",
                     "estimator_class": estimator_name,
                     "weighting": weighting,
                     "paired_sampling": paired,
-                    "leverage_sampling": leverage,
                     "bernoulli_sampling": bernoulli,
                 })
         else:
