@@ -174,8 +174,8 @@ class UniversalRegression(BaseEstimator):
             max_samples -= 2 # Two for v0, v1
         m = min(self.num_samples, max_samples) # Maximum number of samples is 2^n -2
         # Find C with binary search
-        L = 1 / 10**self.n
-        R = 10 ** self.n
+        L = 1 / 100**self.n
+        R = 100 ** self.n
         binoms = scipy.special.binom(self.n, self.valid_sizes)
         expected = (binoms@self.prob).sum()
         while round(expected) != m:
