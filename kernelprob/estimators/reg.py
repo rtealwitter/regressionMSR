@@ -18,7 +18,7 @@ class UniversalRegression(BaseEstimator):
         self,
         model,
         baseline,
-        prob_weight,
+        weighting,
         pair_sampling=True, 
         with_replace=False,
         constrain_reg=True,
@@ -33,9 +33,9 @@ class UniversalRegression(BaseEstimator):
         constrain_reg:
             Whether to solve the constrained regression problem.
         """
-        super().__init__(model, baseline, prob_weight)
+        super().__init__(model, baseline, weighting)
         self.n = self.baseline.shape[1] # Number of features
-        self.p = get_p(self.n, prob_weight)
+        self.p = get_p(self.n, weighting)
         self.model = model
         self.baseline = baseline
         self.gen = np.random.Generator(np.random.PCG64())

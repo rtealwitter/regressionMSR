@@ -256,7 +256,6 @@ class TreeProbExplainer:
         n_samples, n_features = explicand.shape
         phi = np.zeros((n_samples, n_features), dtype=np.float64)
 
-        # For each sample in X
         for i in range(n_samples):
             # Accumulate across all trees
             row_phi = np.zeros(n_features, dtype=np.float64)

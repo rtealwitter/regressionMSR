@@ -5,22 +5,22 @@ weightings:
     - banzhaf
   beta_shapley:
     - beta_shapley_1_16
-  #  - beta_shapley_1_4
-  #  - beta_shapley_1_1 # Same as Shapley
-  #  - beta_shapley_4_1
-  #  - beta_shapley_16_1
-  #weighted_banzhaf:
-  #  - weighted_banzhaf_0.1
-  #  - weighted_banzhaf_0.3
-  #  - weighted_banzhaf_0.5 # Same as Banzhaf
-  #  - weighted_banzhaf_0.7
-  #  - weighted_banzhaf_0.9
-  #random:
-  #  - random_42
-  #  - random_27
-  #  - random_91
-  #  - random_58
-  #  - random_16
+    - beta_shapley_1_4
+    # - beta_shapley_1_1 # Same as Shapley
+    - beta_shapley_4_1
+    - beta_shapley_16_1
+  weighted_banzhaf:
+    - weighted_banzhaf_0.1
+    - weighted_banzhaf_0.3
+    # - weighted_banzhaf_0.5 # Same as Banzhaf
+    - weighted_banzhaf_0.7
+    - weighted_banzhaf_0.9
+  random:
+    - random_42
+    - random_27
+    - random_91
+    - random_58
+    - random_16
 
 estimators:
   UniversalConstrained:
@@ -29,9 +29,10 @@ estimators:
       - banzhaf
       - beta_shapley
       - weighted_banzhaf
-      - random
+      # - random
     paired_sampling:
       - True
+      - False
     bernoulli_sampling:
       - True
 
@@ -41,51 +42,52 @@ estimators:
       - banzhaf
       - beta_shapley
       - weighted_banzhaf
-      - random
+      # - random
     paired_sampling:
       - True
+      - False
     bernoulli_sampling:
       - True
 
-  # OFA:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
-  #     - beta_shapley
-  #     - weighted_banzhaf
-  #     - random
-  #   modes:
-  #     - A
-  #     - S
+  OFA:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
+      # - random
+    modes:
+      - A
+      - S
 
-  # WSL:
-  #   weightings:
-  #     - shapley
-  #     - banzhaf
-  #     - beta_shapley
-  #     - weighted_banzhaf
+  WSL:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - weighted_banzhaf
 
-  # LeverageSHAP:
-  #   weightings:
-  #     - shapley
-  #   paired_sampling:
-  #     - True
-  #     - False
-  #   bernoulli_sampling:
-  #     - True
-  #     - False
+  LeverageSHAP:
+    weightings:
+      - shapley
+    paired_sampling:
+      - True
+      # - False
+    bernoulli_sampling:
+      - True
+      # - False
 
-  # KernelSHAP:
-  #   weightings:
-  #     - shapley
+  KernelSHAP:
+    weightings:
+      - shapley
    
-  # PermutationSHAP:
-  #   weightings:
-  #     - shapley
+  PermutationSHAP:
+    weightings:
+      - shapley
 
-  # KernelBanzhaf:
-  #   weightings:
-  #     - banzhaf
+  KernelBanzhaf:
+    weightings:
+      - banzhaf
 
   MSR:
     weightings:

@@ -2,8 +2,8 @@ from typing import Any, Dict, List
 import itertools
 import yaml
 
-from ..estimators.kpc import KernelProbCEstimator
-from ..estimators.kpu import KernelProbUEstimator
+# from ..estimators.kpc import KernelProbCEstimator
+# from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalRegression
 
 from ..estimators.ofa import OFAEstimator
@@ -60,7 +60,7 @@ VARIABLES = {
     # "bn": TODO
 }
 
-NUM_RUNS = 5
+NUM_RUNS = 30
 
 def generate_experiment_configs() -> List[Dict[str, Any]]:
     """

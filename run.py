@@ -27,7 +27,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
         logging.error(f"Weighting not specified for '{experiment_name}'. Skipping.")
 
     if "random" in weighting:
-        print("Using enumeration for random p distribution.")
+        logging.info("Using enumeration for random p distribution.")
         true_values = enumeration_prob(baseline, explicands, model, weighting)
     # TODO: remove if treeprob is good enough :)
     elif weighting == "shapley":
@@ -71,7 +71,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                 estimator = ESTIMATOR_FACTORY['Universal'](
                     model=noised_model,
                     baseline=baseline,
-                    prob_weight=weighting,
+                    weighting=weighting,
                     pair_sampling= exp_cfg.get("paired_sampling", True),
                     with_replace = not exp_cfg.get("bernoulli_sampling", True),
                     constrain_reg = 'Unconstrained' not in estimator_class_name
@@ -110,27 +110,29 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
 
 
 def run_debug():
-    dataset = load_dataset("California")
+    dataset = load_dataset("Adult")
     X, y = dataset
     n = X.shape[1]
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
     model.fit(X, y)
-    baseline, explicands = load_input(X, num_runs=10, is_synthetic=False)
+    baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
 
-    weighting = "beta_shapley_1_6"       
+    # weighting = "beta_shapley_1_16"   
+    weighting = "shapley"    
 
     estimators = {
-        "KernelProbC": ESTIMATOR_FACTORY["KernelProbC"](model, baseline, weighting=weighting, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True),
+        # "KernelProbC": ESTIMATOR_FACTORY["KernelProbC"](model, baseline, weighting=weighting, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True),
         #"KernelSHAP": ESTIMATOR_FACTORY["KernelSHAP"](model, baseline, weighting=weighting),
         #"PermutationSHAP": ESTIMATOR_FACTORY["PermutationSHAP"](model, baseline, weighting=weighting),
         #"OFA S" : ESTIMATOR_FACTORY["OFA"](model, baseline, weighting=weighting, mode='S'),
-        "Universal": ESTIMATOR_FACTORY["Universal"](model, baseline, prob_weight=weighting, pair_sampling=False, with_replace=False,constrain_reg=True)
+        # "Universal": ESTIMATOR_FACTORY["Universal"](model, baseline, weighting=weighting, pair_sampling=False, with_replace=False,constrain_reg=True)
+        "WSL": ESTIMATOR_FACTORY["WSL"](model, baseline, weighting=weighting)
     }
 
     true_values = tree_prob(baseline, explicands, model, weighting)
-    print(f"True values: {true_values}")
+    # print(f"True values: {true_values}")
 
-    for sample_size in [5, 10]:
+    for sample_size in [6, 10, 20]:
         for idx, explicand in enumerate(explicands):
             results = {}
             for estimator_name, estimator in estimators.items():
@@ -187,7 +189,7 @@ def main():
         model.fit(X, y)
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
         for exp_cfg in experiments:
-            print(f"Running experiment: {exp_cfg['name']} on {dataset}")
+            logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
             run_experiment(exp_cfg, baseline, explicands, model, variable, dataset)
         exit()
 
