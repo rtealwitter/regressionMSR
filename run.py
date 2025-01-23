@@ -89,13 +89,10 @@ def run_debug():
     # weighting = "beta_shapley_1_16"   
     weighting = "shapley"    
 
+    estimator_names = ["OFA_S", "OFA_A"]
+
     estimators = {
-        # "KernelProbC": ESTIMATOR_FACTORY["KernelProbC"](model, baseline, weighting=weighting, paired_sampling=True, leverage_sampling=True, bernoulli_sampling=True),
-        #"KernelSHAP": ESTIMATOR_FACTORY["KernelSHAP"](model, baseline, weighting=weighting),
-        #"PermutationSHAP": ESTIMATOR_FACTORY["PermutationSHAP"](model, baseline, weighting=weighting),
-        #"OFA S" : ESTIMATOR_FACTORY["OFA"](model, baseline, weighting=weighting, mode='S'),
-        # "Universal": ESTIMATOR_FACTORY["Universal"](model, baseline, weighting=weighting, pair_sampling=False, with_replace=False,constrain_reg=True)
-        "WSL": ESTIMATOR_FACTORY["WSL"](model, baseline, weighting=weighting)
+        name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
     }
 
     true_values = tree_prob(baseline, explicands, model, weighting)
@@ -109,6 +106,7 @@ def run_debug():
             
             for estimator_name, result in results.items():
                 print(f"Estimator: {estimator_name} \t Error: {((np.sum(result) - np.sum(true_values[idx])) ** 2).mean()}")
+                print(f"Estimate: {result}")
     
 def parse_args():
     parser = argparse.ArgumentParser(description="Run experiments.")
