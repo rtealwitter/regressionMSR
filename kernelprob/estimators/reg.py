@@ -243,4 +243,19 @@ class UniversalRegression(BaseEstimator):
 
         self.phi = PZSSZP_inv_PZSSb 
         self.phi += sum_phi / self.n
-    
+
+class UniversalConstrainedPair(UniversalRegression):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(model, baseline, weighting, pair_sampling=True, with_replace=False, constrain_reg=True)
+
+class UniversalConstrained(UniversalRegression):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(model, baseline, weighting, pair_sampling=False, with_replace=False, constrain_reg=True)
+
+class UniversalUnconstrainedPair(UniversalRegression):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(model, baseline, weighting, pair_sampling=True, with_replace=False, constrain_reg=False)
+
+class UniversalUnconstrained(UniversalRegression):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(model, baseline, weighting, pair_sampling=False, with_replace=False, constrain_reg=False)

@@ -4,9 +4,9 @@ import yaml
 
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
-from ..estimators.reg import UniversalRegression
+from ..estimators.reg import UniversalConstrained, UniversalConstrainedPair, UniversalUnconstrained, UniversalUnconstrainedPair
 
-from ..estimators.ofa import OFAEstimator
+from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
 
 from ..estimators.lshap import LeverageSHAPEstimator
@@ -21,28 +21,38 @@ from ..exact.enumeration import EnumerationExplainer
 
 config_path = "kernelprob/configs/estimators.yaml"
 
-ESTIMATOR_FACTORY = {
-    # ground truth
+ESTIMATOR_TRUE = {
     "TreeProb": TreeProbExplainer,
-    "Enumeration": EnumerationExplainer, # For random p distribution
-    # estimators
-    "Universal" : UniversalRegression,
-#    "KernelProbC": KernelProbCEstimator,
-#    "KernelProbU": KernelProbUEstimator,
-    "OFA": OFAEstimator, # OFA is the general version of MSR
-    "WSL": WSLEstimator, # WSL is the general version of MC
-    # ARM has "worst" performance in OFA so we exclude it
-    # standard only
+    "Enumeration": EnumerationExplainer,
+}
+
+ESTIMATOR_ALL = {
+    "UniversalConstrained": UniversalConstrained,
+    "UniversalConstrainedPair": UniversalConstrainedPair,
+    "UniversalUnconstrained": UniversalUnconstrained,
+    "UniversalUnconstrainedPair": UniversalUnconstrainedPair,
+    "OFA_S": OFA_S,
+    "OFA_A": OFA_A,
+    "WSL": WSLEstimator,
+}
+
+ESTIMATOR_SHAPLEY = {
     "LeverageSHAP": LeverageSHAPEstimator,
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,
-    "KernelBanzhaf": KernelBanzhafEstimator,
-    "MSR": MSREstimator,
-    "MonteCarlo": MonteCarloEstimator, 
 }
 
+ESTIMATOR_BANZHAF = {
+    #"KernelBanzhaf": KernelBanzhafEstimator,
+    "MSR": MSREstimator,
+    "MonteCarlo": MonteCarloEstimator,
+}
+
+# Combine all estimator dictionaries
+ESTIMATOR_FACTORY = {**ESTIMATOR_ALL, **ESTIMATOR_SHAPLEY, **ESTIMATOR_BANZHAF}
+
 DATASETS = {
-    "small_n": ['California', 'Adult', 'Breast Cancer'],
+    "small_n": ['California', 'Adult'],
     "big_n": ['Correlated', 'Independent', 'NHANES', 'Communities']
 }
 
@@ -60,7 +70,7 @@ VARIABLES = {
     # "bn": TODO
 }
 
-NUM_RUNS = 30
+NUM_RUNS = 5
 
 def generate_experiment_configs() -> List[Dict[str, Any]]:
     """
@@ -81,34 +91,12 @@ def generate_experiment_configs() -> List[Dict[str, Any]]:
             category_weightings = weightings_config.get(category, [])
             applicable_weightings.extend(category_weightings)
 
-        if "modes" in params: # OFAEstimator
-            modes = params.get("modes", [])
-            # Create Cartesian product for OFAEstimator
-            for weighting, mode in itertools.product(applicable_weightings, modes):
-                experiments.append({
-                    "name": f"{estimator_name}_{mode}_{weighting}",
-                    "estimator_class": estimator_name,
-                    "weighting": weighting,
-                    "mode": mode,
-                })
-        elif "paired_sampling" in params:
-            paired_sampling = params.get("paired_sampling", [])
-            bernoulli_sampling = params.get("bernoulli_sampling", [])
-            for weighting, paired, bernoulli in itertools.product(applicable_weightings, paired_sampling, bernoulli_sampling):
-                experiments.append({
-                    "name": f"{estimator_name}_{weighting}_paired-{paired}_bernoulli-{bernoulli}",
-                    "estimator_class": estimator_name,
-                    "weighting": weighting,
-                    "paired_sampling": paired,
-                    "bernoulli_sampling": bernoulli,
-                })
-        else:
-            for weighting in applicable_weightings:
-                experiments.append({
-                    "name": f"{estimator_name}_{weighting}",
-                    "estimator_class": estimator_name,
-                    "weighting": weighting,
-                })
+        for weighting in applicable_weightings:
+            experiments.append({
+                "name": f"{estimator_name}_{weighting}",
+                "estimator_class": estimator_name,
+                "weighting": weighting,
+            })
 
     return experiments
 

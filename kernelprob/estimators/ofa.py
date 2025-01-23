@@ -154,3 +154,21 @@ class OFAEstimator(BaseEstimator):
 
         phi = tmp_val
         return phi
+
+class OFA_S(OFAEstimator):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(
+            model=model,
+            baseline=baseline,
+            weighting=weighting,
+            mode="S"
+        )
+
+class OFA_A(OFAEstimator):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(
+            model=model,
+            baseline=baseline,
+            weighting=weighting,
+            mode="A"
+        )

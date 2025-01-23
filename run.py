@@ -14,10 +14,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     n = baseline.shape[1]
     estimator_class_name = exp_cfg["estimator_class"]
     experiment_name = exp_cfg["name"]
-    if "Universal" in estimator_class_name:
-        estimator_cls = ESTIMATOR_FACTORY["Universal"]
-    else:
-        estimator_cls = ESTIMATOR_FACTORY[estimator_class_name]
+    estimator_cls = ESTIMATOR_FACTORY[estimator_class_name]
     if estimator_cls is None:
         logging.error(f"Estimator class '{estimator_class_name}' not found. Skipping.")
         return
@@ -49,39 +46,11 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     for noise_std in VARIABLES[variable]["noise_std"]:
         noised_model = NoisyModel(model, noise_std)
         try:
-            if estimator_class_name == "OFA":
-                mode = exp_cfg.get("mode", "A")
-                estimator = estimator_cls(
-                    model=noised_model,
-                    baseline=baseline,
-                    weighting=weighting,
-                    mode=mode
-                )
-            elif estimator_class_name in ["LeverageSHAP"]:
-                paired_sampling = exp_cfg.get("paired_sampling", True)
-                bernoulli_sampling = exp_cfg.get("bernoulli_sampling", True)
-                estimator = estimator_cls(
-                    model=noised_model,
-                    baseline=baseline,
-                    weighting=weighting,
-                    paired_sampling=paired_sampling,
-                    bernoulli_sampling=bernoulli_sampling
-                )
-            elif 'Universal' in estimator_class_name:
-                estimator = ESTIMATOR_FACTORY['Universal'](
-                    model=noised_model,
-                    baseline=baseline,
-                    weighting=weighting,
-                    pair_sampling= exp_cfg.get("paired_sampling", True),
-                    with_replace = not exp_cfg.get("bernoulli_sampling", True),
-                    constrain_reg = 'Unconstrained' not in estimator_class_name
-                )
-            else:
-                estimator = estimator_cls(
-                    model=noised_model,
-                    baseline=baseline,
-                    weighting=weighting
-                )
+            estimator = estimator_cls(
+                model=noised_model,
+                baseline=baseline,
+                weighting=weighting
+            )
         except Exception as e:
             logging.error(f"Error instantiating '{estimator_class_name}': {e}. Skipping.")
             return
@@ -180,6 +149,7 @@ def main():
     if not os.path.exists("output"):
         os.makedirs("output")
     experiments = generate_experiment_configs()
+    print(experiments)
     datasets = DATASETS["small_n"] + DATASETS["big_n"]
 
     for dataset in datasets:
@@ -191,7 +161,6 @@ def main():
         for exp_cfg in experiments:
             logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
             run_experiment(exp_cfg, baseline, explicands, model, variable, dataset)
-        exit()
 
 if __name__ == "__main__":
     main()
