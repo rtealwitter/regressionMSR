@@ -71,8 +71,8 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                         'difference': noised_model.get_sample_count() - actual_sample_size,
                         'noise': noise_std,
                         'n' : n,
-                        'error' : np.sum((predicted - true_values[idx]) ** 2) / np.sum(true_values[idx] ** 2),
-                        'sum_error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2 / np.sum(true_values[idx])**2,
+                        'error' : np.sum((predicted - true_values[idx]) ** 2),# / np.sum(true_values[idx] ** 2),
+                        'sum_error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2,# / np.sum(true_values[idx])**2,
                     }
                     f.write(str(dict) + '\n')
                 noised_model.reset_sample_count()
