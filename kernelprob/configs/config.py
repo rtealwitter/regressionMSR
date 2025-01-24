@@ -59,6 +59,10 @@ DATASETS = {
 }
 
 VARIABLES = {
+    "basic" : {
+        "sample_size": [10],
+        "noise_std": [0],
+    },
     "sample_size":
         {
             "sample_size": [6, 10, 20, 40, 80, 160],
@@ -67,9 +71,8 @@ VARIABLES = {
     "noise_std":
         {
             "sample_size": [10],
-            "noise_std": [0, .5 * 1e-3, 1e-3, .5 * 1e-2, 1e-2, .5 * 1e-1, 1e-1, .5, 1]
+            "noise_std": [.5 * 1e-3, 1e-3, .5 * 1e-2, 1e-2, .5 * 1e-1, 1e-1, .5, 1]
         }
-    # "bn": TODO
 }
 
 NUM_RUNS = 10

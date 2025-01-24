@@ -113,8 +113,8 @@ def parse_args():
     parser.add_argument(
        "--variable",
         type=str,
-        default="sample_size",
-        help="sample_size, noise, or bn"
+        default="basic",
+        help="basic, sample_size, or noise"
     )
     parser.add_argument(
         "--debug",
