@@ -6,7 +6,7 @@ import yaml
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalConstrainedPair, UniversalUnconstrained, UniversalUnconstrainedPair
 
-from ..estimators.ofa import OFA_S, OFA_A
+from ..estimators.ofa import OFA_S, OFA_A, OFA_A_Optimized, OFA_S_Optimized
 from ..estimators.wsl import WSLEstimator
 
 from ..estimators.lshap import LeverageSHAPEstimator
@@ -34,6 +34,8 @@ ESTIMATOR_ALL = {
     "OFA_S": OFA_S,
     "OFA_A": OFA_A,
     "WSL": WSLEstimator,
+    "OFA_S_Optimized": OFA_S_Optimized,
+    "OFA_A_Optimized": OFA_A_Optimized,
 }
 
 ESTIMATOR_SHAPLEY = {

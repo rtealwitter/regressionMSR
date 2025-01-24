@@ -29,6 +29,22 @@ weightings:
 #    - random_16
 
 estimators:
+  OFA_S_Optimized:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+
+  OFA_A_Optimized:
+    weightings:
+      - shapley
+      # - banzhaf # This is MSR
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+
   UniversalConstrained: # For not symmetric values
     weightings:
       - beta_shapley
@@ -50,22 +66,6 @@ estimators:
       - banzhaf
       - shapley
       - beta_shapley_sym
-
-  OFA_S:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  OFA_A:
-    weightings:
-      - shapley
-      # - banzhaf # This is MSR
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
 
   WSL:
     weightings:

@@ -89,7 +89,7 @@ def run_debug():
     # weighting = "beta_shapley_1_16"   
     weighting = "shapley"    
 
-    estimator_names = ["OFA_S", "OFA_A"]
+    estimator_names = [ "OFA_S_Optimized", "OFA_A_Optimized", 'OFA_S', 'OFA_A']
 
     estimators = {
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
