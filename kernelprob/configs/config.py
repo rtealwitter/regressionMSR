@@ -26,16 +26,16 @@ ESTIMATOR_TRUE = {
     "Enumeration": EnumerationExplainer,
 }
 
-ESTIMATOR_ALL = {
-    "UniversalConstrained": UniversalConstrained,
+ESTIMATOR_ALL = { # Important that supersets of other estimators are included first
     "UniversalConstrainedPair": UniversalConstrainedPair,
-    "UniversalUnconstrained": UniversalUnconstrained,
+    "UniversalConstrained": UniversalConstrained,
     "UniversalUnconstrainedPair": UniversalUnconstrainedPair,
+    "UniversalUnconstrained": UniversalUnconstrained,
+    "OFA_S_Optimized": OFA_S_Optimized,
     "OFA_S": OFA_S,
+    "OFA_A_Optimized": OFA_A_Optimized,
     "OFA_A": OFA_A,
     "WSL": WSLEstimator,
-    "OFA_S_Optimized": OFA_S_Optimized,
-    "OFA_A_Optimized": OFA_A_Optimized,
 }
 
 ESTIMATOR_SHAPLEY = {
