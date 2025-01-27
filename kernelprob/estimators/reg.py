@@ -44,8 +44,9 @@ class UniversalRegression(BaseEstimator):
         self.with_replace = with_replace
         self.constrain_reg = constrain_reg
     
-    def explain(self, explicand, num_samples):
+    def explain(self, explicand, num_samples, true_sum=None):
         self.explicand = explicand
+        self.true_sum = true_sum
 
         self.select_samples = self.sample_with_replacement if self.with_replace else self.sample_without_replacement
 
@@ -229,6 +230,9 @@ class UniversalRegression(BaseEstimator):
         sum_weighting = -self.p[sizes] * (self.n - sizes) + self.p[sizes-1] * sizes
         sum_phi = prob_sampled * sum_weighting @ Sv
         sum_phi = sum_phi + (v1-v0)*self.p[-1]*self.n
+
+        if self.true_sum is not None:
+            sum_phi = self.true_sum
         
         Sb = Sv - sizes * sum_phi / self.n
 

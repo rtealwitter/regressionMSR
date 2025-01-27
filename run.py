@@ -79,17 +79,16 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
 
 
 def run_debug():
-    dataset = load_dataset("Adult")
+    dataset = load_dataset("NHANES")
     X, y = dataset
     n = X.shape[1]
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
 
-    # weighting = "beta_shapley_1_16"   
-    weighting = "shapley"    
+    weighting = "beta_shapley_1_16"   
 
-    estimator_names = [ "OFA_S_Optimized", "OFA_A_Optimized", 'OFA_S', 'OFA_A']
+    estimator_names = ["WSL", "UniversalConstrained"]
 
     estimators = {
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
@@ -102,11 +101,15 @@ def run_debug():
         for idx, explicand in enumerate(explicands):
             results = {}
             for estimator_name, estimator in estimators.items():
-                results[estimator_name] = estimator.explain(explicand, sample_size * n)
+                if estimator_name == "UniversalConstrained":
+                    results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=np.sum(true_values[idx]))
+                else:
+                    results[estimator_name] = estimator.explain(explicand, sample_size * n)
             
             for estimator_name, result in results.items():
                 print(f"Estimator: {estimator_name} \t Error: {((np.sum(result) - np.sum(true_values[idx])) ** 2).mean()}")
                 print(f"Estimate: {result}")
+                print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
     
 def parse_args():
     parser = argparse.ArgumentParser(description="Run experiments.")
