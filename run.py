@@ -87,6 +87,8 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
 
     weighting = "beta_shapley_1_16"   
+    #weighting = "shapley"
+    weighting = "beta_shapley_2_2"
 
     estimator_names = ["WSL", "UniversalConstrained"]
 
@@ -102,13 +104,15 @@ def run_debug():
             results = {}
             for estimator_name, estimator in estimators.items():
                 if estimator_name == "UniversalConstrained":
-                    results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=np.sum(true_values[idx]))
+                    results[estimator_name] = estimator.explain(explicand, sample_size * n)#, true_sum=np.sum(true_values[idx]))
+                    #results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=estimated_sum)
                 else:
                     results[estimator_name] = estimator.explain(explicand, sample_size * n)
+                estimated_sum = np.sum(results[estimator_name])
             
             for estimator_name, result in results.items():
-                print(f"Estimator: {estimator_name} \t Error: {((np.sum(result) - np.sum(true_values[idx])) ** 2).mean()}")
-                print(f"Estimate: {result}")
+                print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).mean()}")
+                #print(f"Estimate: {result}")
                 print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
     
 def parse_args():

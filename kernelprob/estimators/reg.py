@@ -234,7 +234,7 @@ class UniversalRegression(BaseEstimator):
         if self.true_sum is not None:
             sum_phi = self.true_sum
         
-        Sb = Sv - sizes * sum_phi / self.n
+        Sb = Sv# - sizes * sum_phi / self.n
 
         # Projection matrix
         P = np.eye(self.n) - 1/self.n * np.ones((self.n, self.n))
