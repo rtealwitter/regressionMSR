@@ -13,6 +13,47 @@ from .est_utils import combination_generator
 # Sampling without replacement and sampling with replacement
 # Constrained regression problem and unconstrained regression problem
 
+def compute_weight_norm(w, p):
+    # Normalize the weights
+    n = len(p)
+    c_sq = 0
+    for ell in range(n):
+        c_sq += scipy.special.binom(n-1, ell) * p[ell] ** 2 * (1 / w[ell] ** 2 + 1/w[ell+1] ** 2)
+    return np.sqrt(c_sq)
+
+def compute_weights(w1, p):
+    n = len(p)
+    w = np.zeros(n+1)
+    w[0] = 1
+    w[1] = w1
+    # Solve for the rest of the weights
+    for ell in range(1, n):
+        numerator = p[ell]**2 * w[ell]**2 * w[ell-1]**2
+        denominator1 = 2 * p[ell] * p[ell-1] * w[ell-1]**2
+        denominator2 = -1*p[ell-1]**2 * w[ell]**2
+        w_sq = numerator / (denominator1 + denominator2)
+        if w_sq < 0: return np.full(n+1, np.nan)
+        w[ell+1] = np.sqrt(w_sq)
+
+    c = compute_weight_norm(w, p)
+    # Check if c is nan
+    if not np.isnan(c):
+        assert np.allclose(compute_weight_norm(w*c, p), 1)
+    return w*c
+
+def find_w1(p, start=10e-10, stop=10e10, num=1000):
+    # all possible values of w1 
+    valid_w1s = []
+    sums = []
+    for w1 in np.geomspace(start, stop, num):
+        w = compute_weights(w1, p)
+        if np.isnan(w).any(): continue
+        valid_w1s.append(w1)
+        sums.append(np.sum(w)) 
+    # find the w1 so that the log_sum is closest to 0
+    closest_idx = np.argmin(np.abs(np.log10(np.array(sums))))
+    return valid_w1s[closest_idx]
+
 class UniversalRegression(BaseEstimator):
     def __init__(
         self,
@@ -60,8 +101,8 @@ class UniversalRegression(BaseEstimator):
         else:            
             self.num_samples = num_samples//2 * 2
             self.load_unconstrained()
-            # Add dimension to p for faster operations
-            self.p = np.append(self.p, -1e10)
+            ## Add dimension to p for faster operations
+            #self.p = np.append(self.p, -1e10)
 
             self.select_samples()
             self.compute_unconstrained()
@@ -71,29 +112,40 @@ class UniversalRegression(BaseEstimator):
     def load_unconstrained(self):
         self.valid_sizes = np.array(list(range(self.n+1)))
 
-        sum1, sum2 = 0, 0
-        for ell in range(self.n):
-            sum1 += scipy.special.binom(self.n-1, ell) * self.p[ell]**2
-            if ell >= 1:
-                sum2 += scipy.special.binom(self.n-2, ell-1) * (self.p[ell]-self.p[ell-1])**2
-        self.an = 2*sum1 - sum2
-        self.bn = sum2 / self.an
-    
+        w1 = find_w1(self.p)
+        self.w = compute_weights(w1, self.p)
+
         def leverage_score(s):
-            first_term = 0 # |S| p_{|S|-1}^2 + (n-|S|) p_{|S|}^2
-            second_term = 0 # |S| p_{|S|-1} - (n-|S|) p_{|S|}
-            first_term += (s > 0) * s * self.p[s-1]**2
-            second_term += (s > 0) * s * self.p[s-1]
-            first_term += (s < self.n) * (self.n - s) * self.p[s]**2
-            second_term -= (s < self.n) * (self.n - s) * self.p[s]
-            #if s > 0:
-            #    first_term += s * self.p[s-1]**2
-            #    second_term += s * self.p[s-1]
-            #if s < self.n:
-            #    first_term += (self.n - s) * self.p[s]**2
-            #    second_term -= (self.n - s) * self.p[s]
-            # (first_term - bn / (1+n * bn) * second_term^2) / a_n
-            return (first_term - self.bn / (1+self.n * self.bn) * second_term**2) / self.an
+            p_ext = np.append(self.p, 0)
+            lev = 0
+            lev += (s > 0) * s * p_ext[s-1]**2
+            lev += (s < self.n) * (self.n - s) * p_ext[s]**2
+            lev /= self.w[s] ** 2
+            return lev
+
+#        sum1, sum2 = 0, 0
+#        for ell in range(self.n):
+#            sum1 += scipy.special.binom(self.n-1, ell) * self.p[ell]**2
+#            if ell >= 1:
+#                sum2 += scipy.special.binom(self.n-2, ell-1) * (self.p[ell]-self.p[ell-1])**2
+#        self.an = 2*sum1 - sum2
+#        self.bn = sum2 / self.an
+#    
+#        def leverage_score(s):
+#            first_term = 0 # |S| p_{|S|-1}^2 + (n-|S|) p_{|S|}^2
+#            second_term = 0 # |S| p_{|S|-1} - (n-|S|) p_{|S|}
+#            first_term += (s > 0) * s * self.p[s-1]**2
+#            second_term += (s > 0) * s * self.p[s-1]
+#            first_term += (s < self.n) * (self.n - s) * self.p[s]**2
+#            second_term -= (s < self.n) * (self.n - s) * self.p[s]
+#            #if s > 0:
+#            #    first_term += s * self.p[s-1]**2
+#            #    second_term += s * self.p[s-1]
+#            #if s < self.n:
+#            #    first_term += (self.n - s) * self.p[s]**2
+#            #    second_term -= (self.n - s) * self.p[s]
+#            # (first_term - bn / (1+n * bn) * second_term^2) / a_n
+#            return (first_term - self.bn / (1+self.n * self.bn) * second_term**2) / self.an
 
         self.leverage_score = lambda s : np.array([leverage_score(val) for val in s])
 
@@ -191,24 +243,20 @@ class UniversalRegression(BaseEstimator):
         # xt = (A^T S^T W S A)^-1 A^T S^T W S v
         # phit = (1+bn 1 1^T) xt
         sizes = np.sum(self.sampled, axis=1).astype(int)
+        p_ext = np.append(self.p, np.inf)
         
-        # Build A_tilde so A_tilde[S,i] = p[|S|-1] if i in S else -p[|S|]
-        A_tilde = self.p[sizes-1][:,None] * self.sampled - self.p[sizes][:,None] * (1-self.sampled)
-        A_tilde /= self.an
+        # Build A_tilde so A_tilde[S,i] = p[|S|-1]/w[|S|] if i in S else -p[|S|]/w[|S|]
+        A_tilde = p_ext[sizes-1][:,None] * self.sampled - p_ext[sizes][:,None] * (1-self.sampled)
+        A_tilde /= self.w[sizes][:,None]
 
         inputs = self.baseline * (1 - self.sampled) + self.explicand * self.sampled
-        Sv = self.model.predict(inputs)
+        Sv = self.model.predict(inputs) * self.w[sizes]
 
         reg_weighting = 1/self.get_probs(sizes)
 
         ASSv = A_tilde.T @ np.diag(reg_weighting) @ Sv
         ASSA = A_tilde.T @ np.diag(reg_weighting) @ A_tilde
-        x_star = np.linalg.lstsq(ASSA, ASSv, rcond=None)[0]
-
-        ATA = np.eye(self.n) + self.bn * np.ones((self.n, self.n))
-
-        self.phi = ATA @ x_star
-
+        self.phi = np.linalg.lstsq(ASSA, ASSv, rcond=None)[0]
 
     def compute_constrained(self):
         # A = Z P

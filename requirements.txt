@@ -6,3 +6,4 @@ tabulate
 networkx
 scipy
 PyYAML
+seaborn
