@@ -88,9 +88,9 @@ def run_debug():
 
     weighting = "beta_shapley_1_16"   
     #weighting = "shapley"
-    weighting = "beta_shapley_2_2"
+    weighting = "beta_shapley_1_16"
 
-    estimator_names = ["WSL", "UniversalConstrained"]
+    estimator_names = ["WSL", "UniversalConstrained", "UniversalConstrainedPair", "UniversalUnconstrained", "UniversalUnconstrainedPair"]
 
     estimators = {
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
@@ -103,15 +103,14 @@ def run_debug():
         for idx, explicand in enumerate(explicands):
             results = {}
             for estimator_name, estimator in estimators.items():
-                if estimator_name == "UniversalConstrained":
-                    results[estimator_name] = estimator.explain(explicand, sample_size * n)#, true_sum=np.sum(true_values[idx]))
-                    #results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=estimated_sum)
-                else:
-                    results[estimator_name] = estimator.explain(explicand, sample_size * n)
-                estimated_sum = np.sum(results[estimator_name])
+                #if estimator_name == "UniversalConstrained":
+                #    results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=np.sum(true_values[idx]))
+                #    #results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=estimated_sum)
+                #else:
+                results[estimator_name] = estimator.explain(explicand, sample_size * n)
             
             for estimator_name, result in results.items():
-                print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).mean()}")
+                print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).sum()/ (true_values[idx] ** 2).sum()}")
                 #print(f"Estimate: {result}")
                 print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
     

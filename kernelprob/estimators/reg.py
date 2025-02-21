@@ -95,6 +95,7 @@ class UniversalRegression(BaseEstimator):
             self.num_samples = (num_samples -2 ) // 2 * 2 # Two used for v1,v0
             self.valid_sizes = np.array(list(range(1, self.n)))
             self.leverage_score = lambda s : (self.p[s] + self.p[s-1]) * s * (self.n - s)
+#            self.leverage_score = lambda s : np.ones_like(s)
 
             self.select_samples()
             self.compute_constrained()
@@ -122,6 +123,8 @@ class UniversalRegression(BaseEstimator):
             lev += (s < self.n) * (self.n - s) * p_ext[s]**2
             lev /= self.w[s] ** 2
             return lev
+        
+#        leverage_score = lambda s : np.ones_like(s)
 
 #        sum1, sum2 = 0, 0
 #        for ell in range(self.n):
@@ -243,7 +246,7 @@ class UniversalRegression(BaseEstimator):
         # xt = (A^T S^T W S A)^-1 A^T S^T W S v
         # phit = (1+bn 1 1^T) xt
         sizes = np.sum(self.sampled, axis=1).astype(int)
-        p_ext = np.append(self.p, np.inf)
+        p_ext = np.append(self.p, 0)
         
         # Build A_tilde so A_tilde[S,i] = p[|S|-1]/w[|S|] if i in S else -p[|S|]/w[|S|]
         A_tilde = p_ext[sizes-1][:,None] * self.sampled - p_ext[sizes][:,None] * (1-self.sampled)
@@ -282,7 +285,7 @@ class UniversalRegression(BaseEstimator):
         if self.true_sum is not None:
             sum_phi = self.true_sum
         
-        Sb = Sv# - sizes * sum_phi / self.n
+        Sb = Sv - sizes * sum_phi / self.n
 
         # Projection matrix
         P = np.eye(self.n) - 1/self.n * np.ones((self.n, self.n))
