@@ -25,7 +25,7 @@ class NoisyModel:
 
 
 def get_filename(dataset, estimator, weighting):
-    return f'output/{weighting}_{dataset}_{estimator}.csv'
+    return f'output/{estimator}_{dataset}_{weighting}.csv'
 
 def read_file(dataset, estimator, x_name, y_name, weighting, constraints={}):
     filename = get_filename(dataset, estimator, weighting)

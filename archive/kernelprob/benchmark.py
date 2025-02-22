@@ -75,7 +75,7 @@ def get_dataset_size(dataset):
     return X.shape[1]
 
 def get_filename(dataset, estimator, weighting):
-    return f'output/{weighting}_{dataset}_{estimator}.csv'
+    return f'output/{estimator}_{dataset}_{weighting}.csv'
 
 def read_file(dataset, estimator, x_name, y_name, weighting, constraints={}):
     filename = get_filename(dataset, estimator, weighting)

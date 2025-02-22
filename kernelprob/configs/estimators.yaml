@@ -29,69 +29,77 @@ weightings:
 #    - random_16
 
 estimators:
-  OFA_S_Optimized:
+  RegressionAdjustment:
     weightings:
       - shapley
       - banzhaf
       - beta_shapley
       - beta_shapley_sym
-      - weighted_banzhaf
+      - weighted_banzhaf  
 
-  OFA_A_Optimized:
-    weightings:
-      - shapley
-      # - banzhaf # This is MSR
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  UniversalConstrained: # For not symmetric values
-    weightings:
-      - beta_shapley
-      - weighted_banzhaf
-
-  UniversalConstrainedPair:
-    weightings:
-      # - shapley # This is LeverageSHAP
-      - banzhaf
-      - beta_shapley_sym
-
-  UniversalUnconstrained: # For not symmetric values
-    weightings:
-      - beta_shapley
-      - weighted_banzhaf
-  
-  UniversalUnconstrainedPair:
-    weightings:
-      - banzhaf
-      - shapley
-      - beta_shapley_sym
-
-  WSL:
-    weightings:
-      # - shapley # This is MC
-      # - banzhaf # This is MC
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  LeverageSHAP:
-    weightings:
-      - shapley
-
-  KernelSHAP:
-    weightings:
-      - shapley
-   
-  PermutationSHAP:
-    weightings:
-      - shapley
-
-  MSR:
-    weightings:
-      - banzhaf
-
-  MonteCarlo:
-    weightings:
-      - shapley
-      - banzhaf
+#  OFA_S_Optimized:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
+#  OFA_A_Optimized:
+#    weightings:
+#      - shapley
+#      # - banzhaf # This is MSR
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
+#  UniversalConstrained: # For not symmetric values
+#    weightings:
+#      - beta_shapley
+#      - weighted_banzhaf
+#
+#  UniversalConstrainedPair:
+#    weightings:
+#      # - shapley # This is LeverageSHAP
+#      - banzhaf
+#      - beta_shapley_sym
+#
+#  UniversalUnconstrained: # For not symmetric values
+#    weightings:
+#      - beta_shapley
+#      - weighted_banzhaf
+#  
+#  UniversalUnconstrainedPair:
+#    weightings:
+#      - banzhaf
+#      - shapley
+#      - beta_shapley_sym
+#
+#  WSL:
+#    weightings:
+#      # - shapley # This is MC
+#      # - banzhaf # This is MC
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
+#  LeverageSHAP:
+#    weightings:
+#      - shapley
+#
+#  KernelSHAP:
+#    weightings:
+#      - shapley
+#   
+#  PermutationSHAP:
+#    weightings:
+#      - shapley
+#
+#  MSR:
+#    weightings:
+#      - banzhaf
+#
+#  MonteCarlo:
+#    weightings:
+#      - shapley
+#      - banzhaf

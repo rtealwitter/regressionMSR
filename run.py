@@ -60,7 +60,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
             for idx, explicand in enumerate(explicands):
             # for bn in VARIABLES[variable]["bn"]:
                 predicted = estimator.explain(explicand, actual_sample_size)
-                filename = f"output/{dataset}_{experiment_name}.csv"
+                filename = f"output/{estimator_class_name}_{dataset}_{weighting}.csv"
                 if not os.path.exists(filename):
                     with open(filename, 'w') as f:
                         f.write('')
@@ -72,7 +72,8 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                         'noise': noise_std,
                         'n' : n,
                         'error' : np.sum((predicted - true_values[idx]) ** 2) / np.sum(true_values[idx] ** 2),
-                        'sum_error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2,# / np.sum(true_values[idx])**2,
+                        'sum_error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2 / np.sum(true_values[idx])**2,
+                        'sum_true' : np.sum(true_values[idx]),
                     }
                     f.write(str(dict) + '\n')
                 noised_model.reset_sample_count()
@@ -90,7 +91,7 @@ def run_debug():
     #weighting = "shapley"
     weighting = "beta_shapley_1_16"
 
-    estimator_names = ["WSL", "UniversalConstrained", "UniversalConstrainedPair", "UniversalUnconstrained", "UniversalUnconstrainedPair"]
+    estimator_names = ["WSL", "RegressionAdjustment"]# "UniversalConstrained", "UniversalConstrainedPair", "UniversalUnconstrained", "UniversalUnconstrainedPair]
 
     estimators = {
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
@@ -112,7 +113,7 @@ def run_debug():
             for estimator_name, result in results.items():
                 print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).sum()/ (true_values[idx] ** 2).sum()}")
                 #print(f"Estimate: {result}")
-                print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
+                #print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
     
 def parse_args():
     parser = argparse.ArgumentParser(description="Run experiments.")

@@ -1,7 +1,6 @@
 import numpy as np
 import scipy
 import scipy.special
-import math
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
