@@ -4,7 +4,7 @@ import yaml
 
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
-from ..estimators.reg import UniversalConstrained, UniversalConstrainedPair, UniversalUnconstrained, UniversalUnconstrainedPair
+from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
 
 from ..estimators.ofa import OFA_S, OFA_A, OFA_A_Optimized, OFA_S_Optimized
 from ..estimators.wsl import WSLEstimator
@@ -27,10 +27,10 @@ ESTIMATOR_TRUE = {
     "Enumeration": EnumerationExplainer,
 }
 
-ESTIMATOR_ALL = { # Important that supersets of other estimators are included first
-    "UniversalConstrainedPair": UniversalConstrainedPair,
+# Important that supersets of other estimators are included first
+# E.g., OFA_S_Optimized should be included before OFA_S
+ESTIMATOR_ALL = { 
     "UniversalConstrained": UniversalConstrained,
-    "UniversalUnconstrainedPair": UniversalUnconstrainedPair,
     "UniversalUnconstrained": UniversalUnconstrained,
     "OFA_S_Optimized": OFA_S_Optimized,
     "OFA_S": OFA_S,
@@ -47,7 +47,7 @@ ESTIMATOR_SHAPLEY = {
 }
 
 ESTIMATOR_BANZHAF = {
-    #"KernelBanzhaf": KernelBanzhafEstimator,
+    "KernelBanzhaf": KernelBanzhafEstimator,
     "MSR": MSREstimator,
     "MonteCarlo": MonteCarloEstimator,
 }

@@ -29,13 +29,13 @@ weightings:
 #    - random_16
 
 estimators:
-  RegressionAdjustment:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf  
+#  RegressionAdjustment:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf  
 
 #  OFA_S_Optimized:
 #    weightings:
@@ -53,27 +53,21 @@ estimators:
 #      - beta_shapley_sym
 #      - weighted_banzhaf
 #
-#  UniversalConstrained: # For not symmetric values
-#    weightings:
-#      - beta_shapley
-#      - weighted_banzhaf
-#
-#  UniversalConstrainedPair:
-#    weightings:
-#      # - shapley # This is LeverageSHAP
-#      - banzhaf
-#      - beta_shapley_sym
-#
-#  UniversalUnconstrained: # For not symmetric values
-#    weightings:
-#      - beta_shapley
-#      - weighted_banzhaf
-#  
-#  UniversalUnconstrainedPair:
-#    weightings:
-#      - banzhaf
-#      - shapley
-#      - beta_shapley_sym
+  UniversalConstrained:
+    weightings:
+      - beta_shapley
+      - weighted_banzhaf
+      - banzhaf
+      - beta_shapley_sym
+      #- shapley # This is Leverage SHAP
+
+  UniversalUnconstrained:
+    weightings:
+      - beta_shapley
+      - weighted_banzhaf
+      #- banzhaf # This is Kernel Banzhaf
+      - shapley
+      - beta_shapley_sym     
 #
 #  WSL:
 #    weightings:
@@ -90,6 +84,10 @@ estimators:
 #  KernelSHAP:
 #    weightings:
 #      - shapley
+#
+  KernelBanzhaf:
+    weightings:
+      - banzhaf
 #   
 #  PermutationSHAP:
 #    weightings:

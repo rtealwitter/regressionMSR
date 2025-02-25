@@ -59,7 +59,6 @@ class UniversalRegression(BaseEstimator):
         model,
         baseline,
         weighting,
-        pair_sampling=True, 
         with_replace=False,
         constrain_reg=True,
     ):
@@ -80,7 +79,9 @@ class UniversalRegression(BaseEstimator):
         self.baseline = baseline
         self.gen = np.random.Generator(np.random.PCG64())
 
-        self.pair_sampling = pair_sampling
+        # Check if self.p is symmetric
+        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+
         self.with_replace = with_replace
         self.constrain_reg = constrain_reg
     
@@ -298,18 +299,10 @@ class UniversalRegression(BaseEstimator):
         self.phi = PZSSZP_inv_PZSSb 
         self.phi += sum_phi / self.n
 
-class UniversalConstrainedPair(UniversalRegression):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, pair_sampling=True, with_replace=False, constrain_reg=True)
-
 class UniversalConstrained(UniversalRegression):
     def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, pair_sampling=False, with_replace=False, constrain_reg=True)
-
-class UniversalUnconstrainedPair(UniversalRegression):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, pair_sampling=True, with_replace=False, constrain_reg=False)
+        super().__init__(model, baseline, weighting, with_replace=False, constrain_reg=True)
 
 class UniversalUnconstrained(UniversalRegression):
     def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, pair_sampling=False, with_replace=False, constrain_reg=False)
+        super().__init__(model, baseline, weighting, with_replace=False, constrain_reg=False)

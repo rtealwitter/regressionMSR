@@ -1,0 +1,10 @@
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 0.00012082095956490674, 'sum_error': 0.00023147321252858186, 'sum_true': -0.3145702215371563}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 0.004478954153023458, 'sum_error': 0.0026520230456548335, 'sum_true': -0.20874844316245508}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 1.0491475330478175e-30, 'sum_error': 2.442385297136111e-31, 'sum_true': 1.347889815181715}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 1.4154253816633003e-30, 'sum_error': 2.831301083566288e-31, 'sum_true': 0.6259482894384781}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 2.568001548706751e-31, 'sum_error': 4.520156437010075e-32, 'sum_true': 1.044391894801419}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 1.3568060191532653e-28, 'sum_error': 3.7260035252717624e-28, 'sum_true': -0.02318613344467322}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 6.661026578141372e-30, 'sum_error': 1.0310244818139115e-26, 'sum_true': -0.04373566478775226}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 2.3624959123245482e-05, 'sum_error': 1.0805750119282968e-05, 'sum_true': -0.5121203034357332}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 0.0016530158883210756, 'sum_error': 0.003075891221968793, 'sum_true': 0.7986209156877677}
+{'sample_size': 80, 'difference': 0, 'noise': 0, 'n': 8, 'error': 1.290682895474927e-30, 'sum_error': 9.06121946370903e-31, 'sum_true': -0.11663178039263375}

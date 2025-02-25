@@ -13,6 +13,8 @@ class RegressionAdjustmentEstimator(BaseEstimator):
         self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size
 
         self.p = get_p(self.n, weighting)
+        # pair sample if p is symmetric
+        self.pair_sampling = np.allclose(self.p, self.p[::-1])
         #self.sample_prob = np.ones(self.n)
         self.sample_prob = self.p * scipy.special.binom(self.n-1, np.arange(self.n))
         self.sample_prob /= np.sum(self.sample_prob)
