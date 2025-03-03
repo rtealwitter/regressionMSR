@@ -22,89 +22,75 @@ class RegressionAdjustmentEstimator(BaseEstimator):
         self.sample_prob /= np.sum(self.sample_prob)
         self.rng = np.random.default_rng()
     
-    def add_sample(self, idx, indices, i):
+    def add_sample(self, i, mean_idx, S_idx, indices):
         size = len(indices)
         weight = self.p[size] * scipy.special.binom(self.n-1, size) / self.sample_prob[size]
 
         # Add S
-        self.X[idx, indices] = 1
-        self.sign[idx] = -1
-        self.weights[idx] = weight
+        self.X[i, mean_idx, S_idx, indices] = 1
+        self.sign[i, mean_idx, S_idx] = -1
+        self.weights[i, mean_idx, S_idx] = weight
 
         # Add S cup i
         indices_with_i = np.append(indices, i)
-        self.X[idx+1, indices_with_i] = 1
-        self.sign[idx+1] = 1
-        self.weights[idx+1] = weight
+        self.X[i, mean_idx, S_idx+1, indices_with_i] = 1
+        self.sign[i, mean_idx, S_idx+1] = 1
+        self.weights[i, mean_idx, S_idx+1] = weight
     
     def sample_with_replacement(self):
         for i in range(self.n):
             except_i = np.delete(np.arange(self.n), i)
-            offset = i * self.nue_avg * self.per_S
+            for mean_idx in range(self.num_means):
+                sampled_sizes = self.rng.choice(self.n, self.nue_avg, p=self.sample_prob)
+                
+                for S_idx, size in enumerate(sampled_sizes):
+                    indices = self.rng.choice(except_i, size=size, replace=False)
 
-            sampled_sizes = self.rng.choice(self.n, size=self.nue_avg, p=self.sample_prob)            
-            for S_idx, size in enumerate(sampled_sizes):
-                indices = self.rng.choice(except_i, size=size, replace=False)
-                self.add_sample(offset + self.per_S * S_idx, indices, i)
-            
-                if self.pair_sampling:
-                    indices_complement = np.delete(np.arange(self.n), np.append(indices, i))
-
-                    self.add_sample(offset + self.per_S * S_idx + 2, indices_complement, i)
+                    self.add_sample(i, mean_idx, self.per_S * S_idx, indices)
+                    
+                    if self.pair_sampling:
+                        indices_complement = np.delete(np.arange(self.n), np.append(indices, i))
+                        self.add_sample(i, mean_idx, self.per_S * S_idx + 2, indices_complement)
 
     def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
-        
-        self.nue_avg = (num_samples // self.per_S) // self.n
-        num_samples = self.nue_avg * self.per_S * self.n
+        samples_per_i = num_samples // self.n
+        self.S_per_i = samples_per_i // self.per_S
+        self.num_means = min(int(np.log(self.n)), self.S_per_i)
+        self.nue_avg = self.S_per_i // self.num_means
 
-        self.X = np.zeros((num_samples, self.n), dtype=float)
-        self.y = np.zeros(num_samples, dtype=float)
-        self.sign = np.ones(num_samples, dtype=float)
-        self.weights = np.ones(num_samples, dtype=float)
+        self.X = np.zeros((self.n, self.num_means, self.nue_avg*self.per_S, self.n), dtype=float)
+        self.y = np.zeros((self.n, self.num_means, self.nue_avg*self.per_S), dtype=float)
+        self.sign = np.ones((self.n, self.num_means, self.nue_avg*self.per_S), dtype=float)
+        self.weights = np.ones((self.n, self.num_means, self.nue_avg*self.per_S), dtype=float)
 
         self.sample_with_replacement()
         
-        model_input = self.baseline * (1 - self.X) + explicand * self.X
-        y = self.model.predict(model_input)
-
+        X_flat = self.X.reshape(-1, self.n)
+        model_input = self.baseline * (1 - X_flat) + explicand * X_flat
+        y_flat = self.model.predict(model_input)
+        y = y_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
+        
         # Fit on all data
         reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=self.n)
-        reg_model.fit(model_input, y)
+        reg_model.fit(model_input, y_flat)
+        
+        reg_pred_flat = reg_model.predict(model_input)
+        reg_pred = reg_pred_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
+
         reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
 
         phi = np.zeros(self.n)
 
         for i in range(self.n):
-            offset = i * self.nue_avg * self.per_S
-            end = offset + self.per_S * self.nue_avg
-            # Exclude everything from offset to end from X            
-            #mask = np.ones(len(X), dtype=bool)
-            #mask[offset:end] = False
-            #reg_model.fit(X[mask], y[mask])
-            #reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
+            means = []
+            for mean_idx in range(self.num_means):
+                means.append(((
+                    y[i, mean_idx, :] * self.sign[i, mean_idx, :] 
+                    - reg_pred[i, mean_idx, :] * self.sign[i, mean_idx, :]
+                    + reg_model_phi[i]
+                ) * self.weights[i, mean_idx, :]
+                ).mean()
+                )
+            phi[i] = np.median(means)
 
-            reg_pred = reg_model.predict(model_input[offset:end])
-            reg_correction = reg_model_phi[i] 
-
-            vec = (
-                y[offset:end][self.sign[offset:end] == 1] 
-                - y[offset:end][self.sign[offset:end] == -1]
-                - reg_pred[self.sign[offset:end] == 1]
-                + reg_pred[self.sign[offset:end] == -1]
-                + reg_correction
-            ) * self.weights[offset:end][self.sign[offset:end] == 1]
-
-            #vec = y[offset:end] * self.sign[offset:end] * self.weights[offset:end]
-            #vec -= reg_pred * self.sign[offset:end] * self.weights[offset:end]
-            #vec += reg_correction / 2 * self.weights[offset:end]
-
-            # Straight mean
-            phi[i] = np.mean(vec, axis=0)# * 2
-
-            # Median of means
-            num_means = min(int(2*np.log(self.n)), len(vec))
-            partition = np.array_split(vec, num_means)
-            means_by_partition = np.array([np.mean(part) for part in partition])
-            phi[i] = np.median(means_by_partition)
- 
         return phi
