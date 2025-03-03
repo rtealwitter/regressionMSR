@@ -41,7 +41,6 @@ def compute_weights(w1, p):
     return w*c
 
 def find_w1(p, start=10e-10, stop=10e10, num=1000):
-    # all possible values of w1 
     valid_w1s = []
     sums = []
     for w1 in np.geomspace(start, stop, num):

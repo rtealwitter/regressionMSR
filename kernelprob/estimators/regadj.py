@@ -22,35 +22,35 @@ class RegressionAdjustmentEstimator(BaseEstimator):
         self.sample_prob /= np.sum(self.sample_prob)
         self.rng = np.random.default_rng()
     
-    def add_one_sample(self, idx, indices, weight, sign):
+    def add_sample(self, idx, indices, i):
+        size = len(indices)
+        weight = self.p[size] * scipy.special.binom(self.n-1, size) / self.sample_prob[size]
+
+        # Add S
         self.X[idx, indices] = 1
-        self.sign[idx] = sign
+        self.sign[idx] = -1
         self.weights[idx] = weight
+
+        # Add S cup i
+        indices_with_i = np.append(indices, i)
+        self.X[idx+1, indices_with_i] = 1
+        self.sign[idx+1] = 1
+        self.weights[idx+1] = weight
     
-    def sample_with_replacement(self, num_samples):
+    def sample_with_replacement(self):
         for i in range(self.n):
             except_i = np.delete(np.arange(self.n), i)
             offset = i * self.nue_avg * self.per_S
 
-            for S_idx in range(self.nue_avg):
-                size = self.rng.choice(self.n, p=self.sample_prob)
+            sampled_sizes = self.rng.choice(self.n, size=self.nue_avg, p=self.sample_prob)            
+            for S_idx, size in enumerate(sampled_sizes):
                 indices = self.rng.choice(except_i, size=size, replace=False)
-                indices_with_i = np.append(indices, i)
-                weight = self.p[size] * scipy.special.binom(self.n-1, size) / self.sample_prob[size]
-
-                self.add_one_sample(offset + self.per_S * S_idx, indices, weight, -1)
-                self.add_one_sample(offset + self.per_S * S_idx + 1, indices_with_i, weight, 1)
+                self.add_sample(offset + self.per_S * S_idx, indices, i)
             
                 if self.pair_sampling:
-                    indices_complement = np.delete(np.arange(self.n), indices_with_i)
-                    #size2 = len(indices_complement)
-                    #weight2 = self.p[size2] * scipy.special.binom(self.n-1, size2) / self.sample_prob[size2]
-                    #assert np.isclose(weight, weight2)
+                    indices_complement = np.delete(np.arange(self.n), np.append(indices, i))
 
-                    indices_complement_with_i = np.append(indices_complement, i)
-
-                    self.add_one_sample(offset + self.per_S * S_idx + 2, indices_complement, weight, -1)
-                    self.add_one_sample(offset + self.per_S * S_idx + 3, indices_complement_with_i, weight, 1)
+                    self.add_sample(offset + self.per_S * S_idx + 2, indices_complement, i)
 
     def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
         
@@ -62,7 +62,7 @@ class RegressionAdjustmentEstimator(BaseEstimator):
         self.sign = np.ones(num_samples, dtype=float)
         self.weights = np.ones(num_samples, dtype=float)
 
-        self.sample_with_replacement(num_samples)
+        self.sample_with_replacement()
         
         model_input = self.baseline * (1 - self.X) + explicand * self.X
         y = self.model.predict(model_input)
