@@ -90,7 +90,7 @@ def run_debug():
     weighting = "shapley"
     #weighting = "beta_shapley_1_16"
 
-    estimator_names = ["WSL", "RegressionAdjustment"]# "UniversalConstrained", "UniversalConstrainedPair", "UniversalUnconstrained", "UniversalUnconstrainedPair]
+    estimator_names = ["WSL", "RegressionAdjustment", "UniversalConstrained", "KernelSHAP", "PermutationSHAP"]
 
     estimators = {
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names

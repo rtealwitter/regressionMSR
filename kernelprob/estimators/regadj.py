@@ -86,8 +86,25 @@ class RegressionAdjustmentEstimator(BaseEstimator):
             reg_pred = reg_model.predict(model_input[offset:end])
             reg_correction = reg_model_phi[i] 
 
-            phi[i] = np.mean(y[offset:end] * self.sign[offset:end] * self.weights[offset:end], axis=0) * 2
-            phi[i] -= np.mean(reg_pred * self.sign[offset:end] * self.weights[offset:end], axis=0) * 2
-            phi[i] += np.mean(reg_correction / 2 * self.weights[offset:end], axis=0) * 2
-        
+            vec = (
+                y[offset:end][self.sign[offset:end] == 1] 
+                - y[offset:end][self.sign[offset:end] == -1]
+                - reg_pred[self.sign[offset:end] == 1]
+                + reg_pred[self.sign[offset:end] == -1]
+                + reg_correction
+            ) * self.weights[offset:end][self.sign[offset:end] == 1]
+
+            #vec = y[offset:end] * self.sign[offset:end] * self.weights[offset:end]
+            #vec -= reg_pred * self.sign[offset:end] * self.weights[offset:end]
+            #vec += reg_correction / 2 * self.weights[offset:end]
+
+            # Straight mean
+            phi[i] = np.mean(vec, axis=0)# * 2
+
+            # Median of means
+            num_means = min(int(2*np.log(self.n)), len(vec))
+            partition = np.array_split(vec, num_means)
+            means_by_partition = np.array([np.mean(part) for part in partition])
+            phi[i] = np.median(means_by_partition)
+ 
         return phi
