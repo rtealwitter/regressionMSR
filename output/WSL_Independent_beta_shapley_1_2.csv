@@ -8,3 +8,13 @@
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.0026693177413615464, 'sum_error': 1.6764270837221529, 'sum_true': -0.0493832086842142}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.035763801104496985, 'sum_error': 0.0038786447126393847, 'sum_true': 1.954370202316543}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.1269369716157336, 'sum_error': 0.2656151203888802, 'sum_true': 0.546914366848029}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.08730949730195267, 'sum_error': 0.05982976762323943, 'sum_true': -0.6942956631885328}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.1112951073230275, 'sum_error': 0.11145142248535907, 'sum_true': 1.8194278776866595}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.07151398116557464, 'sum_error': 0.004280750728714478, 'sum_true': 2.5791264648844914}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.0925866974332451, 'sum_error': 0.10204913700495818, 'sum_true': 0.4903059309006319}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.07332892694233124, 'sum_error': 0.01911315787446856, 'sum_true': 1.4048139950213807}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.15382431594896756, 'sum_error': 0.1077032110128009, 'sum_true': 2.595438342401559}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.08134241187290667, 'sum_error': 2.0048430348450792e-05, 'sum_true': -0.7250786385605332}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.014352559270833606, 'sum_error': 1.6784197203454936, 'sum_true': -0.0493832086842142}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.019926776742409683, 'sum_error': 0.03703103157102816, 'sum_true': 1.954370202316543}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.047391895599708404, 'sum_error': 1.477867052145835e-05, 'sum_true': 0.546914366848029}

@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.2911712250131629, 'sum_error': 0.007306697970903305, 'sum_true': -337.83915595228837}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.2761959753640901, 'sum_error': 0.014069932129995768, 'sum_true': -228.6386497089904}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9979353884052119, 'sum_error': 0.9733241003994796, 'sum_true': -384.4966415493144}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.4731288655828383, 'sum_error': 0.1454801536406938, 'sum_true': -382.25800440054917}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.29066985689082064, 'sum_error': 0.5071636250313675, 'sum_true': -139.42008025419622}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 8.195233779925548, 'sum_error': 1.8577321905571047, 'sum_true': -482.12468936120933}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.24101840812562633, 'sum_error': 0.01025031490126476, 'sum_true': 301.691334031386}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9980421426386392, 'sum_error': 0.43368275289078934, 'sum_true': -319.8100291585374}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.11902273212849979, 'sum_error': 0.02656099061622507, 'sum_true': -125.81790678221125}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.15782414662300484, 'sum_error': 0.006462284967112592, 'sum_true': -489.4848286417075}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.9552807592592738, 'sum_error': 0.37004736927279647, 'sum_true': -337.83915595228837}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.974546375378506, 'sum_error': 1.1727057861352672, 'sum_true': -228.6386497089904}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.864004233561775, 'sum_error': 0.5310630307608276, 'sum_true': -384.4966415493144}

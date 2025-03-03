@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.0460656069304297, 'sum_error': 0.44928077497072866, 'sum_true': -353.78821042632126}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.830005330692728, 'sum_error': 2.081224549492861, 'sum_true': -250.13069133441942}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 2.3420791347536727, 'sum_error': 1.3840660577107933, 'sum_true': -391.8547046780626}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.1580988344588805, 'sum_error': 0.00798680260877152, 'sum_true': -356.28344522779946}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.6218871572699457, 'sum_error': 0.07996809124676658, 'sum_true': -138.63571086595306}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9967575807501589, 'sum_error': 0.7541702077596238, 'sum_true': -461.94081153882985}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.7712968626229516, 'sum_error': 1.0994973595703852, 'sum_true': 300.34015348892166}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 2.487485553747482, 'sum_error': 1.2812625523519003, 'sum_true': -332.9888040337001}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9631508534818854, 'sum_error': 0.49483963009744136, 'sum_true': -118.98001763196517}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.8331078313155148, 'sum_error': 0.7462463803762226, 'sum_true': -481.8647482245814}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 2.8817203985493847, 'sum_error': 1.2058745637405797, 'sum_true': -353.78821042632126}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.8810791761087908, 'sum_error': 0.25859961187442587, 'sum_true': -250.13069133441942}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.7878614939405841, 'sum_error': 1.6086665069018686, 'sum_true': -391.8547046780626}

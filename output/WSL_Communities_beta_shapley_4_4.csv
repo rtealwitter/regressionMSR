@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.03625948668353945, 'sum_error': 0.05577218192183011, 'sum_true': -292.55298216289543}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.06597006394822327, 'sum_error': 0.009831096774580904, 'sum_true': -166.92578099534614}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.3658723363911066, 'sum_error': 0.21732975569855217, 'sum_true': -361.5173010180078}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.26403610371133185, 'sum_error': 0.09687567247056891, 'sum_true': -429.05404590418516}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.2367471141776143, 'sum_error': 0.1545566800331985, 'sum_true': -141.77318841892586}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9095481534588317, 'sum_error': 0.40528459303804754, 'sum_true': -520.0177159293493}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.43022523398992585, 'sum_error': 0.31570071099869157, 'sum_true': 325.58465923322325}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.046233107712657394, 'sum_error': 0.00901329816931791, 'sum_true': -282.3112381041964}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.29403265137390444, 'sum_error': 0.10628503974165643, 'sum_true': -139.46832955920374}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.05828234854742377, 'sum_error': 0.003025517518012948, 'sum_true': -514.8436358915847}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.025912976248258005, 'sum_error': 0.004947859238747337, 'sum_true': -292.55298216289543}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.024300188146033987, 'sum_error': 0.09665893341366938, 'sum_true': -166.92578099534614}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.007256360968884253, 'sum_error': 0.0005438903087166965, 'sum_true': -361.5173010180078}

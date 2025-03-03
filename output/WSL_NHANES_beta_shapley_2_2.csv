@@ -8,3 +8,13 @@
 {'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.0029548100029672666, 'sum_error': 0.0005604165960638848, 'sum_true': -2.4526726076458316}
 {'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.13502795078738444, 'sum_error': 0.5289222733119537, 'sum_true': 0.4094369650844979}
 {'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.020845283027748164, 'sum_error': 0.0005510274286047013, 'sum_true': 0.6526448857580167}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.03949473102234198, 'sum_error': 0.039761399300040134, 'sum_true': 13.547036428758313}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.0010913493368126868, 'sum_error': 0.0035171386450364587, 'sum_true': -1.5288775309969143}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.060603511467348055, 'sum_error': 0.17471818449822926, 'sum_true': -1.643696225827832}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.006121788904329105, 'sum_error': 0.0170558962382137, 'sum_true': 6.994117057520218}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.009553052241571615, 'sum_error': 0.005889208171529564, 'sum_true': 4.430283735173382}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.00013291119089512158, 'sum_error': 6.010466155861096e-08, 'sum_true': -2.5738573868185712}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.0036718007289041703, 'sum_error': 2.3000371292846153e-05, 'sum_true': 15.304387440234974}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.007125005511583008, 'sum_error': 0.009174587334337037, 'sum_true': -2.4526726076458316}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.008116327901802995, 'sum_error': 3.5646371705675785e-05, 'sum_true': 0.4094369650844979}
+{'sample_size': 790, 'difference': 0, 'noise': 0, 'n': 79, 'error': 0.02189963732274766, 'sum_error': 0.0018214777948283587, 'sum_true': 0.6526448857580167}

@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.007419163587632286, 'sum_error': 0.0042268224223559565, 'sum_true': -318.0756837564679}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.09441116561844082, 'sum_error': 0.0587942252588566, 'sum_true': -201.60315045417892}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.0898715795118811, 'sum_error': 0.06748306827678259, 'sum_true': -374.15505018981924}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.04942350234699038, 'sum_error': 0.010618436642277435, 'sum_true': -398.62324479530014}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.036421814215218756, 'sum_error': 0.012163803096407003, 'sum_true': -140.46590610518717}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.049928772999797255, 'sum_error': 2.1483931511688466e-06, 'sum_true': -495.73582031901003}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.0825260606992694, 'sum_error': 0.06455290952109737, 'sum_true': 315.08566739100553}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.35285541573445706, 'sum_error': 0.19104041665863059, 'sum_true': -303.43327382535915}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.028855614068707756, 'sum_error': 0.026359468857394992, 'sum_true': -130.91003152976617}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.17137932277163836, 'sum_error': 0.0053716266892504414, 'sum_true': -501.0980604476775}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.11808871932507492, 'sum_error': 0.09654816702586211, 'sum_true': -318.0756837564679}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.027232210512595466, 'sum_error': 0.07937691335870097, 'sum_true': -201.60315045417892}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.015347946593528618, 'sum_error': 0.0061722034660431045, 'sum_true': -374.15505018981924}

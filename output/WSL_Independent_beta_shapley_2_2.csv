@@ -8,3 +8,13 @@
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.028199100986724932, 'sum_error': 4657341.470692672, 'sum_true': -0.00010693448666676542}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.11462435092208621, 'sum_error': 0.00015273769352504112, 'sum_true': 2.0227100739777732}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.018266124493174003, 'sum_error': 0.024406460086789768, 'sum_true': 0.6233722119290788}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.03505902269735922, 'sum_error': 0.48922795333562075, 'sum_true': -0.5010981126906452}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.04617939179553861, 'sum_error': 0.007529377291158448, 'sum_true': 1.8025365862980638}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.023682320541866596, 'sum_error': 0.006348937741106329, 'sum_true': 2.443452910071585}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.03942714618634257, 'sum_error': 2.3748677378001773e-06, 'sum_true': 0.5356569114093035}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.08090959002357942, 'sum_error': 0.032865491022985284, 'sum_true': 1.4090192934060313}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.10832478577818459, 'sum_error': 0.028606847003084714, 'sum_true': 2.584653477081205}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.06468849306124967, 'sum_error': 0.041669103153908454, 'sum_true': -0.7292587232958632}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.01413128918270242, 'sum_error': 1673864.462940753, 'sum_true': -0.00010693448666676542}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.02307234635374317, 'sum_error': 0.002125100281215898, 'sum_true': 2.0227100739777732}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.05606463912821018, 'sum_error': 0.04981583072826327, 'sum_true': 0.6233722119290788}

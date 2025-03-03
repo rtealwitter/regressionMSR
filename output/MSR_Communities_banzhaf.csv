@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.10504047788020741, 'sum_error': 0.14304642177164983, 'sum_true': -292.0715931341913}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.08922791531190871, 'sum_error': 0.13043681182752145, 'sum_true': -166.4063719422178}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.09493324692110401, 'sum_error': 0.000850118172632334, 'sum_true': -361.68744221068863}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.15348819196454025, 'sum_error': 0.010263365922516601, 'sum_true': -435.0049221539133}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.08361766644572749, 'sum_error': 0.0701033112276488, 'sum_true': -141.77318841892586}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.09107004999932512, 'sum_error': 0.03543877722860831, 'sum_true': -524.3766694129841}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.12263649523326733, 'sum_error': 0.03966335965253547, 'sum_true': 322.20394245448955}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.09357229956663786, 'sum_error': 0.013180297947996479, 'sum_true': -281.9282430720259}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.10213896650165841, 'sum_error': 0.07665421764263763, 'sum_true': -140.7584131444943}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.11282660048465958, 'sum_error': 0.01705918714950746, 'sum_true': -514.473797477194}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.09643795781925069, 'sum_error': 0.00029444618983982715, 'sum_true': -292.0715931341913}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.09426658425146783, 'sum_error': 0.022119905119472736, 'sum_true': -166.4063719422178}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.12055630926149716, 'sum_error': 0.2116053865575508, 'sum_true': -361.68744221068863}

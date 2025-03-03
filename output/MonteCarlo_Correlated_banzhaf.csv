@@ -8,3 +8,13 @@
 {'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.006788488094675762, 'sum_error': 0.0006997075163397081, 'sum_true': -0.3997732728480648}
 {'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.011670985262469848, 'sum_error': 0.004437643818776019, 'sum_true': 1.302461642857775}
 {'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.009233076208555464, 'sum_error': 0.0021427394502769675, 'sum_true': -0.30906136726791367}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.018485590280711298, 'sum_error': 0.004539677720384319, 'sum_true': -0.5640158053529847}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.01695619938083277, 'sum_error': 0.005604658985001885, 'sum_true': 0.26568198220048056}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.012186940052913937, 'sum_error': 0.00021455979393535755, 'sum_true': 2.583152486385163}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.01564271899501511, 'sum_error': 0.0034668868844321458, 'sum_true': -1.0376527420139514}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.006399433076526336, 'sum_error': 1.870200513392076e-05, 'sum_true': 1.0913343587496267}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.010938130618185783, 'sum_error': 1.263016643099607e-05, 'sum_true': 2.854804012813485}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.008061298888959983, 'sum_error': 0.010877234811147331, 'sum_true': -0.6639674477595339}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.010377865076384779, 'sum_error': 0.009337316494123496, 'sum_true': -0.3997732728480648}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.00897641958354055, 'sum_error': 0.0005200705114952748, 'sum_true': 1.302461642857775}
+{'sample_size': 600, 'difference': 600, 'noise': 0, 'n': 60, 'error': 0.014948109172849134, 'sum_error': 0.20259063331299287, 'sum_true': -0.30906136726791367}

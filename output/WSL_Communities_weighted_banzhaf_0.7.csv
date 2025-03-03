@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9667685112273412, 'sum_error': 0.6398125481990034, 'sum_true': -322.23670157892246}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.23909174817520532, 'sum_error': 0.3206729860548549, 'sum_true': -207.5205826018138}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.5289261594344701, 'sum_error': 0.42234256303836326, 'sum_true': -377.0160767618359}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.8438589014977474, 'sum_error': 0.6562897295401607, 'sum_true': -404.06172388076766}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.6612738455122809, 'sum_error': 0.7845305423200974, 'sum_true': -140.20444964243944}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.47542035593586085, 'sum_error': 0.002414727841172488, 'sum_true': -499.28391188264436}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9424068920859492, 'sum_error': 1.743400733377481, 'sum_true': 305.8739957213059}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 4.230205172007951, 'sum_error': 3.174292612922955, 'sum_true': -306.9070107065376}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.42469949781718713, 'sum_error': 0.07255249712169133, 'sum_true': -131.7269357510482}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.13421791515301365, 'sum_error': 0.12236662125726126, 'sum_true': -497.48498392446794}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9608688728547266, 'sum_error': 0.7097944169815759, 'sum_true': -322.23670157892246}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.7187675724440984, 'sum_error': 0.32128892003748755, 'sum_true': -207.5205826018138}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.4607488843951275, 'sum_error': 0.3054592009504703, 'sum_true': -377.0160767618359}

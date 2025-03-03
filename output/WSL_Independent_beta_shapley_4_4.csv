@@ -8,3 +8,13 @@
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.38297512274311024, 'sum_error': 3633.159310950435, 'sum_true': -0.004718047076322618}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.2307864640728247, 'sum_error': 0.7340279871110682, 'sum_true': 1.9764369594301532}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.14669124715537166, 'sum_error': 0.023927960749222703, 'sum_true': 0.6272419684278143}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.04473755619441092, 'sum_error': 0.007132114413923407, 'sum_true': -0.49515613345866005}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.014102676869154228, 'sum_error': 0.003972739405827365, 'sum_true': 1.7949786122229312}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.06797044382353055, 'sum_error': 0.01652957047448792, 'sum_true': 2.422630783872838}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.12127554492836196, 'sum_error': 0.6498869882085996, 'sum_true': 0.533166648242997}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.020450312046854012, 'sum_error': 0.010984795811616302, 'sum_true': 1.4148183814207735}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.19098028066878164, 'sum_error': 7.168112358640407e-05, 'sum_true': 2.573831087969835}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.03129395543671101, 'sum_error': 0.010964751124789944, 'sum_true': -0.733680104334467}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.03865890235274453, 'sum_error': 519.7278469961433, 'sum_true': -0.004718047076322618}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.09085577471224807, 'sum_error': 0.020956719844027864, 'sum_true': 1.9764369594301532}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.08007014095694384, 'sum_error': 0.006151307766248712, 'sum_true': 0.6272419684278143}

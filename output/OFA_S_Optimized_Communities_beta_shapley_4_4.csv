@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.0321293881585512, 'sum_error': 2.6517941605899034, 'sum_true': -292.55298216289543}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.0303736369609562, 'sum_error': 5.67043406718744, 'sum_true': -166.92578099534614}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9847479354454804, 'sum_error': 0.00022776187914017867, 'sum_true': -361.5173010180078}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9890213181593451, 'sum_error': 0.7277250052873542, 'sum_true': -429.05404590418516}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.0233896642766724, 'sum_error': 3.277370145157112, 'sum_true': -141.77318841892586}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9778514608554506, 'sum_error': 0.3150732816949501, 'sum_true': -520.0177159293493}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9832072950291889, 'sum_error': 0.017342576299106044, 'sum_true': 325.58465923322325}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.0343791789924155, 'sum_error': 2.9158634268406556, 'sum_true': -282.3112381041964}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9778063242468438, 'sum_error': 0.03175354819796152, 'sum_true': -139.46832955920374}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9779580962687009, 'sum_error': 0.29902515128197543, 'sum_true': -514.8436358915847}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.0321293881585512, 'sum_error': 2.6517941605899034, 'sum_true': -292.55298216289543}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 1.0303736369609562, 'sum_error': 5.67043406718744, 'sum_true': -166.92578099534614}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.9847479354454804, 'sum_error': 0.00022776187914017867, 'sum_true': -361.5173010180078}

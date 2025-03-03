@@ -8,3 +8,13 @@
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.06337834212176123, 'sum_error': 0.0006555183981171313, 'sum_true': -0.40046455794110714}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.08774741049127667, 'sum_error': 0.10470456512057072, 'sum_true': 1.3019575838174589}
 {'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.22313336612006113, 'sum_error': 0.1910252943239637, 'sum_true': -0.32355899839279406}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.18448572350330225, 'sum_error': 0.6337655406998303, 'sum_true': -0.5416262344567748}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.07847167956192756, 'sum_error': 0.6567067861748925, 'sum_true': 0.27063763097093235}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.09086462716207758, 'sum_error': 0.00024230100526084688, 'sum_true': 2.609994697231625}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.16406704797701116, 'sum_error': 0.009443572695200166, 'sum_true': -1.0263000175359471}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.11902389187985767, 'sum_error': 0.22719372362617601, 'sum_true': 1.0843739698794814}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.17390797781024714, 'sum_error': 0.10473812210294199, 'sum_true': 2.8461820923516106}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.13064946470683392, 'sum_error': 0.26236620794311055, 'sum_true': -0.6818518906009194}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.18066553428497686, 'sum_error': 0.03777822830443987, 'sum_true': -0.40046455794110714}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.07534504441739975, 'sum_error': 0.03798550499270906, 'sum_true': 1.3019575838174589}
+{'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.18948590905315094, 'sum_error': 0.00266959761338642, 'sum_true': -0.32355899839279406}

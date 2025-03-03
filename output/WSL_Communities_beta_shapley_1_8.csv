@@ -8,3 +8,13 @@
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.3643748885002669, 'sum_error': 0.24962320749670708, 'sum_true': -352.17013775172524}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.10076439459622225, 'sum_error': 0.01751522969584743, 'sum_true': -247.90889760637285}
 {'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.7228775297842283, 'sum_error': 0.6452162836744183, 'sum_true': -390.9826969265438}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.25525954846946863, 'sum_error': 0.029453078765445548, 'sum_true': -357.3224418413101}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.19048332933505432, 'sum_error': 0.3414084770613311, 'sum_true': -138.72286302020234}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.2045899909044268, 'sum_error': 0.10691716048949601, 'sum_true': -462.8458143985602}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.21729122589764813, 'sum_error': 0.07999003615864031, 'sum_true': 301.7719115041497}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.36257740056421267, 'sum_error': 0.30390235378335945, 'sum_true': -331.64705412453213}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.10900007483862865, 'sum_error': 0.0002235107220888584, 'sum_true': -119.32695634581063}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 5.5958913687302845, 'sum_error': 1.5888270468830066, 'sum_true': -482.88698700220726}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.47903280537515963, 'sum_error': 0.2579369566229546, 'sum_true': -352.17013775172524}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.06870236199374294, 'sum_error': 0.0005911294676472133, 'sum_true': -247.90889760637285}
+{'sample_size': 1010, 'difference': 0, 'noise': 0, 'n': 101, 'error': 0.15900736216614278, 'sum_error': 0.1722846934085502, 'sum_true': -390.9826969265438}
