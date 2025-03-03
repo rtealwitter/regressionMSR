@@ -86,10 +86,9 @@ def run_debug():
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
-
-    weighting = "beta_shapley_1_16"   
-    #weighting = "shapley"
-    weighting = "beta_shapley_1_16"
+ 
+    weighting = "shapley"
+    #weighting = "beta_shapley_1_16"
 
     estimator_names = ["WSL", "RegressionAdjustment"]# "UniversalConstrained", "UniversalConstrainedPair", "UniversalUnconstrained", "UniversalUnconstrainedPair]
 
@@ -100,7 +99,7 @@ def run_debug():
     true_values = tree_prob(baseline, explicands, model, weighting)
     # print(f"True values: {true_values}")
 
-    for sample_size in [6, 10, 20]:
+    for sample_size in [8, 16, 32]:
         for idx, explicand in enumerate(explicands):
             results = {}
             for estimator_name, estimator in estimators.items():
