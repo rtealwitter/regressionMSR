@@ -7,8 +7,9 @@ from ..utils.p_generator import get_p
 from ..exact.treeprob import tree_prob
 
 class RegressionAdjustmentEstimator(BaseEstimator):
-    def __init__(self, model, baseline: np.ndarray, weighting: str):
+    def __init__(self, model, baseline: np.ndarray, weighting: str, model_type='random_forest'):
         super().__init__(model, baseline, weighting)
+        self.model_type = model_type
 
         self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size
         self.p = get_p(self.n, weighting)
@@ -71,13 +72,31 @@ class RegressionAdjustmentEstimator(BaseEstimator):
         y = y_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
         
         # Fit on all data
-        reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=self.n)
-        reg_model.fit(model_input, y_flat)
+        if self.model_type == 'linear':
+            reg_model = sklearn.linear_model.LinearRegression()
+            reg_model.fit(model_input, y_flat)
+            reg_model_phi = reg_model.coef_
+        
+        elif self.model_type == 'exact_linear':
+            try:
+                true_values = tree_prob(self.baseline, explicand, self.model, self.weighting)[0][0]
+            except:
+                true_values = tree_prob(self.baseline, explicand, self.model.model, self.weighting)[0][0]
+            
+            reg_model = sklearn.linear_model.LinearRegression()
+            reg_model.coef_ = true_values
+            reg_model.intercept_ = self.model.predict(self.baseline)[0]
+            reg_model_phi = true_values
+
+        elif self.model_type == 'random_forest':
+            reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=self.n)
+            reg_model.fit(model_input, y_flat)
+            reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
         
         reg_pred_flat = reg_model.predict(model_input)
         reg_pred = reg_pred_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
 
-        reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
+        
 
         phi = np.zeros(self.n)
 
@@ -93,4 +112,56 @@ class RegressionAdjustmentEstimator(BaseEstimator):
                 )
             phi[i] = np.median(means)
 
+        return phi
+
+class PermutationRegression(BaseEstimator):
+    def __init__(self, model, baseline: np.ndarray, weighting: str):
+        super().__init__(model, baseline, weighting)
+        self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size
+        self.p = get_p(self.n, weighting)        
+        self.rng = np.random.default_rng()
+    
+    def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
+        num_permutations = (num_samples - 2)// (self.n-1)
+        phi = np.zeros(self.n)
+        pred_baseline = self.model.predict(self.baseline)
+        pred_explicand = self.model.predict(explicand)
+
+        X = np.zeros((num_permutations*num_samples, self.n))
+        for perm_idx in range(num_permutations):
+            # Set seed to perm_idx
+            self.rng = np.random.default_rng(perm_idx)
+            permutation = self.rng.permutation(self.n)
+            for i in range(1, self.n):
+                X[perm_idx*self.n + i, permutation[:i]] = 1
+        y = self.model.predict(self.baseline * (1 - X) + explicand * X)
+        reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=self.n)
+        reg_model.fit(X, y)
+        reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
+        reg_baseline = reg_model.predict(self.baseline)
+        reg_explicand = reg_model.predict(explicand)
+        reg_pred = reg_model.predict(X)
+
+        for perm_idx in range(num_permutations):
+            self.rng = np.random.default_rng(perm_idx)
+            permutation = self.rng.permutation(self.n)
+            for i in range(1, self.n+1):
+                if i == 1:
+                    phi[permutation[i-1]] += (
+                        y[perm_idx*self.n + i] - pred_baseline
+                        #- reg_pred[perm_idx*self.n + i] + reg_baseline
+                        #+ reg_model_phi[permutation[i-1]]
+                    ) / num_permutations
+                elif i == self.n:
+                    phi[permutation[i-1]] += (
+                        pred_explicand - y[perm_idx*self.n + i]
+                        #- reg_explicand + reg_pred[perm_idx*self.n + i]
+                        #+ reg_model_phi[permutation[i-1]]
+                    ) / num_permutations
+                else:
+                    phi[permutation[i-1]] += (
+                        y[perm_idx*self.n + i] - y[perm_idx*self.n + i-1]
+                        #- reg_pred[perm_idx*self.n + i] + reg_pred[perm_idx*self.n + i-1]
+                        #+ reg_model_phi[permutation[i-1]]
+                    ) / num_permutations
         return phi

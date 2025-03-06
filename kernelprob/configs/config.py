@@ -15,7 +15,7 @@ from ..estimators.pshap import PermutationSHAPEstimator
 from ..estimators.kb import KernelBanzhafEstimator
 from ..estimators.msr import MSREstimator
 from ..estimators.mc import MonteCarloEstimator
-from ..estimators.regadj import RegressionAdjustmentEstimator
+from ..estimators.regadj import RegressionAdjustmentEstimator, PermutationRegression
 
 from ..exact.treeprob import TreeProbExplainer
 from ..exact.enumeration import EnumerationExplainer
@@ -44,6 +44,7 @@ ESTIMATOR_SHAPLEY = {
     "LeverageSHAP": LeverageSHAPEstimator,
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,
+    "PermutationRegression" : PermutationRegression,
 }
 
 ESTIMATOR_BANZHAF = {
