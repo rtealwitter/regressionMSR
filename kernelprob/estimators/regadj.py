@@ -122,46 +122,50 @@ class PermutationRegression(BaseEstimator):
         self.rng = np.random.default_rng()
     
     def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
-        num_permutations = (num_samples - 2)// (self.n-1)
+        num_permutations = (num_samples - 2) // (self.n-1)
         phi = np.zeros(self.n)
         pred_baseline = self.model.predict(self.baseline)
         pred_explicand = self.model.predict(explicand)
 
-        X = np.zeros((num_permutations*num_samples, self.n))
+        X = np.zeros((num_permutations,self.n-1, self.n))
+        permutations = np.zeros((num_permutations, self.n))
         for perm_idx in range(num_permutations):
-            # Set seed to perm_idx
-            self.rng = np.random.default_rng(perm_idx)
             permutation = self.rng.permutation(self.n)
-            for i in range(1, self.n):
-                X[perm_idx*self.n + i, permutation[:i]] = 1
-        y = self.model.predict(self.baseline * (1 - X) + explicand * X)
+            permutations[perm_idx, :] = permutation
+            for i in range(self.n-1):
+                X[perm_idx, i, permutation[:i+1]] = 1
+        X_flat = X.reshape(-1, self.n)
+        y_flat = self.model.predict(self.baseline * (1 - X_flat) + explicand * X_flat)
+        y = y_flat.reshape(num_permutations, self.n-1)
         reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=self.n)
-        reg_model.fit(X, y)
+        reg_model.fit(X_flat, y_flat)
         reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
         reg_baseline = reg_model.predict(self.baseline)
         reg_explicand = reg_model.predict(explicand)
-        reg_pred = reg_model.predict(X)
+        reg_pred = reg_model.predict(X_flat).reshape(num_permutations, self.n-1)
 
         for perm_idx in range(num_permutations):
-            self.rng = np.random.default_rng(perm_idx)
-            permutation = self.rng.permutation(self.n)
-            for i in range(1, self.n+1):
-                if i == 1:
-                    phi[permutation[i-1]] += (
-                        y[perm_idx*self.n + i] - pred_baseline
-                        #- reg_pred[perm_idx*self.n + i] + reg_baseline
-                        #+ reg_model_phi[permutation[i-1]]
+            permutation = permutations[perm_idx].astype(int)
+            for i in range(self.n):
+                if i == 0:
+                    phi[permutation[i]] += (
+                        y[perm_idx, i] - pred_baseline
+                        #- reg_pred[perm_idx, i] + reg_baseline
+                        #+ reg_model_phi[permutation[i]]
                     ) / num_permutations
-                elif i == self.n:
-                    phi[permutation[i-1]] += (
-                        pred_explicand - y[perm_idx*self.n + i]
-                        #- reg_explicand + reg_pred[perm_idx*self.n + i]
-                        #+ reg_model_phi[permutation[i-1]]
+                elif 0 < i and i < self.n-1:
+                    phi[permutation[i]] += (
+                        y[perm_idx, i] - y[perm_idx, i-1]
+                        #- reg_pred[perm_idx, i] + reg_pred[perm_idx, i-1]
+                        #+ reg_model_phi[permutation[i]]
                     ) / num_permutations
+                elif i == self.n-1:
+                    phi[permutation[i]] += (
+                        pred_explicand - y[perm_idx, i-1]
+                        #- reg_explicand + reg_pred[perm_idx, i-1]
+                        #+ reg_model_phi[permutation[i]]
+                    ) / num_permutations
+
                 else:
-                    phi[permutation[i-1]] += (
-                        y[perm_idx*self.n + i] - y[perm_idx*self.n + i-1]
-                        #- reg_pred[perm_idx*self.n + i] + reg_pred[perm_idx*self.n + i-1]
-                        #+ reg_model_phi[permutation[i-1]]
-                    ) / num_permutations
+                    raise ValueError("Weirdly out of bounds")
         return phi
