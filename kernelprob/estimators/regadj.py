@@ -6,10 +6,47 @@ from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
 from ..exact.treeprob import tree_prob
 
+class NullModel:
+    def __init__(self):
+        pass
+
+    def fit(self, X, y):
+        pass
+
+    def predict(self, X):
+        return np.zeros(X.shape[0])
+
+def get_fit(X_flat, y_flat, n, weighting):
+    num_samples = X_flat.shape[0]
+    idx_train = np.random.choice(num_samples, int(num_samples * 0.8), replace=False)
+    idx_test = np.setdiff1d(np.arange(num_samples), idx_train)
+
+    reg_models = [
+        NullModel(),
+        sklearn.linear_model.LinearRegression(),
+        sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=n),
+    ]
+    phi_methods = [
+        lambda reg_model : np.zeros(n),
+        lambda reg_model: reg_model.coef_,
+        lambda reg_model: tree_prob(np.zeros((1,n)), np.ones((1,n)), reg_model, weighting)[0].squeeze(),
+    ]
+
+    best_fit = np.inf
+
+    for reg_model, phi_method in zip(reg_models, phi_methods):
+        reg_model.fit(X_flat[idx_train,:], y_flat[idx_train])
+        reg_pred_fit = ((reg_model.predict(X_flat[idx_test,:]) - y_flat[idx_test])**2).mean()
+        if reg_pred_fit < best_fit:
+            best_fit = reg_pred_fit
+            best_model = reg_model
+            best_phi = phi_method(reg_model)
+
+    return best_model, best_phi
+
 class RegressionAdjustmentEstimator(BaseEstimator):
-    def __init__(self, model, baseline: np.ndarray, weighting: str, model_type='random_forest'):
+    def __init__(self, model, baseline: np.ndarray, weighting: str):
         super().__init__(model, baseline, weighting)
-        self.model_type = model_type
 
         self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size
         self.p = get_p(self.n, weighting)
@@ -70,34 +107,10 @@ class RegressionAdjustmentEstimator(BaseEstimator):
         model_input = self.baseline * (1 - X_flat) + explicand * X_flat
         y_flat = self.model.predict(model_input)
         y = y_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
-        
-        # Fit on all data
-        if self.model_type == 'linear':
-            reg_model = sklearn.linear_model.LinearRegression()
-            reg_model.fit(model_input, y_flat)
-            reg_model_phi = reg_model.coef_
-        
-        elif self.model_type == 'exact_linear':
-            try:
-                true_values = tree_prob(self.baseline, explicand, self.model, self.weighting)[0][0]
-            except:
-                true_values = tree_prob(self.baseline, explicand, self.model.model, self.weighting)[0][0]
-            
-            reg_model = sklearn.linear_model.LinearRegression()
-            reg_model.coef_ = true_values
-            reg_model.intercept_ = self.model.predict(self.baseline)[0]
-            reg_model_phi = true_values
 
-        elif self.model_type == 'random_forest':
-            reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=self.n)
-            reg_model.fit(model_input, y_flat)
-            reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
-        
-        reg_pred_flat = reg_model.predict(model_input)
-        reg_pred = reg_pred_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
-
-        
-
+        reg_model, reg_phi = get_fit(X_flat, y_flat, self.n, self.weighting)
+        reg_pred = reg_model.predict(X_flat).reshape(self.n, self.num_means, self.nue_avg*self.per_S)
+ 
         phi = np.zeros(self.n)
 
         for i in range(self.n):
@@ -106,7 +119,7 @@ class RegressionAdjustmentEstimator(BaseEstimator):
                 means.append(((
                     y[i, mean_idx, :] * self.sign[i, mean_idx, :] 
                     - reg_pred[i, mean_idx, :] * self.sign[i, mean_idx, :]
-                    + reg_model_phi[i]
+                    + reg_phi[i]
                 ) * self.weights[i, mean_idx, :]
                 ).mean()
                 )
@@ -130,19 +143,26 @@ class PermutationRegression(BaseEstimator):
         X = np.zeros((num_permutations,self.n-1, self.n))
         permutations = np.zeros((num_permutations, self.n))
         for perm_idx in range(num_permutations):
-            permutation = self.rng.permutation(self.n)
+            if perm_idx % 2 == 0: # Sample a random permutation
+                permutation = self.rng.permutation(self.n)
+            else: # Reverse the previous permutation
+                permutation = permutation[::-1]
             permutations[perm_idx, :] = permutation
+
+        for perm_idx in range(num_permutations):
+            permutation = permutations[perm_idx].astype(int)
             for i in range(self.n-1):
-                X[perm_idx, i, permutation[:i+1]] = 1
+                X[perm_idx, i, permutation[:i+1]] = 1        
+
         X_flat = X.reshape(-1, self.n)
-        y_flat = self.model.predict(self.baseline * (1 - X_flat) + explicand * X_flat)
+        model_input = self.baseline * (1 - X_flat) + explicand * X_flat
+        y_flat = self.model.predict(model_input)
         y = y_flat.reshape(num_permutations, self.n-1)
-        reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=self.n)
-        reg_model.fit(X_flat, y_flat)
-        reg_model_phi = tree_prob(self.baseline, explicand, reg_model, self.weighting)[0].squeeze()
-        reg_baseline = reg_model.predict(self.baseline)
-        reg_explicand = reg_model.predict(explicand)
+
+        reg_model, reg_phi = get_fit(X_flat, y_flat, self.n, self.weighting)
         reg_pred = reg_model.predict(X_flat).reshape(num_permutations, self.n-1)
+        reg_baseline = reg_model.predict(np.zeros_like(self.baseline))
+        reg_explicand = reg_model.predict(np.ones_like(explicand))
 
         for perm_idx in range(num_permutations):
             permutation = permutations[perm_idx].astype(int)
@@ -150,22 +170,20 @@ class PermutationRegression(BaseEstimator):
                 if i == 0:
                     phi[permutation[i]] += (
                         y[perm_idx, i] - pred_baseline
-                        #- reg_pred[perm_idx, i] + reg_baseline
-                        #+ reg_model_phi[permutation[i]]
+                        - reg_pred[perm_idx, i] + reg_baseline
+                        + reg_phi[permutation[i]]
                     ) / num_permutations
                 elif 0 < i and i < self.n-1:
                     phi[permutation[i]] += (
                         y[perm_idx, i] - y[perm_idx, i-1]
-                        #- reg_pred[perm_idx, i] + reg_pred[perm_idx, i-1]
-                        #+ reg_model_phi[permutation[i]]
+                        - reg_pred[perm_idx, i] + reg_pred[perm_idx, i-1]
+                        + reg_phi[permutation[i]]
                     ) / num_permutations
                 elif i == self.n-1:
                     phi[permutation[i]] += (
                         pred_explicand - y[perm_idx, i-1]
-                        #- reg_explicand + reg_pred[perm_idx, i-1]
-                        #+ reg_model_phi[permutation[i]]
+                        - reg_explicand + reg_pred[perm_idx, i-1]
+                        + reg_phi[permutation[i]]
                     ) / num_permutations
 
-                else:
-                    raise ValueError("Weirdly out of bounds")
         return phi
