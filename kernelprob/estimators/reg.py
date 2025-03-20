@@ -43,13 +43,17 @@ def compute_weights(w1, p):
 def find_w1(p, start=10e-10, stop=10e10, num=1000):
     valid_w1s = []
     sums = []
+    l2norms = []
     for w1 in np.geomspace(start, stop, num):
         w = compute_weights(w1, p)
         if np.isnan(w).any(): continue
+        l2norms.append(np.linalg.norm(w))
         valid_w1s.append(w1)
         sums.append(np.sum(w)) 
-    # find the w1 so that the log_sum is closest to 0
-    closest_idx = np.argmin(np.abs(np.log10(np.array(sums))))
+    ## find the w1 so that the log_sum is closest to 0
+    #closest_idx = np.argmin(np.abs(np.log10(np.array(sums))))
+    # find the w1 with smallest l2 norm
+    closest_idx = np.argmin(np.array(l2norms))
     return valid_w1s[closest_idx]
 
 class UniversalRegression(BaseEstimator):

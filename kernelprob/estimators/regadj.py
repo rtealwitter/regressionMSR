@@ -44,12 +44,14 @@ def get_fit(X_flat, y_flat, n, weighting):
 
     return best_model, best_phi
 
-class RegressionAdjustmentEstimator(BaseEstimator):
-    def __init__(self, model, baseline: np.ndarray, weighting: str):
+class GeneralMonteCarloEstimator(BaseEstimator):
+    def __init__(self, model, baseline: np.ndarray, weighting: str, regression_adjust=True, use_median=True):
         super().__init__(model, baseline, weighting)
 
         self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size
         self.p = get_p(self.n, weighting)
+        self.regression_adjust = regression_adjust
+        self.use_median = use_median
         
         # pair sample if p is symmetric
         self.pair_sampling = np.allclose(self.p, self.p[::-1])
@@ -93,7 +95,10 @@ class RegressionAdjustmentEstimator(BaseEstimator):
     def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
         samples_per_i = num_samples // self.n
         self.S_per_i = samples_per_i // self.per_S
-        self.num_means = min(int(np.log(self.n)), self.S_per_i)
+        if self.use_median:
+            self.num_means = min(int(np.log(self.n)), self.S_per_i)
+        else:
+            self.num_means = 1
         self.nue_avg = self.S_per_i // self.num_means
 
         self.X = np.zeros((self.n, self.num_means, self.nue_avg*self.per_S, self.n), dtype=float)
@@ -108,8 +113,12 @@ class RegressionAdjustmentEstimator(BaseEstimator):
         y_flat = self.model.predict(model_input)
         y = y_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
 
-        reg_model, reg_phi = get_fit(X_flat, y_flat, self.n, self.weighting)
-        reg_pred = reg_model.predict(X_flat).reshape(self.n, self.num_means, self.nue_avg*self.per_S)
+        if self.regression_adjust:
+            reg_model, reg_phi = get_fit(X_flat, y_flat, self.n, self.weighting)
+            reg_pred = reg_model.predict(X_flat).reshape(self.n, self.num_means, self.nue_avg*self.per_S)
+        else:
+            reg_phi = np.zeros(self.n)
+            reg_pred = np.zeros((self.n, self.num_means, self.nue_avg*self.per_S))
  
         phi = np.zeros(self.n)
 
@@ -126,6 +135,14 @@ class RegressionAdjustmentEstimator(BaseEstimator):
             phi[i] = np.median(means)
 
         return phi
+
+class WeightedMonteCarloEstimator(GeneralMonteCarloEstimator):
+    def __init__(self, model, baseline: np.ndarray, weighting: str):
+        super().__init__(model, baseline, weighting, regression_adjust=False, use_median=False)
+
+class RegressionAdjustedEstimator(GeneralMonteCarloEstimator):
+    def __init__(self, model, baseline: np.ndarray, weighting: str):
+        super().__init__(model, baseline, weighting, regression_adjust=True)
 
 class PermutationRegression(BaseEstimator):
     def __init__(self, model, baseline: np.ndarray, weighting: str):

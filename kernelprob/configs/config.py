@@ -6,7 +6,7 @@ import yaml
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
 
-from ..estimators.ofa import OFA_S, OFA_A, OFA_A_Optimized, OFA_S_Optimized
+from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
 
 from ..estimators.lshap import LeverageSHAPEstimator
@@ -15,7 +15,7 @@ from ..estimators.pshap import PermutationSHAPEstimator
 from ..estimators.kb import KernelBanzhafEstimator
 from ..estimators.msr import MSREstimator
 from ..estimators.mc import MonteCarloEstimator
-from ..estimators.regadj import RegressionAdjustmentEstimator, PermutationRegression
+from ..estimators.regadj import RegressionAdjustedEstimator, PermutationRegression, WeightedMonteCarloEstimator
 
 from ..exact.treeprob import TreeProbExplainer
 from ..exact.enumeration import EnumerationExplainer
@@ -30,14 +30,13 @@ ESTIMATOR_TRUE = {
 # Important that supersets of other estimators are included first
 # E.g., OFA_S_Optimized should be included before OFA_S
 ESTIMATOR_ALL = { 
-    "UniversalConstrained": UniversalConstrained,
-    "UniversalUnconstrained": UniversalUnconstrained,
-    "OFA_S_Optimized": OFA_S_Optimized,
+    "LeverageSHAP+": UniversalConstrained,
+    "KernelBanzhaf+": UniversalUnconstrained,
     "OFA_S": OFA_S,
-    "OFA_A_Optimized": OFA_A_Optimized,
-    "OFA_A": OFA_A,
+#    "OFA_A": OFA_A,
     "WSL": WSLEstimator,
-    "RegressionAdjustment": RegressionAdjustmentEstimator,
+    "RegressionAdjusted": RegressionAdjustedEstimator,
+    "MonteCarlo": WeightedMonteCarloEstimator,
 }
 
 ESTIMATOR_SHAPLEY = {
@@ -50,7 +49,7 @@ ESTIMATOR_SHAPLEY = {
 ESTIMATOR_BANZHAF = {
     "KernelBanzhaf": KernelBanzhafEstimator,
     "MSR": MSREstimator,
-    "MonteCarlo": MonteCarloEstimator,
+    "BanzhafMonteCarlo": MonteCarloEstimator,
 }
 
 # Combine all estimator dictionaries
@@ -78,7 +77,7 @@ VARIABLES = {
         }
 }
 
-NUM_RUNS = 10
+NUM_RUNS = 100
 
 def generate_experiment_configs() -> List[Dict[str, Any]]:
     """
