@@ -88,9 +88,13 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     weighting = "shapley"
-    #weighting = "beta_shapley_1_16"
+    weighting = "beta_shapley_16_16"
+    #weighting = "banzhaf"
 
-    estimator_names = ["WSL", "RegressionAdjustment", "UniversalConstrained", "KernelSHAP", "PermutationSHAP", "PermutationRegression"]
+    estimator_names = [
+        #"WSL", "RegressionAdjustment", "UniversalConstrained", "KernelSHAP", "PermutationSHAP", "PermutationRegression",
+        "KernelBanzhaf+",
+    ]
 
     estimators = {
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names

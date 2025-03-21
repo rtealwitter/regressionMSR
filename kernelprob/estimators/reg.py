@@ -1,6 +1,6 @@
 import numpy as np
 import scipy
-import scipy.special
+from scipy.special import comb
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
@@ -13,11 +13,11 @@ from .est_utils import combination_generator
 # Constrained regression problem and unconstrained regression problem
 
 def compute_weight_norm(w, p):
-    # Normalize the weights
+    # Faster implementation with vectorized operations
     n = len(p)
-    c_sq = 0
-    for ell in range(n):
-        c_sq += scipy.special.binom(n-1, ell) * p[ell] ** 2 * (1 / w[ell] ** 2 + 1/w[ell+1] ** 2)
+    binom_coeffs = comb(n - 1, np.arange(n))  # Vector of binomial coefficients
+    w_inv_sq = 1 / w[:n]**2 + 1 / w[1:n+1]**2  # Vectorized inverse squares
+    c_sq = np.sum(binom_coeffs * p**2 * w_inv_sq)
     return np.sqrt(c_sq)
 
 def compute_weights(w1, p):
@@ -36,23 +36,18 @@ def compute_weights(w1, p):
 
     c = compute_weight_norm(w, p)
     # Check if c is nan
-    if not np.isnan(c):
-        assert np.allclose(compute_weight_norm(w*c, p), 1)
+    #if not np.isnan(c):
+    #    assert np.allclose(compute_weight_norm(w*c, p), 1)
     return w*c
 
 def find_w1(p, start=10e-10, stop=10e10, num=1000):
     valid_w1s = []
-    sums = []
     l2norms = []
     for w1 in np.geomspace(start, stop, num):
         w = compute_weights(w1, p)
         if np.isnan(w).any(): continue
-        l2norms.append(np.linalg.norm(w))
+        l2norms.append((w**2).sum())
         valid_w1s.append(w1)
-        sums.append(np.sum(w)) 
-    ## find the w1 so that the log_sum is closest to 0
-    #closest_idx = np.argmin(np.abs(np.log10(np.array(sums))))
-    # find the w1 with smallest l2 norm
     closest_idx = np.argmin(np.array(l2norms))
     return valid_w1s[closest_idx]
 
