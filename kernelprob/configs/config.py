@@ -77,7 +77,7 @@ VARIABLES = {
         }
 }
 
-NUM_RUNS = 100
+NUM_RUNS = 10
 
 def generate_experiment_configs() -> List[Dict[str, Any]]:
     """

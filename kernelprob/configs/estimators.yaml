@@ -1,26 +1,26 @@
 weightings:
   shapley:
     - shapley
-  banzhaf:
-    - banzhaf
-  beta_shapley_sym:
-    - beta_shapley_1_1 # Same as Shapley
-    - beta_shapley_2_2
-    - beta_shapley_4_4
-    - beta_shapley_8_8
-    - beta_shapley_16_16
-  beta_shapley:
-    - beta_shapley_1_1 # Same as Shapley
-    - beta_shapley_1_2
-    - beta_shapley_1_4
-    - beta_shapley_1_8
-    - beta_shapley_1_16
-  weighted_banzhaf:
-    - weighted_banzhaf_0.5 # Same as Banzhaf
-    - weighted_banzhaf_0.6
-    - weighted_banzhaf_0.7
-    - weighted_banzhaf_0.8
-    - weighted_banzhaf_0.9
+  #banzhaf:
+  #  - banzhaf
+  #beta_shapley_sym:
+  #  - beta_shapley_1_1 # Same as Shapley
+  #  - beta_shapley_2_2
+  #  - beta_shapley_4_4
+  #  - beta_shapley_8_8
+  #  - beta_shapley_16_16
+  #beta_shapley:
+  #  - beta_shapley_1_1 # Same as Shapley
+  #  - beta_shapley_1_2
+  #  - beta_shapley_1_4
+  #  - beta_shapley_1_8
+  #  - beta_shapley_1_16
+  #weighted_banzhaf:
+  #  - weighted_banzhaf_0.5 # Same as Banzhaf
+  #  - weighted_banzhaf_0.6
+  #  - weighted_banzhaf_0.7
+  #  - weighted_banzhaf_0.8
+  #  - weighted_banzhaf_0.9
 #  random:
 #    - random_42
 #    - random_27
@@ -63,46 +63,46 @@ estimators:
 #      - beta_shapley_sym
 #      - weighted_banzhaf
 #
-  LeverageSHAP+:
-    weightings:
-      - beta_shapley
-      - weighted_banzhaf
-      - banzhaf
-      - beta_shapley_sym
-      #- shapley # This is Leverage SHAP
+#  LeverageSHAP+:
+#    weightings:
+#      - beta_shapley
+#      - weighted_banzhaf
+#      - banzhaf
+#      - beta_shapley_sym
+#      #- shapley # This is Leverage SHAP
+#
+  #KernelBanzhaf+:
+  #  weightings:
+  #    - beta_shapley
+  #    - weighted_banzhaf
+  #    #- banzhaf # This is Kernel Banzhaf
+  #    - shapley
+  #    - beta_shapley_sym     
 
-  KernelBanzhaf+:
+#  WSL:
+#    weightings:
+#      # - shapley # This is MC
+#      # - banzhaf # This is MC
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
+  LeverageSHAP:
     weightings:
-      - beta_shapley
-      - weighted_banzhaf
-      #- banzhaf # This is Kernel Banzhaf
       - shapley
-      - beta_shapley_sym     
 
-  WSL:
+  KernelSHAP:
     weightings:
-      # - shapley # This is MC
-      # - banzhaf # This is MC
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-#
-#  LeverageSHAP:
-#    weightings:
-#      - shapley
-#
-#  KernelSHAP:
-#    weightings:
-#      - shapley
-#
+      - shapley
+
 #  KernelBanzhaf:
 #    weightings:
 #      - banzhaf
 #   
-#  PermutationSHAP:
-#    weightings:
-#      - shapley
-#
+  PermutationSHAP:
+    weightings:
+      - shapley
+
 #  MSR:
 #    weightings:
 #      - banzhaf
