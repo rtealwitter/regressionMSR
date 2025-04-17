@@ -42,13 +42,15 @@ def compute_weights(w1, p):
 
 def find_w1(p, start=10e-10, stop=10e10, num=1000):
     valid_w1s = []
-    l2norms = []
+    objectives = []
     for w1 in np.geomspace(start, stop, num):
         w = compute_weights(w1, p)
         if np.isnan(w).any(): continue
-        l2norms.append((w**2).sum())
+        objectives.append(
+            ((w[::-1] - w)**2).sum()
+        )
         valid_w1s.append(w1)
-    closest_idx = np.argmin(np.array(l2norms))
+    closest_idx = np.argmin(np.array(objectives))
     return valid_w1s[closest_idx]
 
 class UniversalRegression(BaseEstimator):
@@ -113,6 +115,8 @@ class UniversalRegression(BaseEstimator):
 
         w1 = find_w1(self.p)
         self.w = compute_weights(w1, self.p)
+        print(f"w1: {w1}")
+        print(f"w: {self.w}")
 
         def leverage_score(s):
             p_ext = np.append(self.p, 0)

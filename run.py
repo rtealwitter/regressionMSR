@@ -92,7 +92,7 @@ def run_debug():
     #weighting = "banzhaf"
 
     estimator_names = [
-        #"WSL", "RegressionAdjustment", "UniversalConstrained", "KernelSHAP", "PermutationSHAP", "PermutationRegression",
+        "RegressionAdjusted",
         "KernelBanzhaf+",
     ]
 
