@@ -29,13 +29,20 @@ weightings:
 #    - random_16
 
 estimators:
-  RegressionAdjusted:
+  TreeAdjusted:
     weightings:
       - shapley
       - banzhaf
       - beta_shapley
       - beta_shapley_sym
       - weighted_banzhaf  
+  LinearAdjusted:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
   MonteCarlo:
     weightings:
       - shapley

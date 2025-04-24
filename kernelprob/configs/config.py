@@ -15,7 +15,7 @@ from ..estimators.pshap import PermutationSHAPEstimator
 from ..estimators.kb import KernelBanzhafEstimator
 from ..estimators.msr import MSREstimator
 from ..estimators.mc import MonteCarloEstimator
-from ..estimators.regadj import RegressionAdjustedEstimator, PermutationRegression, WeightedMonteCarloEstimator
+from ..estimators.regadj import TreeAdjustedMC, LinearAdjustedMC, PermutationRegression, WeightedMonteCarloEstimator, GeneralMonteCarloEstimator
 
 from ..exact.treeprob import TreeProbExplainer
 from ..exact.enumeration import EnumerationExplainer
@@ -35,8 +35,10 @@ ESTIMATOR_ALL = {
     "OFA_S": OFA_S,
 #    "OFA_A": OFA_A,
     "WSL": WSLEstimator,
-    "RegressionAdjusted": RegressionAdjustedEstimator,
+    "TreeAdjusted": TreeAdjustedMC,
+    "LinearAdjusted" : LinearAdjustedMC,
     "MonteCarlo": WeightedMonteCarloEstimator,
+    "GeneralMonteCarlo": GeneralMonteCarloEstimator,
 }
 
 ESTIMATOR_SHAPLEY = {

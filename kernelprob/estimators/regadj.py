@@ -16,36 +16,27 @@ class NullModel:
     def predict(self, X):
         return np.zeros(X.shape[0])
 
-def get_fit(X_flat, y_flat, n, weighting):
-    num_samples = X_flat.shape[0]
-    idx_train = np.random.choice(num_samples, int(num_samples * 0.8), replace=False)
-    idx_test = np.setdiff1d(np.arange(num_samples), idx_train)
+def get_fit(X_flat, y_flat, weighting, regression_adj):
+    n = X_flat.shape[1]
+    if regression_adj is False:
+        reg_model = NullModel()
+        phi_method = lambda reg_model : np.zeros(n)
+    elif regression_adj == "linear":
+        reg_model = sklearn.linear_model.LinearRegression()
+        phi_method = lambda reg_model: reg_model.coef_
+    elif regression_adj == "tree":
+        reg_model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=n)
+        phi_method = lambda reg_model: tree_prob(np.zeros((1,n)), np.ones((1,n)), reg_model, weighting)[0].squeeze()
+    else:
+        raise ValueError("regression_adjustment must be False, 'linear', or 'tree'")
 
-    reg_models = [
-        NullModel(),
-        sklearn.linear_model.LinearRegression(),
-        sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=10, random_state=42, max_features=n),
-    ]
-    phi_methods = [
-        lambda reg_model : np.zeros(n),
-        lambda reg_model: reg_model.coef_,
-        lambda reg_model: tree_prob(np.zeros((1,n)), np.ones((1,n)), reg_model, weighting)[0].squeeze(),
-    ]
+    reg_model.fit(X_flat, y_flat)
+    phi = phi_method(reg_model)
 
-    best_fit = np.inf
-
-    for reg_model, phi_method in zip(reg_models, phi_methods):
-        reg_model.fit(X_flat[idx_train,:], y_flat[idx_train])
-        reg_pred_fit = ((reg_model.predict(X_flat[idx_test,:]) - y_flat[idx_test])**2).mean()
-        if reg_pred_fit < best_fit:
-            best_fit = reg_pred_fit
-            best_model = reg_model
-            best_phi = phi_method(reg_model)
-
-    return best_model, best_phi
+    return reg_model, phi
 
 class GeneralMonteCarloEstimator(BaseEstimator):
-    def __init__(self, model, baseline: np.ndarray, weighting: str, regression_adjust=True, use_median=True):
+    def __init__(self, model, baseline: np.ndarray, weighting: str, regression_adjust=False, use_median=True):
         super().__init__(model, baseline, weighting)
 
         self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size
@@ -92,7 +83,7 @@ class GeneralMonteCarloEstimator(BaseEstimator):
                         indices_complement = np.delete(np.arange(self.n), np.append(indices, i))
                         self.add_sample(i, mean_idx, self.per_S * S_idx + 2, indices_complement)
 
-    def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
+    def explain(self, explicand: np.ndarray, num_samples: int, return_direct=False) -> np.ndarray:
         samples_per_i = num_samples // self.n
         self.S_per_i = samples_per_i // self.per_S
         if self.use_median:
@@ -113,12 +104,10 @@ class GeneralMonteCarloEstimator(BaseEstimator):
         y_flat = self.model.predict(model_input)
         y = y_flat.reshape(self.n, self.num_means, self.nue_avg*self.per_S)
 
-        if self.regression_adjust:
-            reg_model, reg_phi = get_fit(X_flat, y_flat, self.n, self.weighting)
-            reg_pred = reg_model.predict(X_flat).reshape(self.n, self.num_means, self.nue_avg*self.per_S)
-        else:
-            reg_phi = np.zeros(self.n)
-            reg_pred = np.zeros((self.n, self.num_means, self.nue_avg*self.per_S))
+        reg_model, reg_phi = get_fit(X_flat, y_flat, self.weighting, self.regression_adjust)
+        reg_pred = reg_model.predict(X_flat).reshape(self.n, self.num_means, self.nue_avg*self.per_S)
+
+        if return_direct: return reg_model
  
         phi = np.zeros(self.n)
 
@@ -140,9 +129,13 @@ class WeightedMonteCarloEstimator(GeneralMonteCarloEstimator):
     def __init__(self, model, baseline: np.ndarray, weighting: str):
         super().__init__(model, baseline, weighting, regression_adjust=False, use_median=False)
 
-class RegressionAdjustedEstimator(GeneralMonteCarloEstimator):
+class TreeAdjustedMC(GeneralMonteCarloEstimator):
     def __init__(self, model, baseline: np.ndarray, weighting: str):
-        super().__init__(model, baseline, weighting, regression_adjust=True)
+        super().__init__(model, baseline, weighting, regression_adjust="tree")
+
+class LinearAdjustedMC(GeneralMonteCarloEstimator):
+    def __init__(self, model, baseline: np.ndarray, weighting: str):
+        super().__init__(model, baseline, weighting, regression_adjust="linear")
 
 class PermutationRegression(BaseEstimator):
     def __init__(self, model, baseline: np.ndarray, weighting: str):
@@ -176,7 +169,7 @@ class PermutationRegression(BaseEstimator):
         y_flat = self.model.predict(model_input)
         y = y_flat.reshape(num_permutations, self.n-1)
 
-        reg_model, reg_phi = get_fit(X_flat, y_flat, self.n, self.weighting)
+        reg_model, reg_phi = get_fit(X_flat, y_flat, self.weighting, "tree")
         reg_pred = reg_model.predict(X_flat).reshape(num_permutations, self.n-1)
         reg_baseline = reg_model.predict(np.zeros_like(self.baseline))
         reg_explicand = reg_model.predict(np.ones_like(explicand))

@@ -2,9 +2,12 @@ from typing import Any, Dict
 import argparse
 import logging
 import sklearn.ensemble
+import sklearn.neural_network
+import sklearn.datasets
 
 from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
 from kernelprob.utils.datasets import load_dataset, load_input
+from kernelprob.utils.p_generator import get_p
 from kernelprob.utils.run_utils import *
 from kernelprob.exact.treeprob import tree_prob
 from kernelprob.exact.treeshap import tree_shap
@@ -78,7 +81,6 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                     f.write(str(dict) + '\n')
                 noised_model.reset_sample_count()
 
-
 def run_debug():
     dataset = load_dataset("NHANES")
     X, y = dataset
@@ -117,6 +119,55 @@ def run_debug():
                 print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).sum()/ (true_values[idx] ** 2).sum()}")
                 #print(f"Estimate: {result}")
                 #print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
+
+def check_fit():
+    n = 10
+    weighting = "shapley"
+    p = get_p(n, weighting)
+    model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
+
+    sample_multiplier = 10
+
+    X, y = sklearn.datasets.make_regression(n_samples=100, n_features=n)
+    model.fit(X, y)
+
+    baseline, explicands = load_input(pd.DataFrame(X), num_runs=1, is_synthetic=False)
+    idx = 0
+
+
+    estimator = ESTIMATOR_FACTORY['GeneralMonteCarlo'](model, baseline, weighting=weighting, regression_adjust="tree")
+    reg_model = estimator.explain(explicands[idx], n * sample_multiplier, return_direct=True)
+
+    # shape: (2**n, 1)
+    values = np.arange(2**n, dtype=np.uint32)[:, None]  
+    # Create powers of 2 to mask bits
+    # shape: (n,)
+    powers = 2 ** np.arange(n - 1, -1, -1, dtype=np.uint32)
+    # Apply bitmask and compare to 0 to get bits
+    all_binary = ((values & powers) > 0).astype(int)
+
+    full_input = baseline * (1-all_binary) + explicands[idx] * (all_binary)
+    v = model.predict(full_input)
+    v_pred = reg_model.predict(full_input)
+
+    error = 0
+    for i in range(n):
+        with_i = all_binary[:, i] == 1
+        without_i = ~with_i  # or: all_binary[:, i] == 0
+
+        subset_sizes_with_i = all_binary[with_i].sum(axis=1) - 1
+        subset_sizes_without_i = all_binary[without_i].sum(axis=1)
+
+        error += (
+            p[subset_sizes_with_i] * (v[with_i] - v_pred[with_i])**2
+            + p[subset_sizes_without_i] * (v[without_i] - v_pred[without_i])**2
+        ).sum()
+    print(v[:10])
+    print(v_pred[:10])
+    print(p)
+    print(error)
+    print(((v-v_pred)**2).mean()/((v)**2).mean())
+
     
 def parse_args():
     parser = argparse.ArgumentParser(description="Run experiments.")
@@ -130,6 +181,11 @@ def parse_args():
         "--debug",
         action="store_true",
         help="Enable debug mode"
+    )
+    parser.add_argument(
+        "--check_fit",
+        action="store_true",
+        help="Run experiments on quality of fit"
     )
     return parser.parse_args()
 
@@ -148,10 +204,14 @@ def main():
     setup_logging()
 
     args = parse_args()
-    variable, debug = args.variable, args.debug
+    variable = args.variable
 
-    if debug:
+    if args.debug:
         run_debug()
+        exit()
+    
+    if args.check_fit:
+        check_fit()
         exit()
 
     if not os.path.exists("output"):
