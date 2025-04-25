@@ -2,8 +2,9 @@ from typing import Any, Dict
 import argparse
 import logging
 import sklearn.ensemble
+import sklearn.linear_model
 import sklearn.neural_network
-import sklearn.datasets
+import xgboost as xgb
 
 from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
 from kernelprob.utils.datasets import load_dataset, load_input
@@ -120,54 +121,68 @@ def run_debug():
                 #print(f"Estimate: {result}")
                 #print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
 
+def get_feature_data(rng, n, sample_multiplier, baseline, explicand, model):
+    num_samples = min(n * sample_multiplier, 2**n)
+    binary = rng.integers(0, 2, size=(num_samples, n), dtype=np.uint8)
+    model_input = baseline * (1-binary) + explicand * (binary)
+    label = model.predict(model_input)
+
+    return label, model_input
+
 def check_fit():
-    n = 10
-    weighting = "shapley"
-    p = get_p(n, weighting)
-    model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
+    rng = np.random.default_rng()
+    num_runs = 10
 
-    sample_multiplier = 10
+    for dataset in DATASETS["small_n"] + DATASETS["big_n"]:
+        filename = f"output/fit_{dataset}.csv"
+        X, y = load_dataset(dataset)
+        n = X.shape[1]
 
-    X, y = sklearn.datasets.make_regression(n_samples=100, n_features=n)
-    model.fit(X, y)
+        ground_truth_classes = {
+            'Linear' : sklearn.linear_model.LinearRegression(),
+            'RandomForest' : sklearn.ensemble.RandomForestRegressor(),
+            'NeuralNet' : sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300),
+        }
 
-    baseline, explicands = load_input(pd.DataFrame(X), num_runs=1, is_synthetic=False)
-    idx = 0
+        for ground_truth_class, model in ground_truth_classes.items():
+            model.fit(X.values, y)
+            baseline, explicands = load_input(pd.DataFrame(X), num_runs=num_runs, is_synthetic=False)
 
+            for explicand in explicands:
 
-    estimator = ESTIMATOR_FACTORY['GeneralMonteCarlo'](model, baseline, weighting=weighting, regression_adjust="tree")
-    reg_model = estimator.explain(explicands[idx], n * sample_multiplier, return_direct=True)
+                test_label, test_input = get_feature_data(rng, n, 32, baseline, explicand, model)
 
-    # shape: (2**n, 1)
-    values = np.arange(2**n, dtype=np.uint32)[:, None]  
-    # Create powers of 2 to mask bits
-    # shape: (n,)
-    powers = 2 ** np.arange(n - 1, -1, -1, dtype=np.uint32)
-    # Apply bitmask and compare to 0 to get bits
-    all_binary = ((values & powers) > 0).astype(int)
+                sample_multipliers = [2, 4, 8, 16, 32, 64, 128]
+                sample_multipliers = [64, 128]
 
-    full_input = baseline * (1-all_binary) + explicands[idx] * (all_binary)
-    v = model.predict(full_input)
-    v_pred = reg_model.predict(full_input)
+                for sample_multiplier in sample_multipliers:
+                    train_label, train_input = get_feature_data(rng, n, sample_multiplier, baseline, explicand, model)
+                    
+                    reg_model_classes = ["Linear", "RandomForest", "XGBoost"]
 
-    error = 0
-    for i in range(n):
-        with_i = all_binary[:, i] == 1
-        without_i = ~with_i  # or: all_binary[:, i] == 0
+                    for reg_model_class in reg_model_classes:
+                        if reg_model_class == "Linear":
+                            reg_model = sklearn.linear_model.LinearRegression()
+                        elif reg_model_class == "RandomForest":
+                            reg_model = sklearn.ensemble.RandomForestRegressor()
+                        elif reg_model_class == "XGBoost":
+                            reg_model = xgb.XGBRegressor()
+                        else:
+                            raise ValueError("Invalid regression model class, must be one of: Linear, RandomForest, XGBoost")
 
-        subset_sizes_with_i = all_binary[with_i].sum(axis=1) - 1
-        subset_sizes_without_i = all_binary[without_i].sum(axis=1)
+                        reg_model.fit(train_input, train_label)
+                        test_pred = reg_model.predict(test_input)
+                        error = np.sum((test_pred - test_label) ** 2) / np.sum(test_label ** 2)
 
-        error += (
-            p[subset_sizes_with_i] * (v[with_i] - v_pred[with_i])**2
-            + p[subset_sizes_without_i] * (v[without_i] - v_pred[without_i])**2
-        ).sum()
-    print(v[:10])
-    print(v_pred[:10])
-    print(p)
-    print(error)
-    print(((v-v_pred)**2).mean()/((v)**2).mean())
+                        dict = {
+                            'ground_truth_class' : ground_truth_class,
+                            'reg_model_class' : reg_model_class,
+                            'sample_multiplier' : sample_multiplier,
+                            'error' : error,
 
+                        }
+                        with open(filename, 'a') as f:
+                            f.write(str(dict) + '\n')
     
 def parse_args():
     parser = argparse.ArgumentParser(description="Run experiments.")
