@@ -1,0 +1,10 @@
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0021103912185320476, 'sum_error': 0.00010274481417180996, 'sum_true': -429.05404590418516}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0015279071762191773, 'sum_error': 0.00014938564572361583, 'sum_true': -141.77318841892586}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0013971130356031192, 'sum_error': 0.0008178555285108912, 'sum_true': -520.0177159293493}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0071610422429500345, 'sum_error': 4.006706827165863e-06, 'sum_true': 325.58465923322325}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0011574943019643457, 'sum_error': 2.72291065652219e-05, 'sum_true': -282.3112381041964}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.005262146979102682, 'sum_error': 0.0010529627785019493, 'sum_true': -139.46832955920374}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.002275778480910045, 'sum_error': 5.244526745056473e-05, 'sum_true': -514.8436358915847}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0018719204515824442, 'sum_error': 2.6579637993880413e-05, 'sum_true': -292.55298216289543}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.004946413605782892, 'sum_error': 3.404674930290674e-05, 'sum_true': -166.92578099534614}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.00027274587699435086, 'sum_error': 3.5963050426717772e-06, 'sum_true': -361.5173010180078}

@@ -1,0 +1,10 @@
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.008125110855912134, 'sum_error': 0.0005503214368375903, 'sum_true': -356.28344522779946}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.000858449178513892, 'sum_error': 0.00012660708683291257, 'sum_true': -138.63571086595306}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.007775444529779761, 'sum_error': 0.00046423089939888945, 'sum_true': -461.94081153882985}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0014788450838307413, 'sum_error': 0.0009154268857447297, 'sum_true': 300.34015348892166}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.000764735495805914, 'sum_error': 0.0003576796921808793, 'sum_true': -332.9888040337001}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0009050587527964753, 'sum_error': 0.001445413203385936, 'sum_true': -118.98001763196517}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.002205275969251683, 'sum_error': 0.00036582143533640923, 'sum_true': -481.8647482245814}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0011129667372131397, 'sum_error': 8.211539528925231e-05, 'sum_true': -353.78821042632126}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0009127230837082739, 'sum_error': 0.002112432847234045, 'sum_true': -250.13069133441942}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.00040511145428069655, 'sum_error': 0.00019856728545981944, 'sum_true': -391.8547046780626}

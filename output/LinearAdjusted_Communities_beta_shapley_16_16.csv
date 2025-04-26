@@ -1,0 +1,10 @@
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0005772271863002686, 'sum_error': 2.4903998031822588e-06, 'sum_true': -433.3819559039873}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 1.8263562009113755e-29, 'sum_error': 1.0047365143661704e-30, 'sum_true': -141.77318841892586}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0008190402404857102, 'sum_error': 1.9092172936691757e-05, 'sum_true': -523.1878639174474}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0009907238226999227, 'sum_error': 0.0001238945243006987, 'sum_true': 323.125956121417}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 5.1038849600854175e-05, 'sum_error': 1.0200197278858227e-06, 'sum_true': -282.03269626261783}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.00022350428727376692, 'sum_error': 1.983562650647957e-05, 'sum_true': -140.40657216668777}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.001679564131109098, 'sum_error': 1.3179550710598027e-05, 'sum_true': -514.5746624993006}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 9.386677138771823e-06, 'sum_error': 2.2614747283250693e-06, 'sum_true': -292.2028810511106}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0004907349647292079, 'sum_error': 0.0002479013758316403, 'sum_true': -166.54802895670738}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 2.7881558108678944e-05, 'sum_error': 2.466182306635104e-06, 'sum_true': -361.6410400672303}

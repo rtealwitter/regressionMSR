@@ -1,0 +1,10 @@
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0009337657387014881, 'sum_error': 0.001216699315066877, 'sum_true': -435.0049221539133}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 4.147981819227164e-30, 'sum_error': 6.430313691943491e-31, 'sum_true': -141.77318841892586}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0005189262680569861, 'sum_error': 0.00010832653953042463, 'sum_true': -524.3766694129841}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0004345828518792755, 'sum_error': 4.900319388441575e-08, 'sum_true': 322.20394245448955}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 6.046946004853631e-05, 'sum_error': 2.9582874477707697e-08, 'sum_true': -281.9282430720259}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0005831168464385556, 'sum_error': 0.0007151077029910656, 'sum_true': -140.7584131444943}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0013210777288011116, 'sum_error': 0.00042814523422868593, 'sum_true': -514.473797477194}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 2.2973453924847602e-05, 'sum_error': 5.912574933656723e-06, 'sum_true': -292.0715931341913}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 0.0005199824471366226, 'sum_error': 0.0003815539378886375, 'sum_true': -166.4063719422178}
+{'ground_truth_class': 'RandomForest', 'sample_size': 1010, 'difference': -202, 'noise': 0, 'n': 101, 'error': 1.2817124371932015e-05, 'sum_error': 1.3479300648817633e-06, 'sum_true': -361.68744221068863}

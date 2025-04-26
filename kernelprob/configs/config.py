@@ -38,7 +38,6 @@ ESTIMATOR_ALL = {
     "TreeAdjusted": TreeAdjustedMC,
     "LinearAdjusted" : LinearAdjustedMC,
     "MonteCarlo": WeightedMonteCarloEstimator,
-    "GeneralMonteCarlo": GeneralMonteCarloEstimator,
 }
 
 ESTIMATOR_SHAPLEY = {
