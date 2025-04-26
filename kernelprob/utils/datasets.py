@@ -5,6 +5,7 @@ import scipy
 import itertools
 import pandas as pd
 from sklearn.datasets import load_breast_cancer
+from sklearn.datasets import fetch_openml
 
 def synthetic(num_features=15):
     binary = np.zeros((2**num_features-2, num_features))
@@ -32,20 +33,36 @@ def synthetic(num_features=15):
     y = pd.Series(ystar + noise, name='Target')
     return X, y
 
+
+def load_bike_sharing():
+    data = fetch_openml(name="Bike_Sharing_Demand", version=2, as_frame=True)
+
+    X = data.data
+    y = data.target.astype(float)
+
+    # Columns to treat as categorical
+    categorical_cols = ['season', 'holiday', 'workingday', 'weather']
+    
+    # One-hot encode categorical columns
+    X = pd.get_dummies(X, columns=categorical_cols, drop_first=True)
+
+    return X, y
+
 def breast_cancer():
     return load_breast_cancer(return_X_y=True, as_frame=True)
 
 dataset_loaders = {
-    'Adult' : shap.datasets.adult,
-    'California' : shap.datasets.california,
-    'Communities' : shap.datasets.communitiesandcrime,
-    'Correlated' : shap.datasets.corrgroups60,
-    'Diabetes' : shap.datasets.diabetes,
-    'Independent' : shap.datasets.independentlinear60,
-    'IRIS' : shap.datasets.iris,
-    'NHANES' : shap.datasets.nhanesi,
-    'Synthetic' : synthetic,
-    "Breast Cancer": breast_cancer
+    'IRIS' : shap.datasets.iris, # 4
+    'California' : shap.datasets.california, #8
+    'Diabetes' : shap.datasets.diabetes, # 10
+    'Adult' : shap.datasets.adult, #12
+    'Bike Sharing' : load_bike_sharing, # 16
+    #'Synthetic' : synthetic, # 15
+    "Breast Cancer": breast_cancer, # 30
+    'Correlated' : shap.datasets.corrgroups60, # 60
+    'Independent' : shap.datasets.independentlinear60, # 60
+    'NHANES' : shap.datasets.nhanesi, # 79
+    'Communities' : shap.datasets.communitiesandcrime, #101
 }
 
 def load_dataset(dataset_name):

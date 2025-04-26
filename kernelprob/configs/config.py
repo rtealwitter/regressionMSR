@@ -58,8 +58,8 @@ ESTIMATOR_BANZHAF = {
 ESTIMATOR_FACTORY = {**ESTIMATOR_ALL, **ESTIMATOR_SHAPLEY, **ESTIMATOR_BANZHAF}
 
 DATASETS = {
-    "small_n": ['California', 'Adult'],
-    "big_n": ['Correlated', 'Independent', 'NHANES', 'Communities']
+    "small_n": ['IRIS', 'California', 'Diabetes', 'Adult', 'Bike Sharing'],
+    "big_n": ['Breast Cancer', 'Independent', 'Correlated',  'NHANES', 'Communities']
 }
 
 VARIABLES = {

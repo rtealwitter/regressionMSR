@@ -14,7 +14,7 @@ from kernelprob.exact.treeprob import tree_prob
 from kernelprob.exact.treeshap import tree_shap
 from kernelprob.exact.enumeration import enumeration_prob
 
-def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str):
+def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, ground_truth_class: str):
     n = baseline.shape[1]
     estimator_class_name = exp_cfg["estimator_class"]
     experiment_name = exp_cfg["name"]
@@ -26,9 +26,10 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     weighting = exp_cfg.get("weighting", None)
     if weighting is None:
         logging.error(f"Weighting not specified for '{experiment_name}'. Skipping.")
-
-    if "random" in weighting:
-        logging.info("Using enumeration for random p distribution.")
+        return
+    
+    if "random" in weighting or ground_truth_class == "MLP":
+        logging.info("Using enumeration.")
         true_values = enumeration_prob(baseline, explicands, model, weighting)
     # TODO: remove if treeprob is good enough :)
     elif weighting == "shapley":
@@ -71,6 +72,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
 
                 with open(filename, 'a') as f:
                     dict = {
+                        'ground_truth_class' : ground_truth_class,
                         'sample_size': actual_sample_size,
                         'difference': noised_model.get_sample_count() - actual_sample_size,
                         'noise': noise_std,
@@ -233,9 +235,20 @@ def main():
         os.makedirs("output")
     experiments = generate_experiment_configs()
     print(experiments)
-    datasets = DATASETS["small_n"] + DATASETS["big_n"]
 
-    for dataset in datasets:
+    ground_truth_class = 'MLP'
+    for dataset in DATASETS["small_n"]:
+        X, y = load_dataset(dataset)
+        n = X.shape[1]
+        model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
+        model.fit(X, y)
+        baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
+        for exp_cfg in experiments:
+            logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
+            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class)
+
+    ground_truth_class = 'RandomForest'
+    for dataset in DATASETS["big_n"]:
         X, y = load_dataset(dataset)
         n = X.shape[1]
         model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4, random_state=42, max_features=n)
@@ -243,7 +256,7 @@ def main():
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
         for exp_cfg in experiments:
             logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
-            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset)
+            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class)
 
 if __name__ == "__main__":
     main()
