@@ -36,7 +36,7 @@ def get_fit(X_flat, y_flat, weighting, regression_adj):
     return reg_model, phi
 
 class GeneralMonteCarloEstimator(BaseEstimator):
-    def __init__(self, model, baseline: np.ndarray, weighting: str, regression_adjust=False, use_median=True):
+    def __init__(self, model, baseline: np.ndarray, weighting: str, regression_adjust=False, use_median=False):
         super().__init__(model, baseline, weighting)
 
         self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size

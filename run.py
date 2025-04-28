@@ -97,8 +97,7 @@ def run_debug():
     #weighting = "banzhaf"
 
     estimator_names = [
-        "RegressionAdjusted",
-        "KernelBanzhaf+",
+        "TreeAdjusted",
     ]
 
     estimators = {
