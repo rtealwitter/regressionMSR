@@ -4,8 +4,8 @@ def tree_shap(baseline, explicands, model):
     import warnings
     warnings.filterwarnings("ignore", category=UserWarning)
 
+    explainer = shap.TreeExplainer(model, data=baseline)
     shap_values = []
-    explainer = shap.TreeExplainer(model, baseline)
     for explicand in explicands:
         shap_values.append(explainer.shap_values(explicand))
         

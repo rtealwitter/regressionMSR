@@ -85,7 +85,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                 noised_model.reset_sample_count()
 
 def run_debug():
-    dataset = load_dataset("NHANES")
+    dataset = load_dataset("Adult")
     X, y = dataset
     n = X.shape[1]
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
@@ -93,11 +93,17 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     weighting = "shapley"
-    weighting = "beta_shapley_16_16"
+    # weighting = "beta_shapley_16_4"
     #weighting = "banzhaf"
 
     estimator_names = [
         "TreeAdjusted",
+        "LeverageSHAP",
+        # "OFA_S",
+        # "OFA_A",
+        "GELS",
+        "ARM",
+        # "GELS_S",
     ]
 
     estimators = {
@@ -119,7 +125,7 @@ def run_debug():
             
             for estimator_name, result in results.items():
                 print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).sum()/ (true_values[idx] ** 2).sum()}")
-                #print(f"Estimate: {result}")
+                # print(f"Estimate: {result}")
                 #print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
 
 def get_feature_data(rng, n, sample_multiplier, baseline, explicand, model):

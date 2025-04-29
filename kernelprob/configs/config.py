@@ -8,7 +8,8 @@ from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
 
 from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
-
+from ..estimators.gels import GELSEstimator, GELSShapleyEstimator
+from ..estimators.arm import ARMEstimator
 from ..estimators.lshap import LeverageSHAPEstimator
 from ..estimators.kshap import KernelSHAPEstimator
 from ..estimators.pshap import PermutationSHAPEstimator
@@ -33,11 +34,13 @@ ESTIMATOR_ALL = {
     "LeverageSHAP+": UniversalConstrained,
     "KernelBanzhaf+": UniversalUnconstrained,
     "OFA_S": OFA_S,
-#    "OFA_A": OFA_A,
+    "OFA_A": OFA_A,
     "WSL": WSLEstimator,
     "TreeAdjusted": TreeAdjustedMC,
     "LinearAdjusted" : LinearAdjustedMC,
     "MonteCarlo": WeightedMonteCarloEstimator,
+    "GELS": GELSEstimator,
+    "ARM": ARMEstimator,
 }
 
 ESTIMATOR_SHAPLEY = {
@@ -45,6 +48,7 @@ ESTIMATOR_SHAPLEY = {
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,
     "PermutationRegression" : PermutationRegression,
+    "GELS_S": GELSShapleyEstimator,
 }
 
 ESTIMATOR_BANZHAF = {

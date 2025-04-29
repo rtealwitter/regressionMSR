@@ -62,13 +62,13 @@ estimators:
       - beta_shapley_sym
       - weighted_banzhaf
 #
-#  OFA_A_Optimized:
-#    weightings:
-#      - shapley
-#      # - banzhaf # This is MSR
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf
+ OFA_A:
+   weightings:
+     - shapley
+     # - banzhaf # This is MSR
+     - beta_shapley
+     - beta_shapley_sym
+     - weighted_banzhaf
 #
   LeverageSHAP+:
     weightings:
@@ -110,11 +110,31 @@ estimators:
     weightings:
       - shapley
 
-#  MSR:
-#    weightings:
-#      - banzhaf
+ MSR:
+   weightings:
+     - banzhaf
 #
 #  MonteCarlo:
 #    weightings:
 #      - shapley
 #      - banzhaf
+
+  GELS:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+
+  GELS_S:
+    weightings:
+      - shapley
+
+  ARM:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
