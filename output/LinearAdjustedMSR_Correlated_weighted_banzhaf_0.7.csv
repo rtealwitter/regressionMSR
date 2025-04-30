@@ -8,3 +8,13 @@
 {'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.0036233024842045702, 'sum_error': 0.00017290839551527924, 'sum_true': -0.3047324710769401}
 {'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.00532085564600507, 'sum_error': 0.0020781708408508744, 'sum_true': 1.5448275884574005}
 {'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.004322596928220086, 'sum_error': 0.0028592596456757814, 'sum_true': -0.5042246720334421}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.005102117203686887, 'sum_error': 0.004572467449359544, 'sum_true': -0.5126017408068697}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.0028991592354679603, 'sum_error': 0.018980014345910325, 'sum_true': 0.2786603811926912}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.003657374272499272, 'sum_error': 0.0005764011246195856, 'sum_true': 2.9185368524702637}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.0036381065935129986, 'sum_error': 2.9650226319542526e-05, 'sum_true': -1.1632493771554184}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.0029535575851947094, 'sum_error': 0.0005711589588234023, 'sum_true': 1.0490656174085222}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.003503355883369872, 'sum_error': 4.2638413818962896e-05, 'sum_true': 2.8321797736732575}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.004463067717911484, 'sum_error': 0.00621805079295233, 'sum_true': -0.665637162409421}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.0021394227873568917, 'sum_error': 0.009910924921129473, 'sum_true': -0.3047324710769401}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.006770745710026363, 'sum_error': 0.007607627789284993, 'sum_true': 1.5448275884574005}
+{'ground_truth_class': 'RandomForest', 'sample_size': 600, 'difference': 0, 'noise': 0, 'n': 60, 'error': 0.004468599087744187, 'sum_error': 0.012299651982023305, 'sum_true': -0.5042246720334421}

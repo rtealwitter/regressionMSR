@@ -8,3 +8,13 @@
 {'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0016044262143022896, 'sum_error': 0.00225914707568985, 'sum_true': -56.10072983259755}
 {'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0006906256039155459, 'sum_error': 0.0027649856035511025, 'sum_true': -35.528900805001406}
 {'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0024717821420172825, 'sum_error': 5.066667678371449e-05, 'sum_true': -51.723857238560555}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 1.014971110501801e-05, 'sum_error': 7.646785467008883e-06, 'sum_true': 95.27781323659048}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0010703602914981438, 'sum_error': 3.4155887078998786e-05, 'sum_true': -31.964498292412905}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.002461037947908472, 'sum_error': 0.0015992783930190114, 'sum_true': -25.731138110316802}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.00032444342321338263, 'sum_error': 0.004699554545988677, 'sum_true': 38.11955415901514}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0004079475888271549, 'sum_error': 0.01144167259471257, 'sum_true': 9.908194082196715}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0005531759829088311, 'sum_error': 0.0023129284541959076, 'sum_true': 19.562624865939156}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.00015089980616078528, 'sum_error': 6.357697802316219e-05, 'sum_true': 74.64473948783521}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0011716500621823229, 'sum_error': 0.0019356672962033573, 'sum_true': -56.10072983259755}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.004071826412782991, 'sum_error': 0.003560685189995606, 'sum_true': -35.528900805001406}
+{'ground_truth_class': 'MLP', 'sample_size': 100, 'difference': 0, 'noise': 0, 'n': 10, 'error': 0.0016430084054200596, 'sum_error': 5.004545856817806e-06, 'sum_true': -51.723857238560555}
