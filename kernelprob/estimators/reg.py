@@ -1,6 +1,7 @@
 import numpy as np
 import scipy
 from scipy.special import comb
+import scipy.special
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
@@ -269,16 +270,22 @@ class UniversalRegression(BaseEstimator):
         # (A^T S^T S A)^-1 A^T S^T S b + (v1 - v0) / n
         # (P^T Z^T S^T S Z P)^-1 P^T Z^T S^T S b + (v1 - v0) / n
 
-        sampled = self.sampled[np.sum(self.sampled, axis=1) != 0] # Remove zero rows
+        self.sampled = self.sampled[np.sum(self.sampled, axis=1) != 0] # Remove zero rows
+        sampled = self.sampled
         v0, v1 = self.model.predict(self.baseline), self.model.predict(self.explicand)
+        self.v0, self.v1 = v0, v1
         inputs = self.baseline * (1 - sampled) + self.explicand * sampled
-        Sv = self.model.predict(inputs) - v0
+        self.y = self.model.predict(inputs)
+        Sv = self.y - v0
 
         # Estimate constant term = 1/n sum_i phi_i
         # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
         # Compute probability each set size was sampled
-        sizes = np.sum(sampled, axis=1).astype(int)
-        prob_sampled = self.get_probs(sizes)
+        self.sizes = np.sum(sampled, axis=1).astype(int)
+        sizes = self.sizes
+        self.prob_sampled = self.get_probs(sizes)
+        prob_sampled = self.prob_sampled
+
 
         sum_weighting = -self.p[sizes] * (self.n - sizes) + self.p[sizes-1] * sizes
         sum_phi = prob_sampled * sum_weighting @ Sv
@@ -308,3 +315,46 @@ class UniversalConstrained(UniversalRegression):
 class UniversalUnconstrained(UniversalRegression):
     def __init__(self, model, baseline, weighting):
         super().__init__(model, baseline, weighting, with_replace=False, constrain_reg=False)
+
+class MSRLeverageSHAP(BaseEstimator):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(model, baseline, weighting)
+        self.n = self.baseline.shape[1]
+        self.p = get_p(self.n, weighting)
+        self.model = model
+        self.baseline = baseline
+        self.gen = np.random.Generator(np.random.PCG64())
+
+        self.LeverageSHAP = UniversalRegression(
+            model, baseline, weighting, with_replace=False, constrain_reg=True,
+        )
+
+    def explain(self, explicand, num_samples):
+        phi_est = self.LeverageSHAP.explain(explicand, num_samples)
+        sampled = self.LeverageSHAP.sampled
+        y = self.LeverageSHAP.y
+        sizes = self.LeverageSHAP.sizes
+        prob_sampled = self.LeverageSHAP.prob_sampled
+        phi = np.zeros(self.n)
+
+        pred = (sampled @ phi_est)
+
+        for i in range(self.n):
+            i_contained = (sampled[:, i] == 1)
+            i_contained_weighting = self.p[sizes[i_contained]-1]
+            not_contained_weighting = self.p[sizes[~i_contained]]
+
+            phi[i] = (
+                (self.LeverageSHAP.v1 - phi_est.sum())/self.n -
+                (self.LeverageSHAP.v0)/self.n +
+                phi_est[i] +
+                (
+                    (y[i_contained] - pred[i_contained]) * i_contained_weighting / prob_sampled[i_contained]
+                 ).mean() -
+                (
+                    (y[~i_contained] - pred[~i_contained]) * not_contained_weighting / prob_sampled[~i_contained]
+                ).mean()
+            )
+
+        return phi
+

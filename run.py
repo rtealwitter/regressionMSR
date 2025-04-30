@@ -85,7 +85,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                 noised_model.reset_sample_count()
 
 def run_debug():
-    dataset = load_dataset("NHANES")
+    dataset = load_dataset("Communities")
     X, y = dataset
     n = X.shape[1]
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
@@ -93,11 +93,16 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     weighting = "shapley"
-    weighting = "beta_shapley_16_16"
+    #weighting = "beta_shapley_16_16"
     #weighting = "banzhaf"
 
     estimator_names = [
+        "LeverageSHAPMSR",
+        "LeverageSHAP",
         "TreeAdjusted",
+        "TreeAdjustedMSR",
+        "LinearAdjusted",
+        "LinearAdjustedMSR",
     ]
 
     estimators = {

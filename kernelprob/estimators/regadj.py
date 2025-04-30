@@ -197,3 +197,83 @@ class PermutationRegression(BaseEstimator):
                     ) / num_permutations
 
         return phi
+
+class MSRAdjusted(BaseEstimator):
+    def __init__(self, model, baseline: np.ndarray, weighting: str, regression_adjust='tree', use_median=False):
+        super().__init__(model, baseline, weighting)
+
+        self.n = self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size
+        self.p = get_p(self.n, weighting)
+        self.regression_adjust = regression_adjust
+        self.use_median = use_median
+        
+        # pair sample if p is symmetric
+        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+        self.pair_sampling = False # Not implemented yet
+
+        self.sample_prob = self.p * scipy.special.binom(self.n-1, np.arange(self.n))
+        self.rng = np.random.default_rng()
+    
+    def add_sample(self, idx, indices, bigger_subset):
+        self.X[idx, indices] = 1
+        self.bigger_subset[idx] = bigger_subset
+        self.sizes[idx] = len(indices)
+    
+    def sample_with_replacement(self):
+
+        elements = np.arange(self.n)
+
+        idx = 0
+        for offset in [0,1]:
+            sizes = np.arange(self.n) + offset
+            sampled_sizes = self.rng.choice(sizes, self.num_samples//2, p=self.sample_prob)
+            
+            for S_idx, size in enumerate(sampled_sizes):
+                indices = self.rng.choice(elements, size=size, replace=False)
+
+                self.add_sample(idx, indices, offset)
+                idx += 1
+                
+                if self.pair_sampling:
+                    indices_complement = np.delete(np.arange(self.n), indices)
+                    size_complement = self.n - size
+                    self.add_sample(idx, indices_complement, offset)
+                    idx += 1
+
+
+    def explain(self, explicand: np.ndarray, num_samples: int, return_direct=False) -> np.ndarray:
+        self.num_samples = num_samples
+        self.X = np.zeros((self.num_samples, self.n), dtype=float)
+        self.bigger_subset = np.ones((self.num_samples), dtype=float)
+        self.sizes = np.zeros((self.num_samples), dtype=int)
+
+        self.sample_with_replacement()
+        
+        model_input = self.baseline * (1 - self.X) + explicand * self.X
+        y = self.model.predict(model_input)
+
+        reg_model, reg_phi = get_fit(self.X, y, self.weighting, self.regression_adjust)
+        reg_pred = reg_model.predict(self.X)
+
+        if return_direct: return reg_model
+ 
+        phi = np.zeros(self.n)
+
+        for i in range(self.n):
+            i_contained = (self.X[:, i] == 1)
+            
+            phi[i] = (
+                reg_phi[i] + 
+                ((y[i_contained] - reg_pred[i_contained])).mean() -
+                ((y[~i_contained] - reg_pred[~i_contained])).mean()
+            )
+
+        return phi
+
+class TreeMSRAdjusted(MSRAdjusted):
+    def __init__(self, model, baseline: np.ndarray, weighting: str):
+        super().__init__(model, baseline, weighting, regression_adjust="tree", use_median=False)
+
+class LinearMSRAdjusted(MSRAdjusted):
+    def __init__(self, model, baseline: np.ndarray, weighting: str):
+        super().__init__(model, baseline, weighting, regression_adjust="linear", use_median=False)

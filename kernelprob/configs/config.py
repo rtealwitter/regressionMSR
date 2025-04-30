@@ -4,7 +4,7 @@ import yaml
 
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
-from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
+from ..estimators.reg import UniversalConstrained, UniversalUnconstrained, MSRLeverageSHAP
 
 from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
@@ -15,7 +15,7 @@ from ..estimators.pshap import PermutationSHAPEstimator
 from ..estimators.kb import KernelBanzhafEstimator
 from ..estimators.msr import MSREstimator
 from ..estimators.mc import MonteCarloEstimator
-from ..estimators.regadj import TreeAdjustedMC, LinearAdjustedMC, PermutationRegression, WeightedMonteCarloEstimator, GeneralMonteCarloEstimator
+from ..estimators.regadj import TreeAdjustedMC, LinearAdjustedMC, PermutationRegression, WeightedMonteCarloEstimator, GeneralMonteCarloEstimator, TreeMSRAdjusted, LinearMSRAdjusted
 
 from ..exact.treeprob import TreeProbExplainer
 from ..exact.enumeration import EnumerationExplainer
@@ -30,6 +30,8 @@ ESTIMATOR_TRUE = {
 # Important that supersets of other estimators are included first
 # E.g., OFA_S_Optimized should be included before OFA_S
 ESTIMATOR_ALL = { 
+    'TreeAdjustedMSR' : TreeMSRAdjusted,
+    "LinearAdjustedMSR" : LinearMSRAdjusted,
     "LeverageSHAP+": UniversalConstrained,
     "KernelBanzhaf+": UniversalUnconstrained,
     "OFA_S": OFA_S,
@@ -41,6 +43,7 @@ ESTIMATOR_ALL = {
 }
 
 ESTIMATOR_SHAPLEY = {
+    'LeverageSHAPMSR': MSRLeverageSHAP,
     "LeverageSHAP": LeverageSHAPEstimator,
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,

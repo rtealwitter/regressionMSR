@@ -1,0 +1,10 @@
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.004731903031653958, 'sum_error': 0.001995304461309043, 'sum_true': 0.2981945440791834}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.11519104880320563, 'sum_error': 0.020082397798640152, 'sum_true': -0.1252545906668873}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.00840200947046703, 'sum_error': 0.00797625295211947, 'sum_true': 0.2756678389831063}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.02151872750641409, 'sum_error': 0.03255979676230248, 'sum_true': 0.30238832536811183}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.043987281636681114, 'sum_error': 0.005095951869163888, 'sum_true': 0.1461511270533474}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.0062592448319278935, 'sum_error': 0.00026858414039743265, 'sum_true': 0.22938969887086655}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.0015914691566409382, 'sum_error': 0.00010129785600840777, 'sum_true': -0.4862752066849626}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.005154408344323359, 'sum_error': 0.0039027883908854576, 'sum_true': 0.28160276990066985}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.006291394564996844, 'sum_error': 0.00033116291259625185, 'sum_true': 0.1710702173283909}
+{'ground_truth_class': 'RandomForest', 'sample_size': 300, 'difference': 0, 'noise': 0, 'n': 30, 'error': 0.16561659054903774, 'sum_error': 0.2697396576671571, 'sum_true': -0.1738344088587809}
