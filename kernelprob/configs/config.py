@@ -1,7 +1,8 @@
 from typing import Any, Dict, List
-import itertools
 import yaml
 
+# import from utils
+from ..utils.datasets import dataset_loaders, dataset_sizes
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
@@ -54,10 +55,13 @@ ESTIMATOR_BANZHAF = {
 # Combine all estimator dictionaries
 ESTIMATOR_FACTORY = {**ESTIMATOR_ALL, **ESTIMATOR_SHAPLEY, **ESTIMATOR_BANZHAF}
 
-DATASETS = {
-    "small_n": ['IRIS', 'California', 'Diabetes', 'Adult', 'Bike Sharing'],
-    "big_n": ['Breast Cancer', 'Independent', 'Correlated',  'NHANES', 'Communities']
-}
+DATASETS = {'small_n' : [], 'big_n' : []}
+
+for dataset in dataset_loaders:
+    if dataset_sizes[dataset] < 20:
+        DATASETS['small_n'].append(dataset)
+    else:
+        DATASETS['big_n'].append(dataset)
 
 VARIABLES = {
     "basic" : {

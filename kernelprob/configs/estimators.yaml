@@ -1,26 +1,26 @@
 weightings:
-  shapley:
-    - shapley
+#  shapley:
+#    - shapley
 #  banzhaf:
 #    - banzhaf
-#  beta_shapley_sym:
-#    - beta_shapley_1_1 # Same as Shapley
-#    - beta_shapley_2_2
-#    - beta_shapley_4_4
-#    - beta_shapley_8_8
-#    - beta_shapley_16_16
-#  beta_shapley:
-#    - beta_shapley_1_1 # Same as Shapley
-#    - beta_shapley_1_2
-#    - beta_shapley_1_4
-#    - beta_shapley_1_8
-#    - beta_shapley_1_16
-#  weighted_banzhaf:
-#    - weighted_banzhaf_0.5 # Same as Banzhaf
-#    - weighted_banzhaf_0.6
-#    - weighted_banzhaf_0.7
-#    - weighted_banzhaf_0.8
-#    - weighted_banzhaf_0.9
+  beta_shapley_sym:
+    - beta_shapley_1_1 # Same as Shapley
+    - beta_shapley_2_2
+    - beta_shapley_4_4
+    - beta_shapley_8_8
+    - beta_shapley_16_16
+  beta_shapley:
+    - beta_shapley_1_1 # Same as Shapley
+    - beta_shapley_1_2
+    - beta_shapley_1_4
+    - beta_shapley_1_8
+    - beta_shapley_1_16
+  weighted_banzhaf:
+    - weighted_banzhaf_0.5 # Same as Banzhaf
+    - weighted_banzhaf_0.6
+    - weighted_banzhaf_0.7
+    - weighted_banzhaf_0.8
+    - weighted_banzhaf_0.9
 #  random:
 #    - random_42
 #    - random_27
@@ -29,43 +29,50 @@ weightings:
 #    - random_16
 
 estimators:
-  MSRTree:
+  KernelSHAP:
     weightings:
       - shapley
-  MSRLinear:
+  PermutationSHAP:
     weightings:
       - shapley
-#  TreeAdjustedMSR:
-#    weightings:
-#      - shapley
-#      - banzhaf
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf      
-#  LinearAdjustedMSR:
-#    weightings:
-#      - shapley
-#      - banzhaf
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf      
-#  LeverageSHAPMSR:
-#    weightings:
-#      - shapley
-#  TreeAdjusted:
-#    weightings:
-#      - shapley
-#      - banzhaf
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf  
-#  LinearAdjusted:
-#    weightings:
-#      - shapley
-#      - banzhaf
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf
+  LeverageSHAP:
+    weightings:
+      - shapley
+
+  KernelBanzhaf:
+    weightings:
+      - banzhaf
+
+  TreeMSR:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+  LinearMSR:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+
+  OFA_S:
+    weightings:
+#      - shapley # Bad performance
+#      - banzhaf # Bad performance
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf  
+  WSL:
+    weightings:
+      # - shapley # This is MC
+      # - banzhaf # This is MC
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+
 #  MonteCarlo:
 #    weightings:
 ##      - shapley
@@ -73,10 +80,6 @@ estimators:
 #      - beta_shapley
 #      - beta_shapley_sym
 #      - weighted_banzhaf   
-##  PermutationRegression:
-##    weightings:
-##      - shapley
-##
 #  OFA_S:
 #    weightings:
 #      - shapley
@@ -93,7 +96,7 @@ estimators:
 ##      - beta_shapley_sym
 ##      - weighted_banzhaf
 ##
-#  LeverageSHAP+:
+#  LeverageSHAP:
 #    weightings:
 #      - beta_shapley
 #      - weighted_banzhaf
@@ -101,7 +104,7 @@ estimators:
 #      - beta_shapley_sym
 #      #- shapley # This is Leverage SHAP
 #
-#  KernelBanzhaf+:
+#  KernelBanzhaf:
 #    weightings:
 #      - beta_shapley
 #      - weighted_banzhaf
@@ -109,29 +112,9 @@ estimators:
 #      - shapley
 #      - beta_shapley_sym     
 #
-#  WSL:
-#    weightings:
-#      # - shapley # This is MC
-#      # - banzhaf # This is MC
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf
+
 #
-#  LeverageSHAP:
-#    weightings:
-#      - shapley
-#
-#  KernelSHAP:
-#    weightings:
-#      - shapley
-#
-##  KernelBanzhaf:
-##    weightings:
-##      - banzhaf
-##   
-#  PermutationSHAP:
-#    weightings:
-#      - shapley
+
 #
 ##  MSR:
 ##    weightings:

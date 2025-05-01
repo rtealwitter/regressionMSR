@@ -128,12 +128,27 @@ dataset_loaders = {
     'Forest Fires' : load_forest_fires, # 13
     'Real Estate' : load_real_estate, # 15
     'Bike Sharing' : load_bike_sharing, # 16
-    #'Synthetic' : synthetic, # 15
-    "Breast Cancer": breast_cancer, # 30
+    'Breast Cancer': breast_cancer, # 30
     'Correlated' : shap.datasets.corrgroups60, # 60
     'Independent' : shap.datasets.independentlinear60, # 60
     'NHANES' : shap.datasets.nhanesi, # 79
     'Communities' : shap.datasets.communitiesandcrime, #101
+}
+
+dataset_sizes = {
+    'IRIS' : 4,
+    'California' : 8,
+    'Diabetes' : 10,
+    'Wine Quality' : 12,
+    'Adult' : 12,
+    'Forest Fires' : 13,
+    'Real Estate' : 15,
+    'Bike Sharing' : 16,
+    'Breast Cancer': 30,
+    'Correlated' : 60,
+    'Independent' : 60,
+    'NHANES' : 79,
+    'Communities' : 101
 }
 
 def load_dataset(dataset_name):
