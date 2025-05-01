@@ -85,24 +85,23 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                 noised_model.reset_sample_count()
 
 def run_debug():
-    dataset = load_dataset("Communities")
-    X, y = dataset
+    dataset_name = "Wine Quality"
+    X, y = load_dataset(dataset_name)
     n = X.shape[1]
+    print(fr"Dataset: {dataset_name} (n={n})")
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
-    weighting = "shapley"
+    weighting = "banzhaf"
     #weighting = "beta_shapley_16_16"
     #weighting = "banzhaf"
 
     estimator_names = [
-        "LeverageSHAPMSR",
-        "LeverageSHAP",
-        "TreeAdjusted",
-        "TreeAdjustedMSR",
-        "LinearAdjusted",
-        "LinearAdjustedMSR",
+        'TreeMSR',
+        'LinearMSR',
+        #"LeverageSHAP",
+        'KernelBanzhaf'
     ]
 
     estimators = {
@@ -110,6 +109,8 @@ def run_debug():
     }
 
     true_values = tree_prob(baseline, explicands, model, weighting)
+    # Enumeration
+    #true_values = enumeration_prob(baseline, explicands, model, weighting)
     # print(f"True values: {true_values}")
 
     for sample_size in [8, 16, 32]:

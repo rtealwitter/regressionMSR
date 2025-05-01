@@ -3,6 +3,10 @@ import scipy
 from scipy.special import comb
 import scipy.special
 
+import sklearn.ensemble
+import sklearn.linear_model
+from ..exact.treeprob import tree_prob
+
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
 from .est_utils import combination_generator
@@ -116,8 +120,8 @@ class UniversalRegression(BaseEstimator):
 
         w1 = find_w1(self.p)
         self.w = compute_weights(w1, self.p)
-        print(f"w1: {w1}")
-        print(f"w: {self.w}")
+#        print(f"w1: {w1}")
+#        print(f"w: {self.w}")
 
         def leverage_score(s):
             p_ext = np.append(self.p, 0)
@@ -249,6 +253,7 @@ class UniversalRegression(BaseEstimator):
         # xt = (A^T S^T W S A)^-1 A^T S^T W S v
         # phit = (1+bn 1 1^T) xt
         sizes = np.sum(self.sampled, axis=1).astype(int)
+        self.sizes = sizes
         p_ext = np.append(self.p, 0)
         
         # Build A_tilde so A_tilde[S,i] = p[|S|-1]/w[|S|] if i in S else -p[|S|]/w[|S|]
@@ -256,9 +261,11 @@ class UniversalRegression(BaseEstimator):
         A_tilde /= self.w[sizes][:,None]
 
         inputs = self.baseline * (1 - self.sampled) + self.explicand * self.sampled
-        Sv = self.model.predict(inputs) * self.w[sizes]
+        self.y = self.model.predict(inputs)
+        Sv = self.y * self.w[sizes]
+        self.prob_sampled = self.get_probs(sizes)
 
-        reg_weighting = 1/self.get_probs(sizes)
+        reg_weighting = 1/self.prob_sampled
 
         ASSv = A_tilde.T @ np.diag(reg_weighting) @ Sv
         ASSA = A_tilde.T @ np.diag(reg_weighting) @ A_tilde
@@ -315,46 +322,3 @@ class UniversalConstrained(UniversalRegression):
 class UniversalUnconstrained(UniversalRegression):
     def __init__(self, model, baseline, weighting):
         super().__init__(model, baseline, weighting, with_replace=False, constrain_reg=False)
-
-class MSRLeverageSHAP(BaseEstimator):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting)
-        self.n = self.baseline.shape[1]
-        self.p = get_p(self.n, weighting)
-        self.model = model
-        self.baseline = baseline
-        self.gen = np.random.Generator(np.random.PCG64())
-
-        self.LeverageSHAP = UniversalRegression(
-            model, baseline, weighting, with_replace=False, constrain_reg=True,
-        )
-
-    def explain(self, explicand, num_samples):
-        phi_est = self.LeverageSHAP.explain(explicand, num_samples)
-        sampled = self.LeverageSHAP.sampled
-        y = self.LeverageSHAP.y
-        sizes = self.LeverageSHAP.sizes
-        prob_sampled = self.LeverageSHAP.prob_sampled
-        phi = np.zeros(self.n)
-
-        pred = (sampled @ phi_est)
-
-        for i in range(self.n):
-            i_contained = (sampled[:, i] == 1)
-            i_contained_weighting = self.p[sizes[i_contained]-1]
-            not_contained_weighting = self.p[sizes[~i_contained]]
-
-            phi[i] = (
-                (self.LeverageSHAP.v1 - phi_est.sum())/self.n -
-                (self.LeverageSHAP.v0)/self.n +
-                phi_est[i] +
-                (
-                    (y[i_contained] - pred[i_contained]) * i_contained_weighting / prob_sampled[i_contained]
-                 ).mean() -
-                (
-                    (y[~i_contained] - pred[~i_contained]) * not_contained_weighting / prob_sampled[~i_contained]
-                ).mean()
-            )
-
-        return phi
-

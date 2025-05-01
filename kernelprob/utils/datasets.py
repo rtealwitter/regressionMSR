@@ -51,11 +51,82 @@ def load_bike_sharing():
 def breast_cancer():
     return load_breast_cancer(return_X_y=True, as_frame=True)
 
+def load_wine_quality():
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"
+    df_red = pd.read_csv(url, sep=';')
+    df_red['type'] = 'red'
+
+    url_white = "https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"
+    df_white = pd.read_csv(url_white, sep=';')
+    df_white['type'] = 'white'
+
+    # Combine red and white datasets
+    df = pd.concat([df_red, df_white], ignore_index=True)
+
+    y = df['quality'].astype(float)
+    X = df.drop(columns=['quality'])
+
+    # One-hot encode the wine type
+    X = pd.get_dummies(X, columns=['type'], drop_first=True)
+
+    return X, y
+
+def load_forest_fires():
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/forest-fires/forestfires.csv"
+    df = pd.read_csv(url)
+
+    y = df["area"].astype(float)
+
+    # Drop 'day' and map month to season
+    df = df.drop(columns=["area", "day"])
+
+    season_map = {
+        'dec': 'winter', 'jan': 'winter', 'feb': 'winter',
+        'mar': 'spring', 'apr': 'spring', 'may': 'spring',
+        'jun': 'summer', 'jul': 'summer', 'aug': 'summer',
+        'sep': 'fall',   'oct': 'fall',   'nov': 'fall'
+    }
+
+    df["season"] = df["month"].map(season_map)
+    df = df.drop(columns=["month"])
+
+    # One-hot encode season
+    X = pd.get_dummies(df, columns=["season"], drop_first=True)
+
+    return X, y
+
+import pandas as pd
+
+import pandas as pd
+
+def load_real_estate():
+    url = "https://archive.ics.uci.edu/ml/machine-learning-databases/00477/Real%20estate%20valuation%20data%20set.xlsx"
+    df = pd.read_excel(url)
+
+    # Drop index column
+    df = df.drop(columns=["No"])
+
+    # Use the correct transaction date column
+    df["month"] = (df["X1 transaction date"] % 1 * 12).round().astype(int)
+    df["month"] = df["month"].replace({0: 1, 12: 1})  # Fix edge cases
+
+    # Drop original date, one-hot encode month
+    df = df.drop(columns=["X1 transaction date"])
+    df = pd.get_dummies(df, columns=["month"], drop_first=True)
+
+    y = df["Y house price of unit area"].astype(float)
+    X = df.drop(columns=["Y house price of unit area"])
+
+    return X, y
+
 dataset_loaders = {
-    'IRIS' : shap.datasets.iris, # 4
-    'California' : shap.datasets.california, #8
-    'Diabetes' : shap.datasets.diabetes, # 10
+#    'IRIS' : shap.datasets.iris, # 4
+#    'California' : shap.datasets.california, #8
+#    'Diabetes' : shap.datasets.diabetes, # 10
+    'Wine Quality' : load_wine_quality, # 12
     'Adult' : shap.datasets.adult, #12
+    'Forest Fires' : load_forest_fires, # 13
+    'Real Estate' : load_real_estate, # 15
     'Bike Sharing' : load_bike_sharing, # 16
     #'Synthetic' : synthetic, # 15
     "Breast Cancer": breast_cancer, # 30
