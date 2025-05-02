@@ -60,15 +60,15 @@ estimators:
 
   OFA_S:
     weightings:
-#      - shapley # Bad performance
-#      - banzhaf # Bad performance
+      - shapley # Bad performance
+      - banzhaf # Bad performance
       - beta_shapley
       - beta_shapley_sym
       - weighted_banzhaf  
   WSL:
     weightings:
-      # - shapley # This is MC
-      # - banzhaf # This is MC
+      - shapley # This is MC
+      - banzhaf # This is MC
       - beta_shapley
       - beta_shapley_sym
       - weighted_banzhaf

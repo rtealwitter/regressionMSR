@@ -33,18 +33,18 @@ ESTIMATOR_TRUE = {
 ESTIMATOR_ALL = {
     'TreeMSR': TreeMSR,
     'LinearMSR': LinearMSR,
-    'MSR' : MSR,
-    "LeverageSHAP+": UniversalConstrained,
-    "KernelBanzhaf+": UniversalUnconstrained,
     "OFA_S": OFA_S,
-#    "OFA_A": OFA_A, # Unfair comparison
     "WSL": WSLEstimator,
+#    "OFA_A": OFA_A, # Unfair comparison
+#    "LeverageSHAP+": UniversalConstrained,
+#    "KernelBanzhaf+": UniversalUnconstrained,
 }
 
 ESTIMATOR_SHAPLEY = {
     "LeverageSHAP": LeverageSHAPEstimator,
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,
+    'MSR' : MSR,
 }
 
 ESTIMATOR_BANZHAF = {
