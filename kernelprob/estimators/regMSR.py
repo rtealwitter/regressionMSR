@@ -144,3 +144,7 @@ class LinearMSR(UniversalMSR):
 class TreeMSR(UniversalMSR):
     def __init__(self, model, baseline, weighting):
         super().__init__(model, baseline, weighting, reg_model_class='tree')
+
+class MSR(UniversalMSR):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(model, baseline, weighting, reg_model_class=False)

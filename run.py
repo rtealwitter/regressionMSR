@@ -84,6 +84,36 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                     f.write(str(dict) + '\n')
                 noised_model.reset_sample_count()
 
+def run_case_study():
+    weighting = 'shapley'
+    sample_size_mult = 5
+    estimator_names = ['WSL', 'MSR', 'LinearMSR']
+    for dataset in DATASETS['small_n'] + DATASETS['big_n']:
+        X, y = load_dataset(dataset)
+        n = X.shape[1]
+        baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
+        results = {}
+
+        print(f"Dataset: {dataset} (n={n})")
+        if n >= 20:
+            model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
+            model.fit(X, y)
+            results['True'] = tree_prob(baseline, explicands, model, weighting)
+        else:
+            model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
+            model.fit(X, y)
+            results['True'] = enumeration_prob(baseline, explicands, model, weighting)
+    
+        estimators = {
+            name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
+        }
+
+        for estimator_name, estimator in estimators.items():
+            results[estimator_name] = estimator.explain(explicands[0], sample_size_mult * n)
+        
+        with open(f"output/case_study_{dataset}.csv", 'w') as f:
+            f.write(str(results).replace('\n', ' '))
+
 def run_debug():
     dataset_name = "Wine Quality"
     X, y = load_dataset(dataset_name)
@@ -209,6 +239,11 @@ def parse_args():
         action="store_true",
         help="Run experiments on quality of fit"
     )
+    parser.add_argument(
+        "--case_study",
+        action="store_true",
+        help="Run case study experiment"
+    )
     return parser.parse_args()
 
 def setup_logging():
@@ -234,6 +269,10 @@ def main():
     
     if args.check_fit:
         check_fit()
+        exit()
+    
+    if args.case_study:
+        run_case_study()
         exit()
 
     if not os.path.exists("output"):

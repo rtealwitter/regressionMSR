@@ -6,7 +6,7 @@ from ..utils.datasets import dataset_loaders, dataset_sizes
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
-from ..estimators.regMSR import TreeMSR, LinearMSR
+from ..estimators.regMSR import TreeMSR, LinearMSR, MSR
 
 from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
@@ -30,9 +30,10 @@ ESTIMATOR_TRUE = {
 
 # Important that supersets of other estimators are included first
 # E.g., OFA_S_Optimized should be included before OFA_S
-ESTIMATOR_ALL = { 
+ESTIMATOR_ALL = {
     'TreeMSR': TreeMSR,
     'LinearMSR': LinearMSR,
+    'MSR' : MSR,
     "LeverageSHAP+": UniversalConstrained,
     "KernelBanzhaf+": UniversalUnconstrained,
     "OFA_S": OFA_S,
@@ -48,7 +49,7 @@ ESTIMATOR_SHAPLEY = {
 
 ESTIMATOR_BANZHAF = {
     "KernelBanzhaf": KernelBanzhafEstimator,
-    "MSR": MSREstimator,
+#    "MSR": MSREstimator,
     "BanzhafMonteCarlo": MonteCarloEstimator,
 }
 
