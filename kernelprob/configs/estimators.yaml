@@ -1,8 +1,8 @@
 weightings:
-#  shapley:
-#    - shapley
-#  banzhaf:
-#    - banzhaf
+  shapley:
+    - shapley
+  banzhaf:
+    - banzhaf
   beta_shapley_sym:
     - beta_shapley_1_1 # Same as Shapley
     - beta_shapley_2_2
@@ -29,98 +29,46 @@ weightings:
 #    - random_16
 
 estimators:
-  KernelSHAP:
-    weightings:
-      - shapley
-  PermutationSHAP:
-    weightings:
-      - shapley
-  LeverageSHAP:
-    weightings:
-      - shapley
-
-  KernelBanzhaf:
-    weightings:
-      - banzhaf
-
-  TreeMSR:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-  LinearMSR:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  OFA_S:
-    weightings:
-      - shapley # Bad performance
-      - banzhaf # Bad performance
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf  
-  WSL:
-    weightings:
-      - shapley # This is MC
-      - banzhaf # This is MC
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-#  MonteCarlo:
-#    weightings:
-##      - shapley
-##      - banzhaf
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf   
-#  OFA_S:
+#  KernelSHAP:
 #    weightings:
 #      - shapley
-#      - banzhaf
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf
-##
-##  OFA_A_Optimized:
-##    weightings:
-##      - shapley
-##      # - banzhaf # This is MSR
-##      - beta_shapley
-##      - beta_shapley_sym
-##      - weighted_banzhaf
-##
+#  PermutationSHAP:
+#    weightings:
+#      - shapley
 #  LeverageSHAP:
 #    weightings:
-#      - beta_shapley
-#      - weighted_banzhaf
-#      - banzhaf
-#      - beta_shapley_sym
-#      #- shapley # This is Leverage SHAP
+#      - shapley
 #
 #  KernelBanzhaf:
 #    weightings:
-#      - beta_shapley
-#      - weighted_banzhaf
-#      #- banzhaf # This is Kernel Banzhaf
+#      - banzhaf
+#
+#  TreeMSR:
+#    weightings:
 #      - shapley
-#      - beta_shapley_sym     
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#  LinearMSR:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
 #
-
-#
-
-#
-##  MSR:
-##    weightings:
-##      - banzhaf
-##
-##  MonteCarlo:
-##    weightings:
-##      - shapley
-##      - banzhaf
+#  OFA_S:
+#    weightings:
+#      - shapley # Bad performance
+#      - banzhaf # Bad performance
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf  
+#  WSL:
+#    weightings:
+#      - shapley # This is MC
+#      - banzhaf # This is MC
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
