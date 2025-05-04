@@ -1,24 +1,12 @@
-# arm_estimator.py
 import math
-import warnings
 from typing import Optional, Sequence
-
 import numpy as np
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
 
 
-def _is_symmetric(p: np.ndarray) -> bool:
-    """Return True iff p_k == p_{n-1-k} for all k (numerically)."""
-    return np.allclose(p, p[::-1])
-
-
 class _ARMBase(BaseEstimator):
-    """
-    A minimal base class shared by ARM and ARM-paired.
-    It only provides RNG handling + the incremental‐mean helper.
-    """
 
     def __init__(
         self,
@@ -26,27 +14,12 @@ class _ARMBase(BaseEstimator):
         baseline: np.ndarray,
         weighting: str = "shapley",
         *,
-        paired: bool = True,
         random_state: Optional[int] = None,
     ):
         super().__init__(model, baseline, weighting)
         self.rng = np.random.default_rng(random_state)
 
-        self.paired = False
-        if paired:
-            if _is_symmetric(get_p(4, weighting)):
-                self.paired = True
-            else:
-                warnings.warn(
-                    "Paired sampling requested but weighting is not symmetric; "
-                    "falling back to ordinary sampling."
-                )
-
     def _utility(self, explicand: np.ndarray, active: Sequence[int]) -> float:
-        """
-        Evaluate the underlying model on a masking vector 'active'
-        and return the scalar utility.
-        """
         exp_vec = np.asarray(explicand).ravel()
         base_vec = np.asarray(self.baseline).ravel()
 
@@ -86,6 +59,7 @@ class ARMEstimator(_ARMBase):
             return np.array([], dtype=float)
 
         p = get_p(n, self.weighting)  # p_s for s = 1..n   (length = n)
+        self.paired = np.allclose(p, p[::-1])
 
         # size probabilities  P⁺(|S| = s)  for 1 ≤ s ≤ n
         w_plus_sizes = np.array([math.comb(n, s) * p[s - 1] for s in range(1, n + 1)],
@@ -103,12 +77,11 @@ class ARMEstimator(_ARMBase):
         pos_cnt = np.zeros(n, dtype=int)
         neg_cnt = np.zeros(n, dtype=int)
 
-        taken = 0                       # #model evaluations consumed so far
         all_idx = np.arange(n)
 
 
         next_is_plus = True  # used only if self.paired == True
-        while taken < num_samples:
+        for _ in range(num_samples):
             if self.paired:
                 draw_plus = next_is_plus
                 next_is_plus = not next_is_plus
@@ -136,7 +109,5 @@ class ARMEstimator(_ARMBase):
                 for i in not_S:
                     neg_est[i] = self._update_mean(neg_est[i], neg_cnt[i], u_val)
                     neg_cnt[i] += 1
-
-            taken += 1
 
         return pos_est - neg_est

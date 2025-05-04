@@ -10,6 +10,10 @@ from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
 from ..estimators.gels import GELSEstimator, GELSShapleyEstimator
 from ..estimators.arm import ARMEstimator
+from ..estimators.shap_iq import SHAPIQEstimator
+from ..estimators.wshap import WeightedSHAPEstimator
+from ..estimators.ame import AMEEstimator, ImprovedAMEEstimator
+
 from ..estimators.lshap import LeverageSHAPEstimator
 from ..estimators.kshap import KernelSHAPEstimator
 from ..estimators.pshap import PermutationSHAPEstimator
@@ -41,6 +45,10 @@ ESTIMATOR_ALL = {
     "MonteCarlo": WeightedMonteCarloEstimator,
     "GELS": GELSEstimator,
     "ARM": ARMEstimator,
+    "SHAPIQ": SHAPIQEstimator,
+    "WeightedSHAP": WeightedSHAPEstimator,
+    "AME": AMEEstimator,
+    "ImprovedAME": ImprovedAMEEstimator,
 }
 
 ESTIMATOR_SHAPLEY = {

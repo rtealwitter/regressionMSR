@@ -1,10 +1,3 @@
-"""
-GELS, GELS-R and GELS-Shapley with optional paired sampling.
-
-phi  = GELSEstimator(model, baseline, paired=True).explain(x, num_samples=4096)
-rank = GELSRankingEstimator(model, baseline, paired=False).explain(x)
-"""
-
 import math
 import warnings
 from typing import Optional
@@ -82,7 +75,8 @@ class _GELSBase(BaseEstimator):
         return curr + (new_val - curr) / (count + 1)
 
 
-# GELS-R  (Algorithm 1) – ranking only
+# GELS-R  (Algorithm 1) – ranking only 
+# Yurong: not used in our paper
 class GELSRankingEstimator(_GELSBase):
     """Generic Estimator based on Least Squares – ranking version."""
 

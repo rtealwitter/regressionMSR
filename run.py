@@ -95,14 +95,19 @@ def run_debug():
     weighting = "shapley"
     # weighting = "beta_shapley_16_4"
     #weighting = "banzhaf"
-
+    # weighting = "weighted_banzhaf_0.8"
     estimator_names = [
-        "TreeAdjusted",
-        "LeverageSHAP",
+        # "TreeAdjusted",
+        # "LeverageSHAP",
         # "OFA_S",
         # "OFA_A",
-        "GELS",
-        "ARM",
+        # "GELS",
+        # "ARM",
+        # "SHAPIQ",
+        # "WSL",
+        "WeightedSHAP",
+        # "AME",
+        "ImprovedAME",
         # "GELS_S",
     ]
 

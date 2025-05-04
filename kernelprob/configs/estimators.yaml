@@ -138,3 +138,26 @@ estimators:
       - beta_shapley
       - beta_shapley_sym
       - weighted_banzhaf
+
+  WeightedSHAP:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+  
+  AME:
+    weightings:
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
+
+  ImprovedAME:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
