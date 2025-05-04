@@ -1,4 +1,7 @@
 import math
+import numpy as np
+from typing import Tuple, Dict, Literal
+import re
 
 def ith_combination(pool, r, index):
     # Function written by ChatGPT

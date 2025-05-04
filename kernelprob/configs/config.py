@@ -10,6 +10,11 @@ from ..estimators.regMSR import TreeMSR, LinearMSR, MSR
 
 from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
+from ..estimators.gels import GELSEstimator, GELSShapleyEstimator
+from ..estimators.arm import ARMEstimator
+from ..estimators.shap_iq import SHAPIQEstimator
+from ..estimators.wshap import WeightedSHAPEstimator
+from ..estimators.ame import AMEEstimator, ImprovedAMEEstimator
 
 from ..estimators.lshap import LeverageSHAPEstimator
 from ..estimators.kshap import KernelSHAPEstimator
@@ -34,7 +39,14 @@ ESTIMATOR_ALL = {
     'TreeMSR': TreeMSR,
     'LinearMSR': LinearMSR,
     "OFA_S": OFA_S,
+#    "OFA_A": OFA_A,
     "WSL": WSLEstimator,
+    "GELS": GELSEstimator,
+    "ARM": ARMEstimator,
+    "SHAPIQ": SHAPIQEstimator,
+    "WeightedSHAP": WeightedSHAPEstimator,
+    "AME": AMEEstimator,
+    "ImprovedAME": ImprovedAMEEstimator,
 #    "OFA_A": OFA_A, # Unfair comparison
 #    "LeverageSHAP+": UniversalConstrained,
 #    "KernelBanzhaf+": UniversalUnconstrained,

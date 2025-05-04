@@ -123,15 +123,23 @@ def run_debug():
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
-    weighting = "banzhaf"
-    #weighting = "beta_shapley_16_16"
+    weighting = "shapley"
+    # weighting = "beta_shapley_16_4"
     #weighting = "banzhaf"
-
+    # weighting = "weighted_banzhaf_0.8"
     estimator_names = [
-        'TreeMSR',
-        'LinearMSR',
-        #"LeverageSHAP",
-        'KernelBanzhaf'
+        # "TreeAdjusted",
+        # "LeverageSHAP",
+        # "OFA_S",
+        # "OFA_A",
+        # "GELS",
+        # "ARM",
+        # "SHAPIQ",
+        # "WSL",
+        "WeightedSHAP",
+        # "AME",
+        "ImprovedAME",
+        # "GELS_S",
     ]
 
     estimators = {
@@ -155,7 +163,7 @@ def run_debug():
             
             for estimator_name, result in results.items():
                 print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).sum()/ (true_values[idx] ** 2).sum()}")
-                #print(f"Estimate: {result}")
+                # print(f"Estimate: {result}")
                 #print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
 
 def get_feature_data(rng, n, sample_multiplier, baseline, explicand, model):
