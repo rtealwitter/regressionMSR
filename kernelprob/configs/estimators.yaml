@@ -1,6 +1,6 @@
 weightings:
-#  shapley:
-#    - shapley
+  shapley:
+    - shapley
   banzhaf:
     - banzhaf
   beta_shapley_sym:
@@ -29,28 +29,10 @@ weightings:
 #    - random_16
 
 estimators:
-  TreeAdjusted:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf  
-  LinearAdjusted:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-  MonteCarlo:
-    weightings:
+#  KernelSHAP:
+#    weightings:
 #      - shapley
-#      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf   
-#  PermutationRegression:
+#  PermutationSHAP:
 #    weightings:
 #      - shapley
 #
@@ -105,16 +87,15 @@ estimators:
 #  KernelBanzhaf:
 #    weightings:
 #      - banzhaf
-#   
-  PermutationSHAP:
-    weightings:
-      - shapley
-
- MSR:
-   weightings:
-     - banzhaf
 #
-#  MonteCarlo:
+#  TreeMSR:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#  LinearMSR:
 #    weightings:
 #      - shapley
 #      - banzhaf

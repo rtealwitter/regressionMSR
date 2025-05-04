@@ -1,10 +1,12 @@
 from typing import Any, Dict, List
-import itertools
 import yaml
 
+# import from utils
+from ..utils.datasets import dataset_loaders, dataset_sizes
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
+from ..estimators.regMSR import TreeMSR, LinearMSR, MSR
 
 from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
@@ -20,7 +22,6 @@ from ..estimators.pshap import PermutationSHAPEstimator
 from ..estimators.kb import KernelBanzhafEstimator
 from ..estimators.msr import MSREstimator
 from ..estimators.mc import MonteCarloEstimator
-from ..estimators.regadj import TreeAdjustedMC, LinearAdjustedMC, PermutationRegression, WeightedMonteCarloEstimator, GeneralMonteCarloEstimator
 
 from ..exact.treeprob import TreeProbExplainer
 from ..exact.enumeration import EnumerationExplainer
@@ -34,44 +35,46 @@ ESTIMATOR_TRUE = {
 
 # Important that supersets of other estimators are included first
 # E.g., OFA_S_Optimized should be included before OFA_S
-ESTIMATOR_ALL = { 
-    "LeverageSHAP+": UniversalConstrained,
-    "KernelBanzhaf+": UniversalUnconstrained,
+ESTIMATOR_ALL = {
+    'TreeMSR': TreeMSR,
+    'LinearMSR': LinearMSR,
     "OFA_S": OFA_S,
-    "OFA_A": OFA_A,
+#    "OFA_A": OFA_A,
     "WSL": WSLEstimator,
-    "TreeAdjusted": TreeAdjustedMC,
-    "LinearAdjusted" : LinearAdjustedMC,
-    "MonteCarlo": WeightedMonteCarloEstimator,
     "GELS": GELSEstimator,
     "ARM": ARMEstimator,
     "SHAPIQ": SHAPIQEstimator,
     "WeightedSHAP": WeightedSHAPEstimator,
     "AME": AMEEstimator,
     "ImprovedAME": ImprovedAMEEstimator,
+#    "OFA_A": OFA_A, # Unfair comparison
+#    "LeverageSHAP+": UniversalConstrained,
+#    "KernelBanzhaf+": UniversalUnconstrained,
 }
 
 ESTIMATOR_SHAPLEY = {
     "LeverageSHAP": LeverageSHAPEstimator,
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,
-    "PermutationRegression" : PermutationRegression,
-    "GELS_S": GELSShapleyEstimator,
+    'MSR' : MSR,
 }
 
 ESTIMATOR_BANZHAF = {
     "KernelBanzhaf": KernelBanzhafEstimator,
-    "MSR": MSREstimator,
+#    "MSR": MSREstimator,
     "BanzhafMonteCarlo": MonteCarloEstimator,
 }
 
 # Combine all estimator dictionaries
 ESTIMATOR_FACTORY = {**ESTIMATOR_ALL, **ESTIMATOR_SHAPLEY, **ESTIMATOR_BANZHAF}
 
-DATASETS = {
-    "small_n": ['IRIS', 'California', 'Diabetes', 'Adult', 'Bike Sharing'],
-    "big_n": ['Breast Cancer', 'Independent', 'Correlated',  'NHANES', 'Communities']
-}
+DATASETS = {'small_n' : [], 'big_n' : []}
+
+for dataset in dataset_loaders:
+    if dataset_sizes[dataset] < 20:
+        DATASETS['small_n'].append(dataset)
+    else:
+        DATASETS['big_n'].append(dataset)
 
 VARIABLES = {
     "basic" : {

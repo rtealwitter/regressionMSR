@@ -1,6 +1,11 @@
 import numpy as np
 import scipy
 from scipy.special import comb
+import scipy.special
+
+import sklearn.ensemble
+import sklearn.linear_model
+from ..exact.treeprob import tree_prob
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
@@ -115,8 +120,8 @@ class UniversalRegression(BaseEstimator):
 
         w1 = find_w1(self.p)
         self.w = compute_weights(w1, self.p)
-        print(f"w1: {w1}")
-        print(f"w: {self.w}")
+#        print(f"w1: {w1}")
+#        print(f"w: {self.w}")
 
         def leverage_score(s):
             p_ext = np.append(self.p, 0)
@@ -248,6 +253,7 @@ class UniversalRegression(BaseEstimator):
         # xt = (A^T S^T W S A)^-1 A^T S^T W S v
         # phit = (1+bn 1 1^T) xt
         sizes = np.sum(self.sampled, axis=1).astype(int)
+        self.sizes = sizes
         p_ext = np.append(self.p, 0)
         
         # Build A_tilde so A_tilde[S,i] = p[|S|-1]/w[|S|] if i in S else -p[|S|]/w[|S|]
@@ -255,9 +261,11 @@ class UniversalRegression(BaseEstimator):
         A_tilde /= self.w[sizes][:,None]
 
         inputs = self.baseline * (1 - self.sampled) + self.explicand * self.sampled
-        Sv = self.model.predict(inputs) * self.w[sizes]
+        self.y = self.model.predict(inputs)
+        Sv = self.y * self.w[sizes]
+        self.prob_sampled = self.get_probs(sizes)
 
-        reg_weighting = 1/self.get_probs(sizes)
+        reg_weighting = 1/self.prob_sampled
 
         ASSv = A_tilde.T @ np.diag(reg_weighting) @ Sv
         ASSA = A_tilde.T @ np.diag(reg_weighting) @ A_tilde
@@ -269,16 +277,22 @@ class UniversalRegression(BaseEstimator):
         # (A^T S^T S A)^-1 A^T S^T S b + (v1 - v0) / n
         # (P^T Z^T S^T S Z P)^-1 P^T Z^T S^T S b + (v1 - v0) / n
 
-        sampled = self.sampled[np.sum(self.sampled, axis=1) != 0] # Remove zero rows
+        self.sampled = self.sampled[np.sum(self.sampled, axis=1) != 0] # Remove zero rows
+        sampled = self.sampled
         v0, v1 = self.model.predict(self.baseline), self.model.predict(self.explicand)
+        self.v0, self.v1 = v0, v1
         inputs = self.baseline * (1 - sampled) + self.explicand * sampled
-        Sv = self.model.predict(inputs) - v0
+        self.y = self.model.predict(inputs)
+        Sv = self.y - v0
 
         # Estimate constant term = 1/n sum_i phi_i
         # = 1/n sum_S (v(S)-v(emptyset)) (-p[|S|]*(n-|S|) + p[|S|-1] * |S|)
         # Compute probability each set size was sampled
-        sizes = np.sum(sampled, axis=1).astype(int)
-        prob_sampled = self.get_probs(sizes)
+        self.sizes = np.sum(sampled, axis=1).astype(int)
+        sizes = self.sizes
+        self.prob_sampled = self.get_probs(sizes)
+        prob_sampled = self.prob_sampled
+
 
         sum_weighting = -self.p[sizes] * (self.n - sizes) + self.p[sizes-1] * sizes
         sum_phi = prob_sampled * sum_weighting @ Sv

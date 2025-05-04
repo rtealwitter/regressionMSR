@@ -8,3 +8,4 @@ scipy
 PyYAML
 seaborn
 scienceplots
+openpyxl
