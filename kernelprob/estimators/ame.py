@@ -1,23 +1,102 @@
 # ame_estimator.py
 import numpy as np
-import warnings
+from math import log
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
 
-class _AMEBase(BaseEstimator):
-    
-    def __init__(self, model, baseline, weighting):
+def _extract_ab(weighting):
+    parts = weighting.split("_")
+    if len(parts) != 4:
+        raise ValueError("beta_shapley string must be beta_shapley_α_β")
+    return float(parts[-2]), float(parts[-1])
+
+class AMEEstimator(BaseEstimator):
+    """
+    AME estimator as defined in Lin et al. (2022), Figure 1.
+
+    Parameters
+    ----------
+    eps : float, optional
+        Required only for "shapley". 0 < eps < 0.5 .
+    """
+
+    def __init__(
+        self,
+        model,
+        baseline,
+        weighting: str,
+        *,
+        eps: float | None = None,
+        rng_seed: int | None = None,
+    ):
         super().__init__(model, baseline, weighting)
+
+        self.model = model
         self.base = np.asarray(baseline, float).reshape(-1)
         self.n = self.base.size
+        self.rng = np.random.default_rng(rng_seed)
 
-    @staticmethod
-    def _extract_ab(weighting):
-        parts = weighting.split("_")
-        if len(parts) != 4:
-            raise ValueError("beta_shapley string must be beta_shapley_α_β")
-        return float(parts[-2]), float(parts[-1])
+        # choose μ and compute constant C
+        if "banzhaf" in weighting:
+            p = 0.5 if weighting == "banzhaf" else float(weighting.split("_")[-1])
+            if not 0.0 < p < 1.0:
+                raise ValueError("weighted_banzhaf requires 0<p<1")
+            self.draw_w = lambda p=p: p           # Dirac mass δ_p
+            self.C = 1.0 / (p * (1.0 - p))
+
+        elif "beta_shapley" in weighting:
+            alpha, beta = _extract_ab(weighting)
+            if alpha <= 1 or beta <= 1:
+                raise ValueError("Original AME needs alpha>1, beta>1.")
+            # μ = Beta(beta, alpha)
+            self.draw_w = lambda a=alpha, b=beta: self.rng.beta(b, a)
+            self.C = ((alpha + beta - 1) * (alpha + beta - 2)) / (
+                (beta - 1) * (alpha - 1)
+            )
+
+        elif "shapley" in weighting:
+            if eps is None or not (0.0 < eps < 0.5):
+                raise ValueError("Provide eps in (0,0.5) for shapley.")
+            self.draw_w = lambda e=eps: self.rng.uniform(e, 1.0 - e)
+            self.C = 2.0 * log((1.0 - eps) / eps) / (1.0 - 2.0 * eps)
+
+        else:
+            raise ValueError(
+                "Original AME not applicable to this weighting "
+                "(C would diverge). "
+                "Use ImprovedAMEEstimator for accurate Shapley estimation."
+            )
+
+    def explain(self, explicand, num_samples: int):
+        x = np.asarray(explicand, float).reshape(-1)
+
+        p = get_p(self.n, self.weighting) 
+        self.paired = np.allclose(p, p[::-1])
+        
+        if x.size != self.n:
+            raise ValueError("explicand length mismatch.")
+
+        # determine output dimension
+        out_dim = self._predict(self.base[None, :]).shape[1]
+
+        # accumulate AᵀA and Aᵀb incrementally
+        ATA = np.zeros((self.n, self.n))
+        ATb = np.zeros((self.n, out_dim))
+
+        for _ in range(num_samples):
+            w = self.draw_w()
+            mask = self.rng.random(self.n) < w
+            U = self._predict(self._masked(x, mask))  # shape (1,out_dim)
+
+            X = mask / (w * self.C) - (1 - mask) / ((1 - w) * self.C)  # (n,)
+            ATA += np.outer(X, X)
+            ATb += X[:, None] * U
+
+        # solve (ATA)φ = ATb
+        phi = np.linalg.solve(ATA + 1e-12 * np.eye(self.n), ATb)  # tiny ridge
+
+        return phi[:, 0] if out_dim == 1 else phi
 
     def _masked(self, x_vec, mask):
         return np.where(mask, x_vec, self.base)[None, :]
@@ -28,112 +107,43 @@ class _AMEBase(BaseEstimator):
             pred = pred[:, None]
         return pred.astype(float)
 
-class AMEEstimator(_AMEBase):
+
+class ImprovedAMEEstimator(BaseEstimator):
+    """
+    Improved Average‑Marginal‑Effect estimator (OFA, Proposition 6).
+    """
+
     def __init__(
         self,
         model,
         baseline,
         weighting: str,
         *,
-        eps_shapley: float = 1e-3,
         rng_seed: int | None = None,
     ):
         super().__init__(model, baseline, weighting)
 
-        self.eps = eps_shapley
+        self.base = np.asarray(baseline, float).reshape(-1)
+        self.n = self.base.size
         self.rng = np.random.default_rng(rng_seed)
-
-        p_vec = get_p(self.n, weighting)
-        self.paired = np.allclose(p_vec, p_vec[::-1])
 
         if "banzhaf" in weighting:
             p = 0.5 if weighting == "banzhaf" else float(weighting.split("_")[-1])
             if not 0.0 < p < 1.0:
-                raise ValueError("weighted_banzhaf needs 0<p<1 for AME.")
-            self.sample_w = lambda p=p: p
-            self.C = 1.0 / (p * (1.0 - p))
-
-        elif weighting.startswith("beta_shapley"):
-            α, β = self._extract_ab(weighting)
-            if α <= 1 or β <= 1:
-                raise ValueError("AME requires α>1, β>1 for Beta‑Shapley.")
-            self.sample_w = lambda β=β, α=α: self.rng.beta(β, α)
-            self.C = ((α + β - 1) * (α + β - 2)) / ((β - 1) * (α - 1))
-
-        else:
-            raise ValueError(
-                "AME not implemented for this weighting: "
-                "no finite‑C representation is known."
-            )
-
-    def explain(self, explicand, num_samples: int):
-        """Return AME φ for a single instance."""
-        x_vec = np.asarray(explicand, float).reshape(-1)
-        if x_vec.size != self.n:
-            raise ValueError("explicand and baseline have different n_features")
-
-        dummy_pred = self._predict(self._masked(x_vec, np.zeros(self.n, bool)))
-        out_dim = dummy_pred.shape[1]
-        phi_acc = np.zeros((self.n, out_dim), dtype=float)
-
-        for _ in range(num_samples):
-            perm = self.rng.permutation(self.n)
-            mask = np.zeros(self.n, dtype=bool)
-
-            prev_pred = self._predict(self._masked(x_vec, mask))
-
-            for k, feat in enumerate(perm):
-                mask[feat] = True
-                curr_pred = self._predict(self._masked(x_vec, mask))
-
-                delta = curr_pred - prev_pred
-                phi_acc[feat] += self.m_vec[k] * delta
-                prev_pred = curr_pred
-
-        phi = phi_acc / num_samples
-        return phi[:, 0] if out_dim == 1 else phi
-
-class ImprovedAMEEstimator(_AMEBase):
-    """
-    Improved Average‑Marginal‑Effect estimator (OFA, Prop 6)
-    with automatic paired sampling for symmetric semivalues.
-    """
-
-    def __init__(
-        self,
-        model,
-        baseline,
-        weighting: str,
-        *,
-        eps_shapley: float = 1e-3,
-        rng_seed: int | None = None,
-    ):
-        super().__init__(model, baseline, weighting)
-
-        self.eps = eps_shapley
-        self.rng = np.random.default_rng(rng_seed)
-
-        p_vec = get_p(self.n, weighting)
-        self.paired = np.allclose(p_vec, p_vec[::-1])
-
-        if weighting in ("shapley", "beta_shapley_1_1"):
-            eps = self.eps
-            self.draw_w = lambda: self.rng.uniform(eps, 1.0 - eps)
-
-        elif weighting.startswith("weighted_banzhaf"):
-            p = 0.5 if weighting == "weighted_banzhaf" else float(weighting.split("_")[-1])
-            if not (0.0 < p < 1.0):
                 raise ValueError("weighted_banzhaf requires 0<p<1.")
-            self.draw_w = lambda p=p: p        # Dirac at p
+            self.draw_w = lambda p=p: p
 
-        elif weighting.startswith("beta_shapley"):
-            alpha, beta = self._extract_ab(weighting)
+        elif "beta_shapley" in weighting:
+            alpha, beta = _extract_ab(weighting)               # returns (α, β)
             if alpha <= 1 or beta <= 1:
                 raise ValueError("beta_shapley needs alpha>1, beta>1.")
             self.draw_w = lambda a=alpha, b=beta: self.rng.beta(b, a)
 
+        elif "shapley" in weighting:
+            self.draw_w = lambda: self.rng.random()            # U(0,1)
+
         else:
-            raise ValueError("Improved AME not implemented for this weighting.")
+            raise ValueError("Improved AME not implemented for this weighting.")
 
     def explain(self, explicand, num_samples: int):
         x = np.asarray(explicand, float).reshape(-1)
@@ -141,26 +151,24 @@ class ImprovedAMEEstimator(_AMEBase):
             raise ValueError("explicand length mismatch.")
 
         out_dim = self._predict(self.base[None, :]).shape[1]
-        phi = np.zeros((self.n, out_dim))
-        t = 0
+        phi_sum = np.zeros((self.n, out_dim))
 
-        while t < num_samples:
-            # sample first subset
+        for _ in range(num_samples):
             w = self.draw_w()
-            mask = self.rng.random(self.n) < w
-            U = self._predict(self._masked(x, mask))
-            coeff = mask / w - (1 - mask) / (1 - w)
-            phi += coeff[:, None] * U
-            t += 1
-            if not (self.paired and t < num_samples):
-                continue  # no pairing or reached quota
+            S = self.rng.random(self.n) < w                    # mask ∼ Ber(w)
+            pred = self._predict(self._masked(x, S))
 
-            # paired complementary subset
-            mask_c = ~mask
-            U_c = self._predict(self._masked(x, mask_c))
-            coeff_c = mask_c / w - (1 - mask_c) / (1 - w)
-            phi += coeff_c[:, None] * U_c
-            t += 1
+            coeff = S / w - (1.0 - S) / (1.0 - w)              # Eq. (10)
+            phi_sum += coeff[:, None] * pred
 
-        phi /= num_samples
+        phi = phi_sum / num_samples
         return phi[:, 0] if out_dim == 1 else phi
+
+    def _masked(self, x_vec: np.ndarray, mask: np.ndarray) -> np.ndarray:
+        return np.where(mask, x_vec, self.base)[None, :]
+
+    def _predict(self, X2d: np.ndarray) -> np.ndarray:
+        y = np.asarray(self.model.predict(X2d))
+        if y.ndim == 1:
+            y = y[:, None]
+        return y.astype(float)

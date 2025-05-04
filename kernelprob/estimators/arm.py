@@ -23,11 +23,6 @@ class _ARMBase(BaseEstimator):
         exp_vec = np.asarray(explicand).ravel()
         base_vec = np.asarray(self.baseline).ravel()
 
-        if exp_vec.shape != base_vec.shape:
-            raise ValueError(
-                f"explicand has {exp_vec.size} features but baseline has {base_vec.size}"
-            )
-
         x = base_vec.copy()
         idx = np.asarray(active, dtype=int)
         if idx.size:
@@ -58,7 +53,7 @@ class ARMEstimator(_ARMBase):
         if n == 0:
             return np.array([], dtype=float)
 
-        p = get_p(n, self.weighting)  # p_s for s = 1..n   (length = n)
+        p = get_p(n, self.weighting)
         self.paired = np.allclose(p, p[::-1])
 
         # size probabilities  P⁺(|S| = s)  for 1 ≤ s ≤ n

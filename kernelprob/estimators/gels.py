@@ -13,11 +13,6 @@ def _harmonic_number(k: int) -> float:
     return sum(1.0 / i for i in range(1, k + 1)) if k >= 1 else 0.0
 
 
-def _is_symmetric(p: np.ndarray) -> bool:
-    """True if p_k == p_{n-1-k} ∀k (within float tolerance)."""
-    return np.allclose(p, p[::-1])
-
-
 class _GELSBase(BaseEstimator):
     """
     Parent class providing:
@@ -38,29 +33,11 @@ class _GELSBase(BaseEstimator):
     ):
         super().__init__(model, baseline, weighting)
         self.rng = np.random.default_rng(random_state)
-
-        # activate complement sampling only when requested **and** symmetric.
-        self.paired = False
-        if paired:
-            p_test = get_p(4, weighting)  # small n is enough to check symmetry
-            if _is_symmetric(p_test):
-                self.paired = True
-            else:
-                warnings.warn(
-                    "Paired sampling requested, but weighting is not symmetric; "
-                    "using ordinary sampling instead."
-                )
+        self.paired = paired
 
     def _utility(self, explicand: np.ndarray, active) -> float:
-        """
-        Hybrid instance: `active` indices use explicand’s value, remaining use baseline.
-        Accepts Python list/tuple or NumPy array for `active`.
-        """
         x_base = np.asarray(self.baseline).ravel().copy()
         x_exp = np.asarray(explicand).ravel()
-
-        if x_base.shape != x_exp.shape:
-            raise ValueError("baseline and explicand must have identical shape")
 
         idx = np.asarray(active, dtype=int)
         if idx.size:
@@ -71,7 +48,6 @@ class _GELSBase(BaseEstimator):
 
     @staticmethod
     def _update_mean(curr: float, count: int, new_val: float) -> float:
-        """Online mean update."""
         return curr + (new_val - curr) / (count + 1)
 
 
@@ -81,11 +57,14 @@ class GELSRankingEstimator(_GELSBase):
     """Generic Estimator based on Least Squares – ranking version."""
 
     def explain(self, explicand: np.ndarray, num_samples: int = 2048) -> np.ndarray:
+        num_samples = num_samples // 2 if self.paired else num_samples
         n = explicand.size
         if n <= 1:
             return np.zeros(n)
 
         p = get_p(n, self.weighting)
+        self.paired = np.allclose(p, p[::-1])
+
         m = p[:-1] + p[1:]                           # m_s = p_s + p_{s+1}
         q_unscaled = np.array([math.comb(n, s) * m_s for s, m_s in enumerate(m, 1)])
         q_prob = q_unscaled / q_unscaled.sum()
@@ -120,11 +99,13 @@ class GELSEstimator(_GELSBase):
     """Generic Estimator based on Least Squares – full value."""
 
     def explain(self, explicand: np.ndarray, num_samples: int = 2048) -> np.ndarray:
+        num_samples = num_samples // 2 if self.paired else num_samples
         n = explicand.size
         if n == 0:
             return np.array([])
 
         p = get_p(n, self.weighting)
+        self.paired = np.allclose(p, p[::-1])
         q_unscaled = np.array([math.comb(n + 1, s) * p_s for s, p_s in enumerate(p, 1)])
         q_prob = q_unscaled / q_unscaled.sum()
 
@@ -157,6 +138,7 @@ class GELSShapleyEstimator(_GELSBase):
     """Fast estimator specialised for the Shapley value."""
 
     def explain(self, explicand: np.ndarray, num_samples: int = 2048) -> np.ndarray:
+        num_samples = num_samples // 2
         n = explicand.size
         if n < 2:
             return np.zeros_like(explicand, dtype=float)
@@ -177,12 +159,12 @@ class GELSShapleyEstimator(_GELSBase):
                 R[i] = self._update_mean(R[i], counts[i], u)
                 counts[i] += 1
 
-            if self.paired:
-                S_bar = np.setdiff1d(all_idx, S, assume_unique=True)
-                u_bar = self._utility(explicand, S_bar)
-                for i in S_bar:
-                    R[i] = self._update_mean(R[i], counts[i], u_bar)
-                    counts[i] += 1
+            # if self.paired:
+            S_bar = np.setdiff1d(all_idx, S, assume_unique=True)
+            u_bar = self._utility(explicand, S_bar)
+            for i in S_bar:
+                R[i] = self._update_mean(R[i], counts[i], u_bar)
+                counts[i] += 1
 
         R *= _harmonic_number(n - 1)
         offset = (

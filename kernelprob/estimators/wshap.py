@@ -31,6 +31,7 @@ class WeightedSHAPEstimator(BaseEstimator):
         return (np.where(mask, x_vec, self.base_vec))[None, :]
 
     def explain(self, explicand: np.ndarray, num_samples: int) -> np.ndarray:
+        num_samples = num_samples // self.n_feat
         x_vec = explicand.reshape(-1).astype(float)
 
         dummy_pred = self.model.predict(self._mask_instance(x_vec, np.zeros(self.n_feat, bool)))

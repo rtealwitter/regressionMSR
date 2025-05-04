@@ -35,55 +35,10 @@ estimators:
 #  PermutationSHAP:
 #    weightings:
 #      - shapley
+#  LeverageSHAP:
+#    weightings:
+#      - shapley
 #
-  OFA_S:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-#
- OFA_A:
-   weightings:
-     - shapley
-     # - banzhaf # This is MSR
-     - beta_shapley
-     - beta_shapley_sym
-     - weighted_banzhaf
-#
-  LeverageSHAP+:
-    weightings:
-      - beta_shapley
-      - weighted_banzhaf
-      - banzhaf
-      - beta_shapley_sym
-      #- shapley # This is Leverage SHAP
-
-  KernelBanzhaf+:
-    weightings:
-      - beta_shapley
-      - weighted_banzhaf
-      #- banzhaf # This is Kernel Banzhaf
-      - shapley
-      - beta_shapley_sym     
-
-  WSL:
-    weightings:
-      # - shapley # This is MC
-      # - banzhaf # This is MC
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  LeverageSHAP:
-    weightings:
-      - shapley
-
-  KernelSHAP:
-    weightings:
-      - shapley
-
 #  KernelBanzhaf:
 #    weightings:
 #      - banzhaf
@@ -99,6 +54,24 @@ estimators:
 #    weightings:
 #      - shapley
 #      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
+#  OFA_S:
+#    weightings:
+#      - shapley # Bad performance
+#      - banzhaf # Bad performance
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf  
+#  WSL:
+#    weightings:
+#      - shapley # This is MC
+#      - banzhaf # This is MC
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
 
   GELS:
     weightings:
@@ -128,17 +101,17 @@ estimators:
       - beta_shapley_sym
       - weighted_banzhaf
   
-  AME:
-    weightings:
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
+  # AME: # Doesn't work for Shapley values
+  #   weightings:
+  #     - banzhaf
+  #     - beta_shapley
+  #     - beta_shapley_sym
+  #     - weighted_banzhaf
 
-  ImprovedAME:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
+  # ImprovedAME: # Only works for Semi-values
+  #   weightings:
+  #     - shapley
+  #     - banzhaf
+  #     - beta_shapley
+  #     - beta_shapley_sym
+  #     - weighted_banzhaf

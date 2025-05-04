@@ -39,7 +39,6 @@ ESTIMATOR_ALL = {
     'TreeMSR': TreeMSR,
     'LinearMSR': LinearMSR,
     "OFA_S": OFA_S,
-#    "OFA_A": OFA_A,
     "WSL": WSLEstimator,
     "GELS": GELSEstimator,
     "ARM": ARMEstimator,
@@ -57,6 +56,7 @@ ESTIMATOR_SHAPLEY = {
     "KernelSHAP": KernelSHAPEstimator,
     "PermutationSHAP": PermutationSHAPEstimator,
     'MSR' : MSR,
+    "GELS_S": GELSShapleyEstimator,
 }
 
 ESTIMATOR_BANZHAF = {
