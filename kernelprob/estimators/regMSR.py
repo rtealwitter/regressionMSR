@@ -42,7 +42,7 @@ def get_fit(X_flat, y_flat, weighting, regression_adj):
     return reg_model, phi
 
 class UniversalMSR(BaseEstimator):
-    def __init__(self, model, baseline, weighting, reg_model_class=False):
+    def __init__(self, model, baseline, weighting, reg_model_class=False, return_direct=False):
         super().__init__(model, baseline, weighting)
         self.n = self.baseline.shape[1]
         self.p = get_p(self.n, weighting)
@@ -51,6 +51,7 @@ class UniversalMSR(BaseEstimator):
         self.gen = np.random.Generator(np.random.PCG64())
         self.reg_model_class = reg_model_class
         self.sample_prob = self.p * scipy.special.binom(self.n-1, np.arange(self.n))
+        self.return_direct = return_direct
        
     def sample_with_replacement(self):
         self.X = np.zeros((self.num_samples, self.n), dtype=float)
@@ -80,6 +81,9 @@ class UniversalMSR(BaseEstimator):
 
         reg_model, reg_phi = get_fit(self.X, y, self.weighting, self.reg_model_class)
         reg_pred = reg_model.predict(self.X)
+
+        if self.return_direct:
+            return reg_phi
  
         phi = np.zeros(self.n)
         for i in range(self.n):
@@ -144,6 +148,10 @@ class LinearMSR(UniversalMSR):
 class TreeMSR(UniversalMSR):
     def __init__(self, model, baseline, weighting):
         super().__init__(model, baseline, weighting, reg_model_class='tree')
+
+class Tree(UniversalMSR):
+    def __init__(self, model, baseline, weighting):
+        super().__init__(model, baseline, weighting, reg_model_class='tree', return_direct=True)
 
 class MSR(UniversalMSR):
     def __init__(self, model, baseline, weighting):
