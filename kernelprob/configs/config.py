@@ -6,7 +6,7 @@ from ..utils.datasets import dataset_loaders, dataset_sizes
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
-from ..estimators.regMSR import TreeMSR, LinearMSR, MSR
+from ..estimators.regMSR import TreeMSR, LinearMSR, MSR, Tree
 
 from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
@@ -47,6 +47,7 @@ ESTIMATOR_ALL = {
     "WeightedSHAP": WeightedSHAPEstimator,
     "AME": AMEEstimator,
     "ImprovedAME": ImprovedAMEEstimator,
+    'Tree': Tree,
 #    "OFA_A": OFA_A, # Unfair comparison
 #    "LeverageSHAP+": UniversalConstrained,
 #    "KernelBanzhaf+": UniversalUnconstrained,
