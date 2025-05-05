@@ -124,20 +124,21 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     # weighting = "shapley"
-    # weighting = "beta_shapley_16_4"
+    # weighting = "beta_shapley_2_2"
     # weighting = "banzhaf"
     weighting = "weighted_banzhaf_0.8"
+    print(f"Weighting: {weighting}")
+    
     estimator_names = [
         # "TreeAdjusted",
         # "LeverageSHAP",
         "OFA_S",
         # "OFA_A",
-        # "GELS",
-        # "ARM",
-        # "SHAPIQ",
+        "GELS",
+        "ARM",
         # "WSL",
-        # "WeightedSHAP",
-        "AME",
+        "WeightedSHAP",
+        # "AME",
         "ImprovedAME",
         # "GELS_S",
     ]

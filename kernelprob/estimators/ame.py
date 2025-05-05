@@ -1,4 +1,3 @@
-# ame_estimator.py
 import numpy as np
 from math import log
 
@@ -141,25 +140,40 @@ class ImprovedAMEEstimator(BaseEstimator):
 
         elif "shapley" in weighting:
             self.draw_w = lambda: self.rng.random()            # U(0,1)
+            # eps = 1e-3
+            # self.draw_w = lambda e=eps: self.rng.uniform(e, 1.0 - e)
 
         else:
             raise ValueError("Improved AME not implemented for this weighting.")
+        
+        p_vec = get_p(self.n, weighting)
+        self.paired = np.allclose(p_vec, p_vec[::-1])
 
     def explain(self, explicand, num_samples: int):
         x = np.asarray(explicand, float).reshape(-1)
-        if x.size != self.n:
-            raise ValueError("explicand length mismatch.")
+        
+        num_iters = num_samples // 2 if self.paired else num_samples
 
-        out_dim = self._predict(self.base[None, :]).shape[1]
-        phi_sum = np.zeros((self.n, out_dim))
-
-        for _ in range(num_samples):
+        set_phi_sum = False
+        for _ in range(num_iters):
             w = self.draw_w()
+
             S = self.rng.random(self.n) < w                    # mask ∼ Ber(w)
             pred = self._predict(self._masked(x, S))
 
+            if not set_phi_sum:
+                out_dim = pred.shape[1]
+                phi_sum = np.zeros((self.n, out_dim))
+                set_phi_sum = True
+
             coeff = S / w - (1.0 - S) / (1.0 - w)              # Eq. (10)
             phi_sum += coeff[:, None] * pred
+
+            if self.paired:
+                Sc = ~S
+                pred_c = self._predict(self._masked(x, Sc))
+                coeff_c = Sc / w - (1.0 - Sc) / (1.0 - w)
+                phi_sum += coeff_c[:, None] * pred_c
 
         phi = phi_sum / num_samples
         return phi[:, 0] if out_dim == 1 else phi

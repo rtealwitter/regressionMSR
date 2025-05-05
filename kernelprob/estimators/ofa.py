@@ -155,23 +155,23 @@ class OFAEstimator(BaseEstimator):
         phi = tmp_val
         return phi
 
-#class OFA_S(OFAEstimator):
-#    def __init__(self, model, baseline, weighting):
-#        super().__init__(
-#            model=model,
-#            baseline=baseline,
-#            weighting=weighting,
-#            mode="S"
-#        )
-#
-#class OFA_A(OFAEstimator):
-#    def __init__(self, model, baseline, weighting):
-#        super().__init__(
-#            model=model,
-#            baseline=baseline,
-#            weighting=weighting,
-#            mode="A"
-#        )
+class OFA_S(OFAEstimator):
+   def __init__(self, model, baseline, weighting):
+       super().__init__(
+           model=model,
+           baseline=baseline,
+           weighting=weighting,
+           mode="S"
+       )
+
+class OFA_A(OFAEstimator):
+   def __init__(self, model, baseline, weighting):
+       super().__init__(
+           model=model,
+           baseline=baseline,
+           weighting=weighting,
+           mode="A"
+       )
 
 class OFAEstimatorOptimized(BaseEstimator):
     """
@@ -286,22 +286,20 @@ class OFAEstimatorOptimized(BaseEstimator):
             phi[i] += (values_with[size] / counts_with[size] - values_without[size] / counts_without[size]) @ mu
         return phi
 
-class OFA_S(OFAEstimatorOptimized):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(
-            model=model,
-            baseline=baseline,
-            weighting=weighting,
-            mode="S"
-        )
+# class OFA_S(OFAEstimatorOptimized):
+#     def __init__(self, model, baseline, weighting):
+#         super().__init__(
+#             model=model,
+#             baseline=baseline,
+#             weighting=weighting,
+#             mode="S"
+#         )
 
-class OFA_A(OFAEstimatorOptimized):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(
-            model=model,
-            baseline=baseline,
-            weighting=weighting,
-            mode="A"
-        )
-
-
+# class OFA_A(OFAEstimatorOptimized):
+#     def __init__(self, model, baseline, weighting):
+#         super().__init__(
+#             model=model,
+#             baseline=baseline,
+#             weighting=weighting,
+#             mode="A"
+#         )
