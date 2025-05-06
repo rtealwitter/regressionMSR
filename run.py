@@ -115,7 +115,7 @@ def run_case_study():
             f.write(str(results).replace('\n', ' '))
 
 def run_debug():
-    dataset_name = "Communities"
+    dataset_name = "Adult"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
@@ -124,7 +124,7 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     # weighting = "shapley"
-    weighting = "beta_shapley_1_1"
+    weighting = "beta_shapley_1_4"
     # weighting = "banzhaf"
     #weighting = "weighted_banzhaf_0.8"
     print(f"Weighting: {weighting}")

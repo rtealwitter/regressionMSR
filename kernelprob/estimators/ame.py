@@ -138,8 +138,6 @@ class ImprovedAMEEstimator(BaseEstimator):
 
         elif "beta_shapley" in weighting:
             alpha, beta = _extract_ab(weighting)               # returns (α, β)
-            if alpha <= 1 or beta <= 1:
-                raise ValueError("beta_shapley needs alpha>1, beta>1.")
             self.draw_w = lambda a=alpha, b=beta: self.rng.beta(b, a)
 
         elif "shapley" in weighting:
