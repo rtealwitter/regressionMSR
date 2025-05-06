@@ -115,7 +115,7 @@ def run_case_study():
             f.write(str(results).replace('\n', ' '))
 
 def run_debug():
-    dataset_name = "IRIS"
+    dataset_name = "Communities"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
@@ -124,22 +124,22 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     # weighting = "shapley"
-    # weighting = "beta_shapley_2_2"
+    weighting = "beta_shapley_2_2"
     # weighting = "banzhaf"
-    weighting = "weighted_banzhaf_0.8"
+    #weighting = "weighted_banzhaf_0.8"
     print(f"Weighting: {weighting}")
     
     estimator_names = [
-        # "TreeAdjusted",
-        # "LeverageSHAP",
-        "OFA_S",
+        "TreeMSR",
+        "LinearMSR",
+        #"OFA_S",
         # "OFA_A",
-        "GELS",
-        "ARM",
+        #"GELS",
+        #"ARM",
         # "WSL",
-        "WeightedSHAP",
+        #"WeightedSHAP",
         # "AME",
-        "ImprovedAME",
+        #"ImprovedAME",
         # "GELS_S",
     ]
 

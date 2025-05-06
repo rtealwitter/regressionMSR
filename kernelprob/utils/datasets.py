@@ -120,19 +120,19 @@ def load_real_estate():
     return X, y
 
 dataset_loaders = {
-    'IRIS' : shap.datasets.iris, # 4
+    #'IRIS' : shap.datasets.iris, # 4
     # 'California' : shap.datasets.california, #8
     # 'Diabetes' : shap.datasets.diabetes, # 10
-    # 'Wine Quality' : load_wine_quality, # 12
-    # 'Adult' : shap.datasets.adult, #12
-    # 'Forest Fires' : load_forest_fires, # 13
-    # 'Real Estate' : load_real_estate, # 15
-    # 'Bike Sharing' : load_bike_sharing, # 16
-    # 'Breast Cancer': breast_cancer, # 30
-    # 'Correlated' : shap.datasets.corrgroups60, # 60
-    # 'Independent' : shap.datasets.independentlinear60, # 60
-    # 'NHANES' : shap.datasets.nhanesi, # 79
-    # 'Communities' : shap.datasets.communitiesandcrime, #101
+    'Wine Quality' : load_wine_quality, # 12
+    'Adult' : shap.datasets.adult, #12
+    'Forest Fires' : load_forest_fires, # 13
+    'Real Estate' : load_real_estate, # 15
+    'Bike Sharing' : load_bike_sharing, # 16
+    'Breast Cancer': breast_cancer, # 30
+    'Correlated' : shap.datasets.corrgroups60, # 60
+    'Independent' : shap.datasets.independentlinear60, # 60
+    'NHANES' : shap.datasets.nhanesi, # 79
+    'Communities' : shap.datasets.communitiesandcrime, #101
 }
 
 dataset_sizes = {

@@ -43,6 +43,13 @@ estimators:
 #    weightings:
 #      - banzhaf
 #
+#  Tree:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf 
 #  TreeMSR:
 #    weightings:
 #      - shapley
@@ -57,14 +64,14 @@ estimators:
 #      - beta_shapley
 #      - beta_shapley_sym
 #      - weighted_banzhaf
-#
-  OFA_S:
-    weightings:
-      - shapley # Bad performance
-      - banzhaf # Bad performance
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf  
+
+#  OFA_S:
+#    weightings:
+#      - shapley # Bad performance
+#      - banzhaf # Bad performance
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf  
 #  WSL:
 #    weightings:
 #      - shapley # This is MC
@@ -73,45 +80,45 @@ estimators:
 #      - beta_shapley_sym
 #      - weighted_banzhaf
 
-  GELS:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  # GELS_S:
-  #   weightings:
-  #     - shapley
-
-  ARM:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  WeightedSHAP:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-  
-  AME: # Doesn't support Shapley values, don't use
-    weightings:
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
+#  GELS:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
+#  # GELS_S:
+#  #   weightings:
+#  #     - shapley
+#
+#  ARM:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
+#  WeightedSHAP:
+#    weightings:
+#      - shapley
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#  
+#  AME: # Doesn't support Shapley values, don't use
+#    weightings:
+#      - banzhaf
+#      - beta_shapley
+#      - beta_shapley_sym
+#      - weighted_banzhaf
+#
   ImprovedAME: # Only works for Semi-values, but bad performance on Shapley values
     weightings:
-      - shapley
-      - banzhaf
+#      - shapley
+#      - banzhaf
       - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
+#      - beta_shapley_sym
+#      - weighted_banzhaf

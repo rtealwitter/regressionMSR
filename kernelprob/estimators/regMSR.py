@@ -51,6 +51,20 @@ class UniversalMSR(BaseEstimator):
         self.gen = np.random.Generator(np.random.PCG64())
         self.reg_model_class = reg_model_class
         self.sample_prob = self.p * scipy.special.binom(self.n-1, np.arange(self.n))
+        
+        if True:
+            sample_prob = []
+            for size in range(self.n+1):
+                prob = 0
+                if size > 0:
+                    prob += self.p[size-1]**2 * size
+                if size < self.n:
+                    prob += self.p[size]**2 * (self.n - size)
+                sample_prob.append(
+                    np.sqrt(prob) * scipy.special.binom(self.n, size)
+                )
+            self.sample_prob = np.array(sample_prob) / np.sum(sample_prob)
+
         self.return_direct = return_direct
        
     def sample_with_replacement(self):
@@ -58,15 +72,24 @@ class UniversalMSR(BaseEstimator):
 
         elements = np.arange(self.n)
         idx = 0
-        for offset in [0,1]:
-            sizes = np.arange(self.n) + offset
-            sampled_sizes = self.gen.choice(sizes, self.num_samples//2, p=self.sample_prob)
+        if False:
+            for offset in [0,1]:
+                sizes = np.arange(self.n) + offset
+                sampled_sizes = self.gen.choice(sizes, self.num_samples//2, p=self.sample_prob)
+                
+                for S_idx, size in enumerate(sampled_sizes):
+                    indices = self.gen.choice(elements, size=size, replace=False)
+
+                    self.X[idx, indices] = 1
+                    idx += 1 
+        else:
+            sizes = np.arange(self.n+1)
+            sampled_sizes = self.gen.choice(sizes, self.num_samples, p=self.sample_prob)
             
-            for S_idx, size in enumerate(sampled_sizes):
+            for idx, size in enumerate(sampled_sizes):
                 indices = self.gen.choice(elements, size=size, replace=False)
 
                 self.X[idx, indices] = 1
-                idx += 1
  
     def explain(self, explicand, num_samples):
         self.num_samples = num_samples // 2 * 2

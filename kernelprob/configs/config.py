@@ -42,9 +42,9 @@ ESTIMATOR_ALL = {
     "WSL": WSLEstimator,
     "GELS": GELSEstimator,
     "ARM": ARMEstimator,
-    "SHAPIQ": SHAPIQEstimator,
+    #"SHAPIQ": SHAPIQEstimator,
     "WeightedSHAP": WeightedSHAPEstimator,
-    "AME": AMEEstimator,
+    #"AME": AMEEstimator,
     "ImprovedAME": ImprovedAMEEstimator,
     'Tree': Tree,
 #    "OFA_A": OFA_A, # Unfair comparison
