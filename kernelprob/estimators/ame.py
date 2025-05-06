@@ -26,7 +26,6 @@ class AMEEstimator(BaseEstimator):
         baseline,
         weighting: str,
         *,
-        eps: float | None = None,
         rng_seed: int | None = None,
     ):
         super().__init__(model, baseline, weighting)
@@ -35,6 +34,9 @@ class AMEEstimator(BaseEstimator):
         self.base = np.asarray(baseline, float).reshape(-1)
         self.n = self.base.size
         self.rng = np.random.default_rng(rng_seed)
+
+        if weighting == "beta_shapley_1_1":
+            weighting = "shapley"
 
         # choose μ and compute constant C
         if "banzhaf" in weighting:
@@ -55,8 +57,7 @@ class AMEEstimator(BaseEstimator):
             )
 
         elif "shapley" in weighting:
-            if eps is None or not (0.0 < eps < 0.5):
-                raise ValueError("Provide eps in (0,0.5) for shapley.")
+            eps = 1e-3
             self.draw_w = lambda e=eps: self.rng.uniform(e, 1.0 - e)
             self.C = 2.0 * log((1.0 - eps) / eps) / (1.0 - 2.0 * eps)
 
@@ -125,6 +126,9 @@ class ImprovedAMEEstimator(BaseEstimator):
         self.base = np.asarray(baseline, float).reshape(-1)
         self.n = self.base.size
         self.rng = np.random.default_rng(rng_seed)
+
+        if weighting == "beta_shapley_1_1":
+            weighting = "shapley"
 
         if "banzhaf" in weighting:
             p = 0.5 if weighting == "banzhaf" else float(weighting.split("_")[-1])
