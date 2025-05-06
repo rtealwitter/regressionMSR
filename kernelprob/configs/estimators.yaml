@@ -1,26 +1,26 @@
 weightings:
-  shapley:
-    - shapley
-  banzhaf:
-    - banzhaf
+#  shapley:
+#    - shapley
+#  banzhaf:
+#    - banzhaf
   beta_shapley_sym:
     - beta_shapley_1_1 # Same as Shapley
-    - beta_shapley_2_2
-    - beta_shapley_4_4
-    - beta_shapley_8_8
-    - beta_shapley_16_16
-  beta_shapley:
-    - beta_shapley_1_1 # Same as Shapley
-    - beta_shapley_1_2
-    - beta_shapley_1_4
-    - beta_shapley_1_8
-    - beta_shapley_1_16
-  weighted_banzhaf:
-    - weighted_banzhaf_0.5 # Same as Banzhaf
-    - weighted_banzhaf_0.6
-    - weighted_banzhaf_0.7
-    - weighted_banzhaf_0.8
-    - weighted_banzhaf_0.9
+#    - beta_shapley_2_2
+#    - beta_shapley_4_4
+#    - beta_shapley_8_8
+#    - beta_shapley_16_16
+#  beta_shapley:
+#    - beta_shapley_1_1 # Same as Shapley
+#    - beta_shapley_1_2
+#    - beta_shapley_1_4
+#    - beta_shapley_1_8
+#    - beta_shapley_1_16
+#  weighted_banzhaf:
+#    - weighted_banzhaf_0.5 # Same as Banzhaf
+#    - weighted_banzhaf_0.6
+#    - weighted_banzhaf_0.7
+#    - weighted_banzhaf_0.8
+#    - weighted_banzhaf_0.9
 #  random:
 #    - random_42
 #    - random_27
@@ -57,13 +57,13 @@ estimators:
 #      - beta_shapley
 #      - beta_shapley_sym
 #      - weighted_banzhaf
-#  LinearMSR:
-#    weightings:
-#      - shapley
-#      - banzhaf
-#      - beta_shapley
-#      - beta_shapley_sym
-#      - weighted_banzhaf
+  LinearMSR:
+    weightings:
+      - shapley
+      - banzhaf
+      - beta_shapley
+      - beta_shapley_sym
+      - weighted_banzhaf
 
 #  OFA_S:
 #    weightings:
@@ -115,10 +115,10 @@ estimators:
 #      - beta_shapley_sym
 #      - weighted_banzhaf
 #
-  ImprovedAME: # Only works for Semi-values, but bad performance on Shapley values
-    weightings:
+#  ImprovedAME: # Only works for Semi-values, but bad performance on Shapley values
+#    weightings:
 #      - shapley
 #      - banzhaf
-      - beta_shapley
+#      - beta_shapley
 #      - beta_shapley_sym
 #      - weighted_banzhaf

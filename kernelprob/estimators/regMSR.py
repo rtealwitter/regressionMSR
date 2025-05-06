@@ -94,7 +94,7 @@ class UniversalMSR(BaseEstimator):
     def explain(self, explicand, num_samples):
         self.num_samples = num_samples // 2 * 2
         self.pair_sampling = False
-        if self.weighting in ['shapley', 'betashapley_1_1', 'banzhaf', 'weighted_banzhaf_0.5'] and self.reg_model_class == 'linear':
+        if self.weighting in ['shapley', 'beta_shapley_1_1', 'banzhaf', 'weighted_banzhaf_0.5'] and self.reg_model_class == 'linear':
             return self.explain_special_linear(explicand, num_samples) 
 
         self.sample_with_replacement()
@@ -125,12 +125,12 @@ class UniversalMSR(BaseEstimator):
         
     def explain_special_linear(self, explicand, num_samples):
 
-        if self.weighting in ['shapley', 'betashapley_1_1']:
+        if self.weighting in ['shapley', 'beta_shapley_1_1']:
             constrain_reg = True
         elif self.weighting in ['banzhaf', 'weighted_banzhaf_0.5']:
             constrain_reg = False
         else:
-            raise ValueError("weighting must be 'shapley', 'betashapley_1_1', 'banzhaf' or 'weighted_banzhaf_0.5'")
+            raise ValueError("weighting must be 'shapley', 'beta_shapley_1_1', 'banzhaf' or 'weighted_banzhaf_0.5'")
         
         LinearEstimator = UniversalRegression(
             self.model, self.baseline, self.weighting, with_replace=False, constrain_reg=constrain_reg,

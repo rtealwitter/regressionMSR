@@ -36,8 +36,8 @@ ESTIMATOR_TRUE = {
 # Important that supersets of other estimators are included first
 # E.g., OFA_S_Optimized should be included before OFA_S
 ESTIMATOR_ALL = {
-    'TreeMSR': TreeMSR,
     'LinearMSR': LinearMSR,
+    'TreeMSR': TreeMSR,
     "OFA_S": OFA_S,
     "WSL": WSLEstimator,
     "GELS": GELSEstimator,
@@ -46,7 +46,7 @@ ESTIMATOR_ALL = {
     "WeightedSHAP": WeightedSHAPEstimator,
     #"AME": AMEEstimator,
     "ImprovedAME": ImprovedAMEEstimator,
-    'Tree': Tree,
+#    'Tree': Tree,
 #    "OFA_A": OFA_A, # Unfair comparison
 #    "LeverageSHAP+": UniversalConstrained,
 #    "KernelBanzhaf+": UniversalUnconstrained,
