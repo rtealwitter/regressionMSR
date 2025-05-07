@@ -12,6 +12,7 @@ from kernelprob.utils.p_generator import get_p
 from kernelprob.utils.run_utils import *
 from kernelprob.exact.treeprob import tree_prob
 from kernelprob.exact.treeshap import tree_shap
+from kernelprob.exact.treeprob_v2 import tree_prob_v2
 from kernelprob.exact.enumeration import enumeration_prob
 
 def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, ground_truth_class: str):
@@ -123,11 +124,26 @@ def run_debug():
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
-    # weighting = "shapley"
-    weighting = "beta_shapley_1_4"
+    weighting = "shapley"
+    # weighting = "beta_shapley_1_4"
     # weighting = "banzhaf"
-    #weighting = "weighted_banzhaf_0.8"
+    # weighting = "weighted_banzhaf_0.8"
+    weighting = "random_42"
     print(f"Weighting: {weighting}")
+
+    # true_values = tree_prob(baseline, explicands, model, weighting)
+    true_values_v2 = tree_prob_v2(baseline, explicands, model, weighting)
+    enumerate_values = enumeration_prob(baseline, explicands, model, weighting)
+
+    # print(f"True values: {true_values}")
+    print(f"True values v2: {true_values_v2}")
+    print(f"Enumerate values: {enumerate_values}\n")
+
+    for i in range(len(enumerate_values)):
+        if not np.allclose(enumerate_values[i], true_values_v2[i]):
+            print(f"True values differ at index {i}\n")
+
+    exit()
     
     estimator_names = [
         # "TreeMSR",
@@ -138,8 +154,8 @@ def run_debug():
         #"ARM",
         # "WSL",
         #"WeightedSHAP",
-        # "AME",
-        "ImprovedAME",
+        "AME",
+        # "ImprovedAME",
         # "GELS_S",
     ]
 
@@ -147,7 +163,6 @@ def run_debug():
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
     }
 
-    true_values = tree_prob(baseline, explicands, model, weighting)
     # Enumeration
     #true_values = enumeration_prob(baseline, explicands, model, weighting)
     # print(f"True values: {true_values}")

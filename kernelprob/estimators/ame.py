@@ -35,8 +35,8 @@ class AMEEstimator(BaseEstimator):
         self.n = self.base.size
         self.rng = np.random.default_rng(rng_seed)
 
-        if weighting == "beta_shapley_1_1":
-            weighting = "shapley"
+        if weighting == "shapley":
+            weighting = "beta_shapley_1_1"
 
         # choose μ and compute constant C
         if "banzhaf" in weighting:
@@ -49,17 +49,20 @@ class AMEEstimator(BaseEstimator):
         elif "beta_shapley" in weighting:
             alpha, beta = _extract_ab(weighting)
             if alpha <= 1 or beta <= 1:
-                raise ValueError("Original AME needs alpha>1, beta>1.")
-            # μ = Beta(beta, alpha)
+                # raise ValueError("Original AME needs alpha>1, beta>1.")
+                eps = 1e-3
+            else:
+                eps = 0.0
+            alpha, beta = alpha + eps, beta + eps
             self.draw_w = lambda a=alpha, b=beta: self.rng.beta(b, a)
             self.C = ((alpha + beta - 1) * (alpha + beta - 2)) / (
                 (beta - 1) * (alpha - 1)
             )
 
-        elif "shapley" in weighting:
-            eps = 1e-3
-            self.draw_w = lambda e=eps: self.rng.uniform(e, 1.0 - e)
-            self.C = 2.0 * log((1.0 - eps) / eps) / (1.0 - 2.0 * eps)
+        # elif "shapley" in weighting:
+        #     eps = 1e-3
+        #     self.draw_w = lambda e=eps: self.rng.uniform(e, 1.0 - e)
+        #     self.C = 2.0 * log((1.0 - eps) / eps) / (1.0 - 2.0 * eps)
 
         else:
             raise ValueError(
