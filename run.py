@@ -88,7 +88,12 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
 def run_case_study():
     weighting = 'shapley'
     sample_size_mult = 5
-    estimator_names = ['WSL', 'MSR', 'LinearMSR']
+    estimator_names = [
+        'WSL',
+        'MSR',
+        'LeverageSHAP',
+        'LinearMSR'
+    ]
     for dataset in DATASETS['small_n'] + DATASETS['big_n']:
         X, y = load_dataset(dataset)
         n = X.shape[1]

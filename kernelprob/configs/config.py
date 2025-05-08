@@ -45,7 +45,7 @@ ESTIMATOR_ALL = {
     #"SHAPIQ": SHAPIQEstimator,
     "WeightedSHAP": WeightedSHAPEstimator,
     "AME": AMEEstimator,
-    "ImprovedAME": ImprovedAMEEstimator,
+#    "ImprovedAME": ImprovedAMEEstimator,
 #    'Tree': Tree,
 #    "OFA_A": OFA_A, # Unfair comparison
 #    "LeverageSHAP+": UniversalConstrained,

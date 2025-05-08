@@ -120,9 +120,9 @@ def load_real_estate():
     return X, y
 
 dataset_loaders = {
-    'IRIS' : shap.datasets.iris, # 4
-    'California' : shap.datasets.california, #8
-    'Diabetes' : shap.datasets.diabetes, # 10
+#    'IRIS' : shap.datasets.iris, # 4
+#    'California' : shap.datasets.california, #8
+#    'Diabetes' : shap.datasets.diabetes, # 10
     'Wine Quality' : load_wine_quality, # 12
     'Adult' : shap.datasets.adult, #12
     'Forest Fires' : load_forest_fires, # 13
