@@ -49,7 +49,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     #         print(f"Official tree SHAP: {official_tree_shap[idx]}")
     # exit()
 
-    for noise_std in VARIABLES[variable]["noise_std"]:
+    for noise_std in VARIABLES[variable]["noise"]:
         noised_model = NoisyModel(model, noise_std)
         try:
             estimator = estimator_cls(

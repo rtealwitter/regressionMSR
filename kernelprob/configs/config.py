@@ -80,17 +80,17 @@ for dataset in dataset_loaders:
 VARIABLES = {
     "basic" : {
         "sample_size": [10],
-        "noise_std": [0],
+        "noise": [0],
     },
     "sample_size":
         {
             "sample_size": [6, 10, 20, 40, 80, 160],
-            "noise_std": [0]
+            "noise": [0]
         },
-    "noise_std":
+    "noise":
         {
             "sample_size": [10],
-            "noise_std": [1e-3, 1e-2, 1e-1, .5, 1]
+            "noise": [1e-3, 1e-2, 1e-1, .5, 1]
         }
 }
 
