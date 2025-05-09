@@ -121,7 +121,7 @@ def run_case_study():
             f.write(str(results).replace('\n', ' '))
 
 def run_debug():
-    dataset_name = "Adult"
+    dataset_name = "Real Estate"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
@@ -130,25 +130,25 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     weighting = "shapley"
-    # weighting = "beta_shapley_1_4"
+    weighting = "beta_shapley_2_2"
     # weighting = "banzhaf"
     # weighting = "weighted_banzhaf_0.8"
-    weighting = "random_42"
+    # weighting = "random_42"
     print(f"Weighting: {weighting}")
 
-    # true_values = tree_prob(baseline, explicands, model, weighting)
-    true_values_v2 = tree_prob_v2(baseline, explicands, model, weighting)
-    enumerate_values = enumeration_prob(baseline, explicands, model, weighting)
+    true_values = tree_prob(baseline, explicands, model, weighting)
+    # true_values_v2 = tree_prob_v2(baseline, explicands, model, weighting)
+    # enumerate_values = enumeration_prob(baseline, explicands, model, weighting)
 
-    # print(f"True values: {true_values}")
-    print(f"True values v2: {true_values_v2}")
-    print(f"Enumerate values: {enumerate_values}\n")
+    # # print(f"True values: {true_values}")
+    # print(f"True values v2: {true_values_v2}")
+    # print(f"Enumerate values: {enumerate_values}\n")
 
-    for i in range(len(enumerate_values)):
-        if not np.allclose(enumerate_values[i], true_values_v2[i]):
-            print(f"True values differ at index {i}\n")
+    # for i in range(len(enumerate_values)):
+    #     if not np.allclose(enumerate_values[i], true_values_v2[i]):
+    #         print(f"True values differ at index {i}\n")
 
-    exit()
+    # exit()
     
     estimator_names = [
         # "TreeMSR",
@@ -158,7 +158,7 @@ def run_debug():
         #"GELS",
         #"ARM",
         # "WSL",
-        #"WeightedSHAP",
+        "WeightedSHAP",
         "AME",
         # "ImprovedAME",
         # "GELS_S",
@@ -172,7 +172,7 @@ def run_debug():
     #true_values = enumeration_prob(baseline, explicands, model, weighting)
     # print(f"True values: {true_values}")
 
-    for sample_size in [8, 16, 32]:
+    for sample_size in [6*n, 10*n, 20*n]:
         for idx, explicand in enumerate(explicands):
             results = {}
             for estimator_name, estimator in estimators.items():
