@@ -4,6 +4,8 @@ from .tree import Tree
 from .tree_utils import is_sklearn_random_forest, is_xgboost_model, parse_xgb_tree
 from .weights import calc_weight
 import warnings
+import xgboost
+import json
 
 def tree_prob(baseline, explicands, model, weighting="shapley"):
     warnings.filterwarnings("ignore", category=RuntimeWarning, message="invalid value encountered in scalar multiply")
@@ -28,6 +30,7 @@ def prob_recurse(
     thresholds,
     values,
     phi,
+    model_type,
     weighting="shapley"
 ):
     """
@@ -60,48 +63,54 @@ def prob_recurse(
 
     # If xlist[dj] > 0 => forcibly follow x's path
     if xlist[dj] > 0:
-        if xdj > tj:
+        split = xdj > tj if model_type == "rf" else xdj >= tj
+        if split:
             return prob_recurse(
                 b_j, U, V, xlist, clist, x, c, 
                 children_left, children_right,
                 features, thresholds, values,
-                phi, weighting
+                phi, model_type, weighting
             )
         else:
             return prob_recurse(
                 a_j, U, V, xlist, clist, x, c,
                 children_left, children_right,
                 features, thresholds, values,
-                phi, weighting
+                phi, model_type, weighting
             )
 
     # If clist[dj] > 0 => forcibly follow c's path
     if clist[dj] > 0:
-        if cdj > tj:
+        split = cdj > tj if model_type == "rf" else cdj >= tj
+        if split:
             return prob_recurse(
                 b_j, U, V, xlist, clist, x, c,
                 children_left, children_right,
                 features, thresholds, values,
-                phi, weighting
+                phi, model_type, weighting
             )
         else:
             return prob_recurse(
                 a_j, U, V, xlist, clist, x, c,
                 children_left, children_right,
                 features, thresholds, values,
-                phi, weighting
+                phi, model_type, weighting
             )
     
     # If x and c both go the same way => single path
-    both_right = (xdj > tj) and (cdj > tj)
-    both_left = (xdj <= tj) and (cdj <= tj)
+    if model_type == "rf":
+        both_right = (xdj > tj) and (cdj > tj)
+        both_left = (xdj <= tj) and (cdj <= tj)
+    elif model_type == "xgb":
+        both_right = (xdj >= tj) and (cdj >= tj)
+        both_left = (xdj < tj) and (cdj < tj)
 
     if both_right:
         return prob_recurse(
             b_j, U, V, xlist, clist, x, c,
             children_left, children_right,
             features, thresholds, values,
-            phi, weighting
+            phi, model_type, weighting
         )
 
     if both_left:
@@ -109,19 +118,23 @@ def prob_recurse(
             a_j, U, V, xlist, clist, x, c,
             children_left, children_right,
             features, thresholds, values,
-            phi, weighting
+            phi, model_type, weighting
         )
 
     # x and c differ => "split path"
     # 1) x -> right, c -> left
-    if (xdj > tj) and (cdj <= tj):
+    if model_type == "rf":
+        split = (xdj > tj) and (cdj <= tj)
+    elif model_type == "xgb":
+        split = (xdj >= tj) and (cdj < tj)
+    if split:
         # Force x down right child
         xlist[dj] += 1
         posx, negx = prob_recurse(
             b_j, U+1, V+1, xlist, clist, x, c,
             children_left, children_right,
             features, thresholds, values,
-            phi, weighting
+            phi, model_type, weighting
         )
         xlist[dj] -= 1
 
@@ -131,7 +144,7 @@ def prob_recurse(
             a_j, U, V+1, xlist, clist, x, c,
             children_left, children_right,
             features, thresholds, values,
-            phi, weighting
+            phi, model_type, weighting
         )
         clist[dj] -= 1
 
@@ -139,13 +152,17 @@ def prob_recurse(
         return (posx + posc, negx + negc)
 
     # 2) x -> left, c -> right
-    if (xdj <= tj) and (cdj > tj):
+    if model_type == "rf":
+        split = (xdj < tj) and (cdj >= tj)
+    elif model_type == "xgb":
+        split = (xdj < tj) and (cdj >= tj)
+    if split:
         xlist[dj] += 1
         posx, negx = prob_recurse(
             a_j, U+1, V+1, xlist, clist, x, c,
             children_left, children_right,
             features, thresholds, values,
-            phi, weighting
+            phi, model_type, weighting
         )
         xlist[dj] -= 1
 
@@ -154,7 +171,7 @@ def prob_recurse(
             b_j, U, V+1, xlist, clist, x, c,
             children_left, children_right,
             features, thresholds, values,
-            phi, weighting
+            phi, model_type, weighting
         )
         clist[dj] -= 1
         
@@ -179,8 +196,11 @@ class TreeProbExplainer:
         self.weighting = weighting
         self.trees = []
 
+        self._is_rf  = is_sklearn_random_forest(model)
+        self._is_xgb = is_xgboost_model(model)
+
         # -- Detect model type
-        if is_sklearn_random_forest(model):
+        if self._is_rf:
             # scikit-learn RandomForest
             n_features = model.n_features_in_
             for estimator in model.estimators_:
@@ -195,20 +215,8 @@ class TreeProbExplainer:
                 )
                 self.trees.append(tree_obj)
 
-        elif is_xgboost_model(model):
-            # XGBoost
-            booster = model.get_booster()
-            df = booster.trees_to_dataframe()
-            try:
-                n_features = model.n_features_in_
-            except:
-                n_features = None
-            
-            n_trees = df["Tree"].max() + 1
-            for tree_id in range(n_trees):
-                tree_obj = parse_xgb_tree(df, tree_id, booster, n_features, n_trees)
-                self.trees.append(tree_obj)
-
+        elif self._is_xgb:
+            self.trees = parse_xgb_tree(model)
         else:
             raise ValueError(
                 "This explainer only supports scikit-learn RandomForestRegressor or XGBoost (XGBRegressor/XGBClassifier)."
@@ -249,6 +257,13 @@ class TreeProbExplainer:
         if len(explicand.shape) == 1:
             explicand = explicand.reshape(1, -1)
 
+        if self._is_rf:
+            model_type = "rf"
+        elif self._is_xgb:
+            model_type = "xgb"
+        else:
+            raise ValueError(f"Invalid model type: {self._is_rf} or {self._is_xgb}")
+        
         baseline = np.array(self.baseline)
         if len(baseline.shape) == 1:
             baseline = baseline.reshape(1, -1)
@@ -280,6 +295,7 @@ class TreeProbExplainer:
                         thresholds=t.thresholds,
                         values=t.values,
                         phi=sum_phi_over_c,
+                        model_type=model_type,
                         weighting=self.weighting
                     )
 
@@ -288,7 +304,9 @@ class TreeProbExplainer:
                 row_phi += sum_phi_over_c
 
             # Average over all trees
-            row_phi /= len(self.trees)
+            if self._is_rf:     
+                row_phi /= len(self.trees)
+
             phi[i, :] = row_phi
 
         return phi
