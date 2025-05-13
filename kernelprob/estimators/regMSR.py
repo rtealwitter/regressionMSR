@@ -2,6 +2,7 @@ import numpy as np
 import scipy
 from scipy.special import comb
 import scipy.special
+import pandas as pd
 
 import sklearn.ensemble
 import sklearn.linear_model
@@ -11,6 +12,7 @@ from ..estimators.reg import UniversalRegression
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p
 from .est_utils import combination_generator
+import xgboost
 
 class NullModel:
     def __init__(self):
@@ -31,7 +33,8 @@ def get_fit(X_flat, y_flat, weighting, regression_adj):
         reg_model = sklearn.linear_model.LinearRegression()
         phi_method = lambda reg_model: reg_model.coef_
     elif regression_adj == "tree":
-        reg_model = sklearn.ensemble.RandomForestRegressor()
+        #reg_model = sklearn.ensemble.RandomForestRegressor()
+        reg_model = xgboost.XGBRegressor()
         phi_method = lambda reg_model: tree_prob(np.zeros((1,n)), np.ones((1,n)), reg_model, weighting)[0].squeeze()
     else:
         raise ValueError("regression_adjustment must be False, 'linear', or 'tree'")
@@ -51,8 +54,10 @@ class UniversalMSR(BaseEstimator):
         self.gen = np.random.Generator(np.random.PCG64())
         self.reg_model_class = reg_model_class
         self.sample_prob = self.p * scipy.special.binom(self.n-1, np.arange(self.n))
+        self.split_samples = False
+        self.split_training = False
         
-        if True:
+        if not self.split_samples:
             sample_prob = []
             for size in range(self.n+1):
                 prob = 0
@@ -69,10 +74,11 @@ class UniversalMSR(BaseEstimator):
        
     def sample_with_replacement(self):
         self.X = np.zeros((self.num_samples, self.n), dtype=float)
+        self.actual_sample_prob = np.zeros(self.num_samples, dtype=float)
 
         elements = np.arange(self.n)
         idx = 0
-        if False:
+        if self.split_samples:
             for offset in [0,1]:
                 sizes = np.arange(self.n) + offset
                 sampled_sizes = self.gen.choice(sizes, self.num_samples//2, p=self.sample_prob)
@@ -81,7 +87,9 @@ class UniversalMSR(BaseEstimator):
                     indices = self.gen.choice(elements, size=size, replace=False)
 
                     self.X[idx, indices] = 1
-                    idx += 1 
+                    self.actual_sample_prob[idx] = self.sample_prob[size-offset] / scipy.special.binom(self.n-1, size-offset)
+                    idx += 1
+                    
         else:
             sizes = np.arange(self.n+1)
             sampled_sizes = self.gen.choice(sizes, self.num_samples, p=self.sample_prob)
@@ -90,6 +98,7 @@ class UniversalMSR(BaseEstimator):
                 indices = self.gen.choice(elements, size=size, replace=False)
 
                 self.X[idx, indices] = 1
+                self.actual_sample_prob[idx] = self.sample_prob[size] / scipy.special.binom(self.n, size)
  
     def explain(self, explicand, num_samples):
         self.num_samples = num_samples // 2 * 2
@@ -102,22 +111,44 @@ class UniversalMSR(BaseEstimator):
         model_input = self.baseline * (1 - self.X) + explicand * self.X
         y = self.model.predict(model_input)
 
-        reg_model, reg_phi = get_fit(self.X, y, self.weighting, self.reg_model_class)
-        reg_pred = reg_model.predict(self.X)
+        # randomly sample m/2 training indices
+        train_indices = self.gen.choice(self.num_samples, self.num_samples//2, replace=False)
+        if self.split_training:
+            X_train, y_train = self.X[train_indices], y[train_indices]
+            X_test, y_test = self.X[~train_indices], y[~train_indices]
+        else:
+            X_train, y_train = X_test, y_test = self.X, y
+
+        feature_names = [f"f{i}" for i in range(model_input.shape[1])]
+        X_train_df = pd.DataFrame(X_train, columns=feature_names)
+        X_test_df = pd.DataFrame(X_test, columns=feature_names)
+        reg_model, reg_phi = get_fit(X_train_df, y_train, self.weighting, self.reg_model_class)        
+        reg_pred = reg_model.predict(X_test_df)
 
         if self.return_direct:
             return reg_phi
  
         phi = np.zeros(self.n)
         for i in range(self.n):
-            i_contained = (self.X[:, i] == 1) 
+            i_contained = (X_test[:, i] == 1)             
+            not_contained = ~i_contained
+            sizes = X_test.sum(axis=1).astype(int)
+            if self.split_training:
+                actual_sample_prob_test = self.actual_sample_prob[~train_indices]
+            else:
+                actual_sample_prob_test = self.actual_sample_prob
+            #if self.split_samples:
+            #    offset = np.zeros(len(self.X), dtype=int)
+            #    offset[self.num_samples//2:] = 1
+            #    i_contained = (self.X[:,i]==1) & (offset == 1)
+            #    not_contained = (self.X[:,i]==0) & (offset== 0)
             phi[i] = (
                 reg_phi[i] + 
                 (
-                    (y[i_contained] - reg_pred[i_contained])
+                    (y_test[i_contained] - reg_pred[i_contained]) * self.p[sizes[i_contained]-1] / actual_sample_prob_test[i_contained]
                  ).mean() -
                 (
-                    (y[~i_contained] - reg_pred[~i_contained])
+                    (y_test[not_contained] - reg_pred[not_contained]) * self.p[sizes[not_contained]] / actual_sample_prob_test[not_contained]
                 ).mean()
             )
 

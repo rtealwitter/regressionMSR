@@ -89,7 +89,7 @@ VARIABLES = {
         },
     "noise":
         {
-            "sample_size": [10],
+            "sample_size": [40],
             "noise": [1e-3, 1e-2, 1e-1, .5, 1]
         }
 }

@@ -92,8 +92,13 @@ def run_case_study():
         'WSL',
         'MSR',
         'LeverageSHAP',
-        'LinearMSR'
+        'LinearMSR',
+        'TreeMSR',
     ]
+#    weighting = "beta_shapley_8_8"
+#    estimator_names = [
+#        'WSL', 'LinearMSR', 'TreeMSR'
+#    ]
     for dataset in DATASETS['small_n'] + DATASETS['big_n']:
         X, y = load_dataset(dataset)
         n = X.shape[1]
@@ -117,11 +122,11 @@ def run_case_study():
         for estimator_name, estimator in estimators.items():
             results[estimator_name] = estimator.explain(explicands[0], sample_size_mult * n)
         
-        with open(f"output/case_study_{dataset}.csv", 'w') as f:
+        with open(f"output/case_study_{dataset}_{weighting}.csv", 'w') as f:
             f.write(str(results).replace('\n', ' '))
 
 def run_debug():
-    dataset_name = "Real Estate"
+    dataset_name = "Adult"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
@@ -130,7 +135,7 @@ def run_debug():
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
     weighting = "shapley"
-    weighting = "beta_shapley_2_2"
+    #weighting = "beta_shapley_2_2"
     # weighting = "banzhaf"
     # weighting = "weighted_banzhaf_0.8"
     # weighting = "random_42"
@@ -151,15 +156,16 @@ def run_debug():
     # exit()
     
     estimator_names = [
-        # "TreeMSR",
-        # "LinearMSR",
+        "TreeMSR",
+        "LinearMSR",
+        "LeverageSHAP",
         #"OFA_S",
         # "OFA_A",
         #"GELS",
         #"ARM",
         # "WSL",
-        "WeightedSHAP",
-        "AME",
+        #"WeightedSHAP",
+        #"AME",
         # "ImprovedAME",
         # "GELS_S",
     ]
@@ -171,21 +177,22 @@ def run_debug():
     # Enumeration
     #true_values = enumeration_prob(baseline, explicands, model, weighting)
     # print(f"True values: {true_values}")
+    num_reps = 10
+
+    def fancy_round(x, precision=2):
+        return f"{x:.{precision}e}"
 
     for sample_size in [6*n, 10*n, 20*n]:
         for idx, explicand in enumerate(explicands):
-            results = {}
             for estimator_name, estimator in estimators.items():
-                #if estimator_name == "UniversalConstrained":
-                #    results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=np.sum(true_values[idx]))
-                #    #results[estimator_name] = estimator.explain(explicand, sample_size * n, true_sum=estimated_sum)
-                #else:
-                results[estimator_name] = estimator.explain(explicand, sample_size * n)
-            
-            for estimator_name, result in results.items():
-                print(f"Estimator: {estimator_name} \t Error: {((result - true_values[idx]) ** 2).sum()/ (true_values[idx] ** 2).sum()}")
-                # print(f"Estimate: {result}")
-                #print(f"Sum difference: {np.sum(result) - np.sum(true_values[idx])}")
+                errors = []
+                for _ in range(num_reps):
+                    estimate = estimator.explain(explicand, sample_size * n)
+                    errors += [
+                        np.sum((estimate - true_values[idx]) ** 2) / np.sum(true_values[idx] ** 2)
+                    ]
+                print(f"Estimator: {estimator_name} \t Mean: {fancy_round(np.mean(errors))} \t 1st: {fancy_round(np.percentile(errors, 25))} \t 2nd: {fancy_round(np.percentile(errors, 50))} \t 3rd: {fancy_round(np.percentile(errors, 75))} \t Max: {fancy_round(np.max(errors))}")
+
 
 def get_feature_data(rng, n, sample_multiplier, baseline, explicand, model):
     num_samples = min(n * sample_multiplier, 2**n)
