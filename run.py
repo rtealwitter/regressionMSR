@@ -12,7 +12,7 @@ from kernelprob.utils.p_generator import get_p
 from kernelprob.utils.run_utils import *
 from kernelprob.exact.treeprob import tree_prob
 from kernelprob.exact.treeshap import tree_shap
-from kernelprob.exact.treeprob_v2 import tree_prob_v2
+from kernelprob.exact.treesemi import tree_semi
 from kernelprob.exact.enumeration import enumeration_prob
 
 def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, ground_truth_class: str):
@@ -126,7 +126,7 @@ def run_case_study():
             f.write(str(results).replace('\n', ' '))
 
 def run_debug():
-    dataset_name = "Adult"
+    dataset_name = "IRIS"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
@@ -142,15 +142,13 @@ def run_debug():
     print(f"Weighting: {weighting}")
 
     true_values = tree_prob(baseline, explicands, model, weighting)
-    # true_values_v2 = tree_prob_v2(baseline, explicands, model, weighting)
     # enumerate_values = enumeration_prob(baseline, explicands, model, weighting)
 
-    # # print(f"True values: {true_values}")
-    # print(f"True values v2: {true_values_v2}")
+    # print(f"True values: {true_values}")
     # print(f"Enumerate values: {enumerate_values}\n")
 
     # for i in range(len(enumerate_values)):
-    #     if not np.allclose(enumerate_values[i], true_values_v2[i]):
+    #     if not np.allclose(enumerate_values[i], true_values[i]):
     #         print(f"True values differ at index {i}\n")
 
     # exit()
