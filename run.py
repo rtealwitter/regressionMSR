@@ -15,40 +15,14 @@ from kernelprob.exact.treeshap import tree_shap
 from kernelprob.exact.treesemi import tree_semi
 from kernelprob.exact.enumeration import enumeration_prob
 
-def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, ground_truth_class: str):
+def run_experiment(exp_cfg: Dict[str, Any], weighting, baseline, explicands, model: Any, variable: str, dataset: str, ground_truth_class: str, true_values: np.ndarray):
     n = baseline.shape[1]
     estimator_class_name = exp_cfg["estimator_class"]
-    experiment_name = exp_cfg["name"]
     estimator_cls = ESTIMATOR_FACTORY[estimator_class_name]
     if estimator_cls is None:
         logging.error(f"Estimator class '{estimator_class_name}' not found. Skipping.")
         return
     
-    weighting = exp_cfg.get("weighting", None)
-    if weighting is None:
-        logging.error(f"Weighting not specified for '{experiment_name}'. Skipping.")
-        return
-    
-    if "random" in weighting or ground_truth_class == "MLP":
-        logging.info("Using enumeration.")
-        true_values = enumeration_prob(baseline, explicands, model, weighting)
-    # TODO: remove if treeprob is good enough :)
-    elif weighting == "shapley":
-        true_values = tree_shap(baseline, explicands, model)
-    else:
-        true_values = tree_prob(baseline, explicands, model, weighting)
-    
-    # # Discrepancy check
-    # official_tree_shap = tree_shap(baseline, explicands, model)
-    # for idx, true_value in enumerate(true_values):
-    #     if np.allclose(true_value, official_tree_shap[idx], rtol=1e-6, atol=1e-8):
-    #         print("Agrees with official tree SHAP.")
-    #     else:
-    #         print("Does not agree with official tree SHAP.")
-    #         print(f"True value: {true_value}")
-    #         print(f"Official tree SHAP: {official_tree_shap[idx]}")
-    # exit()
-
     for noise_std in VARIABLES[variable]["noise"]:
         noised_model = NoisyModel(model, noise_std)
         try:
@@ -157,24 +131,12 @@ def run_debug():
         "TreeMSR",
         "LinearMSR",
         "LeverageSHAP",
-        #"OFA_S",
-        # "OFA_A",
-        #"GELS",
-        #"ARM",
-        # "WSL",
-        #"WeightedSHAP",
-        #"AME",
-        # "ImprovedAME",
-        # "GELS_S",
     ]
 
     estimators = {
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
     }
 
-    # Enumeration
-    #true_values = enumeration_prob(baseline, explicands, model, weighting)
-    # print(f"True values: {true_values}")
     num_reps = 10
 
     def fancy_round(x, precision=2):
@@ -251,9 +213,22 @@ def check_fit():
                             'error' : error,
 
                         }
-                        with open(filename, 'a') as f:
-                            f.write(str(dict) + '\n')
-    
+                        print(dict)
+                        # with open(filename, 'a') as f:
+                        #     f.write(str(dict) + '\n')
+
+def get_true_values(baseline, explicands, model, weighting, ground_truth_class):
+    if ground_truth_class == "MLP":
+        logging.info(f"Using enumeration for {weighting}.")
+        true_values = enumeration_prob(baseline, explicands, model, weighting)
+    elif weighting == "shapley":
+        logging.info(f"Using tree shap for {weighting}.")
+        true_values = tree_shap(baseline, explicands, model)
+    else:
+        logging.info(f"Using tree prob for {weighting}.")
+        true_values = tree_prob(baseline, explicands, model, weighting)
+    return true_values
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Run experiments.")
     parser.add_argument(
@@ -284,11 +259,6 @@ def setup_logging():
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s'
     )
-    console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    console.setFormatter(formatter)
-    logging.getLogger('').addHandler(console)
 
 def main():
     setup_logging()
@@ -313,16 +283,28 @@ def main():
     experiments = generate_experiment_configs()
     print(experiments)
 
+    weightings = set()
+    for exp_cfg in experiments:
+        weightings.add(exp_cfg.get("weighting", None))
+
     ground_truth_class = 'MLP'
     for dataset in DATASETS["small_n"]:
         X, y = load_dataset(dataset)
         n = X.shape[1]
         model = sklearn.neural_network.MLPRegressor()
         model.fit(X, y)
+
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
+        true_values = {weighting: get_true_values(baseline, explicands, model, weighting, ground_truth_class) for weighting in weightings}
+
         for exp_cfg in experiments:
+            weighting = exp_cfg.get("weighting", None)
+            if weighting is None:
+                logging.info(f"Skipping experiment: {exp_cfg['name']} on {dataset} because weighting is not specified")
+                continue
+
             logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
-            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class)
+            run_experiment(exp_cfg, weighting, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class, true_values=true_values[weighting])
 
     ground_truth_class = 'RandomForest'
     for dataset in DATASETS["big_n"]:
@@ -330,10 +312,17 @@ def main():
         n = X.shape[1]
         model = sklearn.ensemble.RandomForestRegressor()
         model.fit(X, y)
+
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
+        true_values = {weighting: get_true_values(baseline, explicands, model, weighting, ground_truth_class) for weighting in weightings}
+
         for exp_cfg in experiments:
+            weighting = exp_cfg.get("weighting", None)
+            if weighting is None:
+                logging.info(f"Skipping experiment: {exp_cfg['name']} on {dataset} because weighting is not specified")
+                continue
             logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
-            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class)
+            run_experiment(exp_cfg, weighting, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class, true_values=true_values[weighting])
 
 if __name__ == "__main__":
     main()
