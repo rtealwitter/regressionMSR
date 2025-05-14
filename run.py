@@ -107,11 +107,11 @@ def run_case_study():
 
         print(f"Dataset: {dataset} (n={n})")
         if n >= 20:
-            model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
+            model = sklearn.ensemble.RandomForestRegressor()
             model.fit(X, y)
             results['True'] = tree_prob(baseline, explicands, model, weighting)
         else:
-            model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
+            model = sklearn.neural_network.MLPRegressor()
             model.fit(X, y)
             results['True'] = enumeration_prob(baseline, explicands, model, weighting)
     
@@ -130,7 +130,7 @@ def run_debug():
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
-    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
+    model = sklearn.ensemble.RandomForestRegressor()
     model.fit(X, y)
     baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
  
@@ -214,7 +214,7 @@ def check_fit():
         ground_truth_classes = {
             'Linear' : sklearn.linear_model.LinearRegression(),
             'RandomForest' : sklearn.ensemble.RandomForestRegressor(),
-            'NeuralNet' : sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300),
+            'NeuralNet' : sklearn.neural_network.MLPRegressor(),
         }
 
         for ground_truth_class, model in ground_truth_classes.items():
@@ -319,7 +319,7 @@ def main():
     for dataset in DATASETS["small_n"]:
         X, y = load_dataset(dataset)
         n = X.shape[1]
-        model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
+        model = sklearn.neural_network.MLPRegressor()
         model.fit(X, y)
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
         for exp_cfg in experiments:
@@ -330,7 +330,7 @@ def main():
     for dataset in DATASETS["big_n"]:
         X, y = load_dataset(dataset)
         n = X.shape[1]
-        model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4, random_state=42, max_features=n)
+        model = sklearn.ensemble.RandomForestRegressor()
         model.fit(X, y)
         baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
         for exp_cfg in experiments:
