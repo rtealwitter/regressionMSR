@@ -56,8 +56,8 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
         
         for sample_size in VARIABLES[variable]["sample_size"]:
             actual_sample_size = sample_size * n
-            if actual_sample_size >= 2**n: 
-                logging.warning(f"Sample size {actual_sample_size} exceeds 2^n for n={n}. Skipping.")
+            if actual_sample_size >= 2**n / 2:  
+                logging.warning(f"Sample size {actual_sample_size} exceeds 2^n / 2 for n={n}. Skipping.")
                 continue
             if actual_sample_size >= 5e4:
                 logging.warning(f"Sample size {actual_sample_size} exceeds 5e4. Skipping to avoid long computation time.")
@@ -135,7 +135,7 @@ def run_debug():
     model.fit(X.values, y)
     baseline, explicands = load_input(X, num_runs=10)
  
-    weighting = "banzhaf"
+    weighting = "shapley"
     #weighting = "beta_shapley_2_2"
     # weighting = "banzhaf"
     # weighting = "weighted_banzhaf_0.8"

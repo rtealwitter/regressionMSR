@@ -202,48 +202,44 @@ class UniversalMSR(BaseEstimator):
             self.v0 = self.model.predict(self.baseline)
             
         groups = []
-        if self.weighting in [] and self.reg_model_class == 'linear':
-            return self.explain_special_linear(explicand, num_samples)
-        
+        self.sample_without_replacement(num_samples)
+        num_samples = self.X.shape[0]
+        sizes = self.X.sum(axis=1).astype(int)
+        model_input = self.baseline * (1 - self.X) + explicand * self.X
+        y = self.model.predict(model_input)
+        # Randomly partition num_samples indices into k groups while keeping pairs together
+        if self.pair_sampling:
+            pair_ids = self.gen.permutation(num_samples // 2)
+            shuffled_indices = np.reshape(np.column_stack((2 * pair_ids, 2 * pair_ids + 1)), -1)
         else:
-            self.sample_without_replacement(num_samples)
-            num_samples = self.X.shape[0]
-            sizes = self.X.sum(axis=1).astype(int)
-            model_input = self.baseline * (1 - self.X) + explicand * self.X
-            y = self.model.predict(model_input)
-            # Randomly partition num_samples indices into k groups while keeping pairs together
-            if self.pair_sampling:
-                pair_ids = self.gen.permutation(num_samples // 2)
-                shuffled_indices = np.reshape(np.column_stack((2 * pair_ids, 2 * pair_ids + 1)), -1)
-            else:
-                shuffled_indices = self.gen.permutation(shuffled_indices)
-            for i in range(k):
-                indices = shuffled_indices[i * (num_samples // k):(i + 1) * (num_samples // k)]
-                group = {
-                    'sampled' : self.X[indices],
-                    'y' : y[indices],
-                    'prob_sampled' : self.actual_sample_prob[indices],
-                    'sizes' : self.X[indices].sum(axis=1).astype(int)
-                }
-                feature_names = [f'feature_{j}' for j in range(self.n)]
-                X_train = pd.DataFrame(self.X[~np.isin(np.arange(num_samples), indices)], columns=feature_names)
-                X_test = pd.DataFrame(self.X[indices], columns=feature_names)
-                y_train = y[~np.isin(np.arange(num_samples), indices)]
-                
-                # For leverage SHAP
-                cache = {
-                    'prob_sampled': self.actual_sample_prob[~np.isin(np.arange(num_samples), indices)],
-                    'v1': self.v1,
-                    'v0': self.v0,
-                    'p': self.p
-                }
-                reg_model, reg_phi = get_fit(
-                    X_train, y_train, self.weighting, self.reg_model_class, cache
-                )
-                reg_pred = reg_model.predict(X_test)
-                group['phi_est'] = reg_phi
-                group['reg_pred'] = reg_pred
-                groups.append(group)
+            shuffled_indices = self.gen.permutation(shuffled_indices)
+        for i in range(k):
+            indices = shuffled_indices[i * (num_samples // k):(i + 1) * (num_samples // k)]
+            group = {
+                'sampled' : self.X[indices],
+                'y' : y[indices],
+                'prob_sampled' : self.actual_sample_prob[indices],
+                'sizes' : self.X[indices].sum(axis=1).astype(int)
+            }
+            feature_names = [f'feature_{j}' for j in range(self.n)]
+            X_train = pd.DataFrame(self.X[~np.isin(np.arange(num_samples), indices)], columns=feature_names)
+            X_test = pd.DataFrame(self.X[indices], columns=feature_names)
+            y_train = y[~np.isin(np.arange(num_samples), indices)]
+            
+            # For leverage SHAP
+            cache = {
+                'prob_sampled': self.actual_sample_prob[~np.isin(np.arange(num_samples), indices)],
+                'v1': self.v1,
+                'v0': self.v0,
+                'p': self.p
+            }
+            reg_model, reg_phi = get_fit(
+                X_train, y_train, self.weighting, self.reg_model_class, cache
+            )
+            reg_pred = reg_model.predict(X_test)
+            group['phi_est'] = reg_phi
+            group['reg_pred'] = reg_pred
+            groups.append(group)
  
         phi = np.zeros(self.n)
         for group in groups:
@@ -267,47 +263,6 @@ class UniversalMSR(BaseEstimator):
                 phi[idx] += (group['phi_est'][idx] + mean_with - mean_without) / k
                 if self.reg_model_class == 'linear' and self.weighting in ['shapley', 'beta_shapley_1_1']:
                     phi[idx] += (self.v1 - group['phi_est'].sum()) / self.n - (self.v0) / self.n
-
-        return phi
-        
-    def explain_special_linear(self, explicand, num_samples):
-
-        if self.weighting in ['shapley', 'beta_shapley_1_1']:
-            constrain_reg = True
-        elif self.weighting in ['banzhaf', 'weighted_banzhaf_0.5']:
-            constrain_reg = False
-        else:
-            raise ValueError("weighting must be 'shapley', 'beta_shapley_1_1', 'banzhaf' or 'weighted_banzhaf_0.5'")
-        
-        LinearEstimator = UniversalRegression(
-            self.model, self.baseline, self.weighting, with_replace=False, constrain_reg=constrain_reg,
-        )
-
-        phi_est = LinearEstimator.explain(explicand, num_samples)
-        sampled = LinearEstimator.sampled
-        y = LinearEstimator.y
-        sizes = LinearEstimator.sizes
-        prob_sampled = LinearEstimator.prob_sampled
-        phi = np.zeros(self.n)
-
-        pred = (sampled @ phi_est)
-
-        for i in range(self.n):
-            i_contained = (sampled[:, i] == 1)
-            i_contained_weighting = self.p[sizes[i_contained]-1]
-            not_contained_weighting = self.p[sizes[~i_contained]]
-
-            phi[i] = (                
-                phi_est[i] +
-                (
-                    (y[i_contained] - pred[i_contained]) * i_contained_weighting / prob_sampled[i_contained]
-                 ).mean() -
-                (
-                    (y[~i_contained] - pred[~i_contained]) * not_contained_weighting / prob_sampled[~i_contained]
-                ).mean()
-            )
-            if constrain_reg:
-                phi[i] += (LinearEstimator.v1 - phi_est.sum())/self.n - (LinearEstimator.v0)/self.n
 
         return phi
 
