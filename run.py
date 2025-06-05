@@ -5,6 +5,7 @@ import sklearn.ensemble
 import sklearn.linear_model
 import sklearn.neural_network
 import xgboost as xgb
+import time
 
 from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
 from kernelprob.utils.datasets import load_dataset, load_input
@@ -15,7 +16,7 @@ from kernelprob.exact.treeshap import tree_shap
 from kernelprob.exact.treeprob_v2 import tree_prob_v2
 from kernelprob.exact.enumeration import enumeration_prob
 
-def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, ground_truth_class: str):
+def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, true_values: dict, ground_truth_class: str):
     n = baseline.shape[1]
     estimator_class_name = exp_cfg["estimator_class"]
     experiment_name = exp_cfg["name"]
@@ -28,15 +29,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
     if weighting is None:
         logging.error(f"Weighting not specified for '{experiment_name}'. Skipping.")
         return
-    
-    if "random" in weighting or ground_truth_class == "MLP":
-        logging.info("Using enumeration.")
-        true_values = enumeration_prob(baseline, explicands, model, weighting)
-    # TODO: remove if treeprob is good enough :)
-    elif weighting == "shapley":
-        true_values = tree_shap(baseline, explicands, model)
-    else:
-        true_values = tree_prob(baseline, explicands, model, weighting)
+    true_values = true_values[weighting]
     
     # # Discrepancy check
     # official_tree_shap = tree_shap(baseline, explicands, model)
@@ -63,8 +56,15 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
         
         for sample_size in VARIABLES[variable]["sample_size"]:
             actual_sample_size = sample_size * n
+            if actual_sample_size >= 2**n: 
+                logging.warning(f"Sample size {actual_sample_size} exceeds 2^n for n={n}. Skipping.")
+                continue
+            if actual_sample_size >= 5e4:
+                logging.warning(f"Sample size {actual_sample_size} exceeds 5e4. Skipping to avoid long computation time.")
+                continue
             for idx, explicand in enumerate(explicands):
             # for bn in VARIABLES[variable]["bn"]:
+                time_start = time.time()
                 predicted = estimator.explain(explicand, actual_sample_size)
                 filename = f"output/{estimator_class_name}_{dataset}_{weighting}.csv"
                 if not os.path.exists(filename):
@@ -81,6 +81,7 @@ def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, va
                         'error' : np.sum((predicted - true_values[idx]) ** 2) / np.sum(true_values[idx] ** 2),
                         'sum_error' : (np.sum(predicted) - np.sum(true_values[idx])) ** 2 / np.sum(true_values[idx])**2,
                         'sum_true' : np.sum(true_values[idx]),
+                        'time' : time.time() - time_start,
                     }
                     f.write(str(dict) + '\n')
                 noised_model.reset_sample_count()
@@ -91,7 +92,7 @@ def run_case_study():
     estimator_names = [
         'WSL',
         'MSR',
-        'LeverageSHAP',
+#        'LeverageSHAP',
         'LinearMSR',
         'TreeMSR',
     ]
@@ -102,17 +103,17 @@ def run_case_study():
     for dataset in DATASETS['small_n'] + DATASETS['big_n']:
         X, y = load_dataset(dataset)
         n = X.shape[1]
-        baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
+        baseline, explicands = load_input(X, num_runs=1)
         results = {}
 
         print(f"Dataset: {dataset} (n={n})")
         if n >= 20:
             model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
-            model.fit(X, y)
+            model.fit(X.values, y)
             results['True'] = tree_prob(baseline, explicands, model, weighting)
         else:
             model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
-            model.fit(X, y)
+            model.fit(X.values, y)
             results['True'] = enumeration_prob(baseline, explicands, model, weighting)
     
         estimators = {
@@ -126,13 +127,13 @@ def run_case_study():
             f.write(str(results).replace('\n', ' '))
 
 def run_debug():
-    dataset_name = "Adult"
+    dataset_name = "Bike Sharing"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
     model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
-    model.fit(X, y)
-    baseline, explicands = load_input(X, num_runs=1, is_synthetic=False)
+    model.fit(X.values, y)
+    baseline, explicands = load_input(X, num_runs=10)
  
     weighting = "shapley"
     #weighting = "beta_shapley_2_2"
@@ -182,16 +183,20 @@ def run_debug():
     def fancy_round(x, precision=2):
         return f"{x:.{precision}e}"
 
+    print(f'{"Estimator":<20} {"Mean":<10} {"1st":<10} {"2nd":<10} {"3rd":<10} {"Max":<10}')
     for sample_size in [6*n, 10*n, 20*n]:
-        for idx, explicand in enumerate(explicands):
-            for estimator_name, estimator in estimators.items():
-                errors = []
-                for _ in range(num_reps):
-                    estimate = estimator.explain(explicand, sample_size * n)
-                    errors += [
-                        np.sum((estimate - true_values[idx]) ** 2) / np.sum(true_values[idx] ** 2)
-                    ]
-                print(f"Estimator: {estimator_name} \t Mean: {fancy_round(np.mean(errors))} \t 1st: {fancy_round(np.percentile(errors, 25))} \t 2nd: {fancy_round(np.percentile(errors, 50))} \t 3rd: {fancy_round(np.percentile(errors, 75))} \t Max: {fancy_round(np.max(errors))}")
+        print("-" * 70)
+        for estimator_name, estimator in estimators.items():
+            errors = []
+            for idx, explicand in enumerate(explicands):                
+                estimate = estimator.explain(explicand, sample_size * n)
+                errors += [
+                    np.sum((estimate - true_values[idx]) ** 2) / np.sum(true_values[idx] ** 2)
+                ]
+            print(f"{estimator_name:<20} {fancy_round(np.mean(errors)):<10} {fancy_round(np.partition(errors, 0)[0]):<10} "
+                  f"{fancy_round(np.partition(errors, 1)[1]):<10} {fancy_round(np.partition(errors, 2)[2]):<10} "
+                  f"{fancy_round(np.max(errors)):<10}")
+        
 
 
 def get_feature_data(rng, n, sample_multiplier, baseline, explicand, model):
@@ -219,7 +224,7 @@ def check_fit():
 
         for ground_truth_class, model in ground_truth_classes.items():
             model.fit(X.values, y)
-            baseline, explicands = load_input(pd.DataFrame(X), num_runs=num_runs, is_synthetic=False)
+            baseline, explicands = load_input(pd.DataFrame(X), num_runs=num_runs)
 
             for explicand in explicands:
 
@@ -292,6 +297,26 @@ def setup_logging():
     console.setFormatter(formatter)
     logging.getLogger('').addHandler(console)
 
+def get_true_values(model, baseline, explicands, experiments, ground_truth_class):
+    true_values = {}
+    for exp_cfg in experiments:
+        weighting = exp_cfg.get("weighting", None)
+        if weighting is None:
+            logging.error(f"Weighting not specified for '{exp_cfg['name']}'. Skipping.")
+            continue
+        if weighting not in true_values:
+            if "random" in weighting or ground_truth_class == "MLP":
+                logging.info("Using enumeration.")
+                true_values[weighting] = enumeration_prob(baseline, explicands, model, weighting)
+            # TODO: remove if treeprob is good enough :)
+            elif weighting == "shapley":
+                logging.info("Using tree SHAP.")
+                true_values[weighting] = tree_shap(baseline, explicands, model)
+            else:
+                logging.info(f"Using tree prob for weighting: {weighting}")
+                true_values[weighting] = tree_prob(baseline, explicands, model, weighting)
+    return true_values
+
 def main():
     setup_logging()
 
@@ -315,27 +340,31 @@ def main():
     experiments = generate_experiment_configs()
     print(experiments)
 
+    np.random.seed(42)
     ground_truth_class = 'MLP'
     for dataset in DATASETS["small_n"]:
         X, y = load_dataset(dataset)
         n = X.shape[1]
         model = sklearn.neural_network.MLPRegressor(hidden_layer_sizes=(50, 100, 50, 100, 50, 100, 50), max_iter=300)
-        model.fit(X, y)
-        baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
+        model.fit(X.values, y)
+        baseline, explicands = load_input(X, NUM_RUNS)
+        true_values = get_true_values(model, baseline, explicands, experiments, ground_truth_class)
         for exp_cfg in experiments:
             logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
-            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class)
+            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, true_values=true_values, ground_truth_class=ground_truth_class)
 
     ground_truth_class = 'RandomForest'
     for dataset in DATASETS["big_n"]:
         X, y = load_dataset(dataset)
         n = X.shape[1]
         model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=4, random_state=42, max_features=n)
-        model.fit(X, y)
-        baseline, explicands = load_input(X, NUM_RUNS, is_synthetic=False)
+        model.fit(X.values, y)
+        baseline, explicands = load_input(X, NUM_RUNS)
+        true_values = get_true_values(model, baseline, explicands, experiments, ground_truth_class)
+ 
         for exp_cfg in experiments:
             logging.info(f"Running experiment: {exp_cfg['name']} on {dataset}")
-            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, ground_truth_class=ground_truth_class)
+            run_experiment(exp_cfg, baseline, explicands, model, variable, dataset, true_values=true_values, ground_truth_class=ground_truth_class)
 
 if __name__ == "__main__":
     main()
