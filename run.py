@@ -135,7 +135,7 @@ def run_debug():
     model.fit(X.values, y)
     baseline, explicands = load_input(X, num_runs=10)
  
-    weighting = "shapley"
+    weighting = "banzhaf"
     #weighting = "beta_shapley_2_2"
     # weighting = "banzhaf"
     # weighting = "weighted_banzhaf_0.8"
@@ -157,8 +157,8 @@ def run_debug():
     # exit()
     
     estimator_names = [
-        "TreeMSR",
         "LinearMSR",
+        "TreeMSR",
         "LeverageSHAP",
         #"OFA_S",
         # "OFA_A",
