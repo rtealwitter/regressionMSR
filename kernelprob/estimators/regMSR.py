@@ -202,7 +202,10 @@ class UniversalMSR(BaseEstimator):
             self.v0 = self.model.predict(self.baseline)
             
         groups = []
-        self.sample_without_replacement(num_samples)
+        if self.n < 50:
+            self.sample_without_replacement(num_samples)
+        else:
+            self.sample_with_replacement(num_samples)
         num_samples = self.X.shape[0]
         sizes = self.X.sum(axis=1).astype(int)
         model_input = self.baseline * (1 - self.X) + explicand * self.X
@@ -212,7 +215,7 @@ class UniversalMSR(BaseEstimator):
             pair_ids = self.gen.permutation(num_samples // 2)
             shuffled_indices = np.reshape(np.column_stack((2 * pair_ids, 2 * pair_ids + 1)), -1)
         else:
-            shuffled_indices = self.gen.permutation(shuffled_indices)
+            shuffled_indices = self.gen.permutation(num_samples)
         for i in range(k):
             indices = shuffled_indices[i * (num_samples // k):(i + 1) * (num_samples // k)]
             group = {
