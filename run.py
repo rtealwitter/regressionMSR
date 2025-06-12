@@ -228,7 +228,7 @@ def check_fit():
 
                 test_label, test_input = get_feature_data(rng, n, 32, baseline, explicand, model)
 
-                sample_multipliers = [2, 4, 8, 16, 32, 64, 128]
+                sample_multipliers = [10, 20, 40, 60, 80, 160, 320, 640]
 
                 for sample_multiplier in sample_multipliers:
                     train_label, train_input = get_feature_data(rng, n, sample_multiplier, baseline, explicand, model)
