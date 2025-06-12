@@ -6,12 +6,14 @@ import sklearn.linear_model
 import sklearn.neural_network
 import xgboost as xgb
 import time
+import numpy as np
 
 from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
 from kernelprob.utils.datasets import load_dataset, load_input
 from kernelprob.utils.p_generator import get_p
 from kernelprob.utils.run_utils import *
 from kernelprob.exact.treeprob import tree_prob
+from kernelprob.exact.treesemi import tree_semi
 from kernelprob.exact.treeshap import tree_shap
 from kernelprob.exact.treeprob_v2 import tree_prob_v2
 from kernelprob.exact.enumeration import enumeration_prob
@@ -131,30 +133,31 @@ def run_debug():
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
-    model = sklearn.ensemble.RandomForestRegressor(n_estimators=100, max_depth=8, random_state=42, max_features=n)
+    model = sklearn.ensemble.RandomForestRegressor()
     model.fit(X.values, y)
     baseline, explicands = load_input(X, num_runs=10)
  
     weighting = "shapley"
     #weighting = "beta_shapley_2_2"
-    # weighting = "banzhaf"
-    # weighting = "weighted_banzhaf_0.8"
-    # weighting = "random_42"
     print(f"Weighting: {weighting}")
 
-    true_values = tree_prob(baseline, explicands, model, weighting)
-    # true_values_v2 = tree_prob_v2(baseline, explicands, model, weighting)
-    # enumerate_values = enumeration_prob(baseline, explicands, model, weighting)
+    true_values = {}
+    true_values['tree_prob'] = tree_prob(baseline, explicands, model, weighting)
+    #true_values['tree_semi'] = tree_semi(baseline, explicands, model, weighting) # same as tree_prob
+    if weighting in ['shapley', 'beta_shapley_1_1']:
+        true_values['tree_shap'] = tree_shap(baseline, explicands, model)    
+        true_values_arr = true_values['tree_shap']
+    if n <= 20:
+        true_values['enumeration'] = enumeration_prob(baseline, explicands, model, weighting)
+        true_values_arr = true_values['enumeration']
+    if n > 20 and weighting not in ['shapley', 'beta_shapley_1_1']:
+        true_values_arr = true_values['tree_prob']
+    keys = list(true_values.keys())
+    for i in range(len(keys)):
+        for j in range(i+1, len(keys)):
+            avg_dist = np.mean([np.mean((x - y)**2) for x, y in zip(true_values[keys[i]], true_values[keys[j]])])
+            print(f"Average error between {keys[i]} and {keys[j]}: {avg_dist}")
 
-    # # print(f"True values: {true_values}")
-    # print(f"True values v2: {true_values_v2}")
-    # print(f"Enumerate values: {enumerate_values}\n")
-
-    # for i in range(len(enumerate_values)):
-    #     if not np.allclose(enumerate_values[i], true_values_v2[i]):
-    #         print(f"True values differ at index {i}\n")
-
-    # exit()
     
     estimator_names = [
         "LinearMSR",
@@ -175,23 +178,18 @@ def run_debug():
         name: ESTIMATOR_FACTORY[name](model, baseline, weighting=weighting) for name in estimator_names
     }
 
-    # Enumeration
-    #true_values = enumeration_prob(baseline, explicands, model, weighting)
-    # print(f"True values: {true_values}")
-    num_reps = 10
-
     def fancy_round(x, precision=2):
         return f"{x:.{precision}e}"
 
     print(f'{"Estimator":<20} {"Mean":<10} {"1st":<10} {"2nd":<10} {"3rd":<10} {"Max":<10}')
-    for sample_size in [6*n, 10*n, 20*n]:
+    for sample_size in [10*n, 20*n]:
         print("-" * 70)
         for estimator_name, estimator in estimators.items():
             errors = []
             for idx, explicand in enumerate(explicands):                
                 estimate = estimator.explain(explicand, sample_size * n)
                 errors += [
-                    np.sum((estimate - true_values[idx]) ** 2) / np.sum(true_values[idx] ** 2)
+                    np.sum((estimate - true_values_arr[idx]) ** 2) / np.sum(true_values_arr[idx] ** 2)
                 ]
             print(f"{estimator_name:<20} {fancy_round(np.mean(errors)):<10} {fancy_round(np.partition(errors, 0)[0]):<10} "
                   f"{fancy_round(np.partition(errors, 1)[1]):<10} {fancy_round(np.partition(errors, 2)[2]):<10} "
