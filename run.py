@@ -130,11 +130,17 @@ def run_case_study():
 
 def run_debug():
     dataset_name = "Bike Sharing"
+    # dataset_name = "Adult"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
     model = sklearn.ensemble.RandomForestRegressor()
+    # model = xgb.XGBRegressor(n_estimators=100, max_depth=4, random_state=42)
     model.fit(X.values, y)
+    # TODO: enable this if we want to use XGBoost
+    # if hasattr(model, 'get_booster'):
+    #     booster = model.get_booster()
+    #     booster.feature_names = [f"f{i}" for i in range(n)]
     baseline, explicands = load_input(X, num_runs=10)
  
     weighting = "shapley"
@@ -143,7 +149,8 @@ def run_debug():
 
     true_values = {}
     true_values['tree_prob'] = tree_prob(baseline, explicands, model, weighting)
-    #true_values['tree_semi'] = tree_semi(baseline, explicands, model, weighting) # same as tree_prob
+    # true_values['tree_prob_v2'] = tree_prob_v2(baseline, explicands, model, weighting)
+    # true_values['tree_semi'] = tree_semi(baseline, explicands, model, weighting) # same as tree_prob
     if weighting in ['shapley', 'beta_shapley_1_1']:
         true_values['tree_shap'] = tree_shap(baseline, explicands, model)    
         true_values_arr = true_values['tree_shap']
@@ -157,6 +164,18 @@ def run_debug():
         for j in range(i+1, len(keys)):
             avg_dist = np.mean([np.mean((x - y)**2) for x, y in zip(true_values[keys[i]], true_values[keys[j]])])
             print(f"Average error between {keys[i]} and {keys[j]}: {avg_dist}")
+
+    # if 'enumeration' in true_values and 'tree_prob' in true_values:
+    #     print("\nExplicands where enumeration and tree_prob differ:")
+    #     for i, (enum_val, tree_val) in enumerate(zip(true_values['enumeration'], true_values['tree_prob'])):
+    #         if not np.allclose(enum_val, tree_val, rtol=1e-10):
+    #             print(f"Explicand {i}:")
+    #             print(f"  Enumeration: {enum_val}")
+    #             print(f"  Tree_prob:   {tree_val}")
+    #             print(f"  Difference:  {np.abs(enum_val - tree_val)}")
+    #             print()
+
+    exit()
 
     
     estimator_names = [
