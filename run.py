@@ -8,15 +8,15 @@ import xgboost as xgb
 import time
 import numpy as np
 
-from kernelprob.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
-from kernelprob.utils.datasets import load_dataset, load_input
-from kernelprob.utils.p_generator import get_p
-from kernelprob.utils.run_utils import *
-from kernelprob.exact.treeprob import tree_prob
-from kernelprob.exact.treesemi import tree_semi
-from kernelprob.exact.treeshap import tree_shap
-from kernelprob.exact.treeprob_v2 import tree_prob_v2
-from kernelprob.exact.enumeration import enumeration_prob
+from regressionMSR.configs.config import generate_experiment_configs, ESTIMATOR_FACTORY, DATASETS, VARIABLES, NUM_RUNS
+from regressionMSR.utils.datasets import load_dataset, load_input
+from regressionMSR.utils.p_generator import get_p
+from regressionMSR.utils.run_utils import *
+from regressionMSR.exact.treeprob import tree_prob
+from regressionMSR.exact.treesemi import tree_semi
+from regressionMSR.exact.treeshap import tree_shap
+from regressionMSR.exact.treeprob_v2 import tree_prob_v2
+from regressionMSR.exact.enumeration import enumeration_prob
 
 def run_experiment(exp_cfg: Dict[str, Any], baseline, explicands, model: Any, variable: str, dataset: str, true_values: dict, ground_truth_class: str):
     n = baseline.shape[1]

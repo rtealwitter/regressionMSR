@@ -3,7 +3,7 @@ import numpy as np
 from .tree import Tree
 from .tree_utils import is_sklearn_random_forest, is_xgboost_model, parse_xgb_tree
 from .weights import calc_weight
-from kernelprob.utils.p_generator import get_p
+from regressionMSR.utils.p_generator import get_p
 import warnings
 import xgboost
 import json
