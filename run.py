@@ -129,8 +129,8 @@ def run_case_study():
             f.write(str(results).replace('\n', ' '))
 
 def run_debug():
-    dataset_name = "Bike Sharing"
-    # dataset_name = "Adult"
+    # dataset_name = "Bike Sharing"
+    dataset_name = "Adult"
     X, y = load_dataset(dataset_name)
     n = X.shape[1]
     print(fr"Dataset: {dataset_name} (n={n})")
@@ -143,8 +143,8 @@ def run_debug():
     #     booster.feature_names = [f"f{i}" for i in range(n)]
     baseline, explicands = load_input(X, num_runs=10)
  
-    weighting = "shapley"
-    #weighting = "beta_shapley_2_2"
+    # weighting = "shapley"
+    weighting = "beta_shapley_2_2"
     print(f"Weighting: {weighting}")
 
     true_values = {}
@@ -159,11 +159,11 @@ def run_debug():
         true_values_arr = true_values['enumeration']
     if n > 20 and weighting not in ['shapley', 'beta_shapley_1_1']:
         true_values_arr = true_values['tree_prob']
-    keys = list(true_values.keys())
-    for i in range(len(keys)):
-        for j in range(i+1, len(keys)):
-            avg_dist = np.mean([np.mean((x - y)**2) for x, y in zip(true_values[keys[i]], true_values[keys[j]])])
-            print(f"Average error between {keys[i]} and {keys[j]}: {avg_dist}")
+    # keys = list(true_values.keys())
+    # for i in range(len(keys)):
+    #     for j in range(i+1, len(keys)):
+    #         avg_dist = np.mean([np.mean((x - y)**2) for x, y in zip(true_values[keys[i]], true_values[keys[j]])])
+    #         print(f"Average error between {keys[i]} and {keys[j]}: {avg_dist}")
 
     # if 'enumeration' in true_values and 'tree_prob' in true_values:
     #     print("\nExplicands where enumeration and tree_prob differ:")
@@ -175,13 +175,16 @@ def run_debug():
     #             print(f"  Difference:  {np.abs(enum_val - tree_val)}")
     #             print()
 
-    exit()
+    # exit()
 
     
     estimator_names = [
         "LinearMSR",
         "TreeMSR",
-        "LeverageSHAP",
+        "LinearMC",
+        "TreeMC",
+        "WeightedMC",
+        # "LeverageSHAP",
         #"OFA_S",
         # "OFA_A",
         #"GELS",

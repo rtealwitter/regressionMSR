@@ -7,6 +7,7 @@ from ..utils.datasets import dataset_loaders, dataset_sizes
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
 from ..estimators.regMSR import TreeMSR, LinearMSR, MSR, Tree
+from ..estimators.regMC import TreeMC, LinearMC, WeightedMC
 
 from ..estimators.ofa import OFA_S, OFA_A
 from ..estimators.wsl import WSLEstimator
@@ -38,6 +39,11 @@ ESTIMATOR_TRUE = {
 ESTIMATOR_ALL = {
     'LinearMSR': LinearMSR,
     'TreeMSR': TreeMSR,
+    #
+    'LinearMC': LinearMC,
+    'TreeMC': TreeMC,
+    'WeightedMC': WeightedMC,
+    # 
     "OFA_S": OFA_S,
     "WSL": WSLEstimator,
     "GELS": GELSEstimator,
