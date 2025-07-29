@@ -29,54 +29,35 @@ weightings:
 #    - random_16
 
 estimators:
-  TreeMSR:
+  # TreeMSR:
+  #   weightings:
+  #     - shapley
+  #     - banzhaf
+  #     - beta_shapley
+  #     - beta_shapley_sym
+  #     - weighted_banzhaf
+  # LinearMSR:
+  #   weightings:
+  #     - shapley
+  #     - banzhaf
+  #     - beta_shapley
+  #     - beta_shapley_sym
+  #     - weighted_banzhaf
+  TreeMC:
     weightings:
       - shapley
       - banzhaf
       - beta_shapley
       - beta_shapley_sym
       - weighted_banzhaf
-  LinearMSR:
+  LinearMC:
     weightings:
       - shapley
       - banzhaf
       - beta_shapley
       - beta_shapley_sym
       - weighted_banzhaf
-
-## For Shapley values...
-  KernelSHAP:
-    weightings:
-      - shapley
-  PermutationSHAP:
-    weightings:
-      - shapley
-  LeverageSHAP:
-    weightings:
-      - shapley
-#
-# For Banzhaf values...
-  KernelBanzhaf:
-    weightings:
-      - banzhaf
-
-# For probabilistic values...
-  OFA_S:
-    weightings:
-      - shapley # Bad performance
-      - banzhaf # Bad performance
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf  
-  WSL:
-    weightings:
-      - shapley # This is MC
-      - banzhaf # This is MC
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
-
-  GELS:
+  WeightedMC:
     weightings:
       - shapley
       - banzhaf
@@ -84,25 +65,65 @@ estimators:
       - beta_shapley_sym
       - weighted_banzhaf
 
-  ARM:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
+# ## For Shapley values...
+#   KernelSHAP:
+#     weightings:
+#       - shapley
+#   PermutationSHAP:
+#     weightings:
+#       - shapley
+#   LeverageSHAP:
+#     weightings:
+#       - shapley
+# #
+# # For Banzhaf values...
+#   KernelBanzhaf:
+#     weightings:
+#       - banzhaf
 
-  WeightedSHAP:
-    weightings:
-      - shapley
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
+# # For probabilistic values...
+#   OFA_S:
+#     weightings:
+#       - shapley # Bad performance
+#       - banzhaf # Bad performance
+#       - beta_shapley
+#       - beta_shapley_sym
+#       - weighted_banzhaf  
+#   WSL:
+#     weightings:
+#       - shapley # This is MC
+#       - banzhaf # This is MC
+#       - beta_shapley
+#       - beta_shapley_sym
+#       - weighted_banzhaf
+
+#   GELS:
+#     weightings:
+#       - shapley
+#       - banzhaf
+#       - beta_shapley
+#       - beta_shapley_sym
+#       - weighted_banzhaf
+
+#   ARM:
+#     weightings:
+#       - shapley
+#       - banzhaf
+#       - beta_shapley
+#       - beta_shapley_sym
+#       - weighted_banzhaf
+
+#   WeightedSHAP:
+#     weightings:
+#       - shapley
+#       - banzhaf
+#       - beta_shapley
+#       - beta_shapley_sym
+#       - weighted_banzhaf
   
-  AME: 
-    weightings:
-      - banzhaf
-      - beta_shapley
-      - beta_shapley_sym
-      - weighted_banzhaf
+#   AME: 
+#     weightings:
+#       - banzhaf
+#       - beta_shapley
+#       - beta_shapley_sym
+#       - weighted_banzhaf

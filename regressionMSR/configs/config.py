@@ -27,7 +27,7 @@ from ..estimators.mc import MonteCarloEstimator
 from ..exact.treeprob import TreeProbExplainer
 from ..exact.enumeration import EnumerationExplainer
 
-config_path = "kernelprob/configs/estimators.yaml"
+config_path = "regressionMSR/configs/estimators.yaml"
 
 ESTIMATOR_TRUE = {
     "TreeProb": TreeProbExplainer,
@@ -85,7 +85,7 @@ for dataset in dataset_loaders:
 
 VARIABLES = {
     "basic" : {
-        "sample_size": [10],
+        "sample_size": [40],
         "noise": [0],
     },
     "sample_size":
