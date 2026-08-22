@@ -275,8 +275,11 @@ class UniversalMSR(BaseEstimator):
         the training subsets are counted exactly, and the held-out subsets stand in for the
         subsets nobody drew.  For a g that is the same for every fold, the average of this over
         the k folds is exactly the single-sample estimate
-        sum_{sampled S} g(S) / actual_sample_prob[S] whenever every size has at least k drawn
-        units (or is enumerated), so cross-fitting costs nothing in that case.
+        sum_{sampled S} g(S) / actual_sample_prob[S] whenever every size is enumerated or its
+        number of drawn units is an exact multiple of k (equal held-out parts in every fold), so
+        cross-fitting costs nothing in that case.  (At least k drawn units is not enough: with
+        unequal parts the fold weights 1/fold_prob differ between folds and the average is only
+        unbiased, not identical, e.g. n=9, k=3, m=27.)
         """
         units = self.sample_without_replacement(num_samples)
         folds = [[] for _ in range(k)]
