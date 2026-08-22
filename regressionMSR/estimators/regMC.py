@@ -15,7 +15,7 @@ from ..exact.enumeration import enumeration_prob
 from ..estimators.reg import UniversalRegression
 
 from ..base_estimator import BaseEstimator
-from ..utils.p_generator import get_p
+from ..utils.p_generator import get_p, is_symmetric
 from .est_utils import combination_generator
 import xgboost
 
@@ -107,7 +107,7 @@ class UniversalMC(BaseEstimator):
         )
         self.sample_prob /= self.sample_prob.sum()
 
-        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+        self.pair_sampling = is_symmetric(self.p)
         self.per_S         = 2 if not self.pair_sampling else 4
         self.rng           = np.random.default_rng()
     

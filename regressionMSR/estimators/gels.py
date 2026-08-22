@@ -4,7 +4,7 @@ from typing import Optional
 import numpy as np
 
 from ..base_estimator import BaseEstimator
-from ..utils.p_generator import get_p
+from ..utils.p_generator import get_p, is_symmetric
 
 
 def _harmonic_number(k: int) -> float:
@@ -62,7 +62,7 @@ class GELSRankingEstimator(_GELSBase):
             return np.zeros(n)
 
         p = get_p(n, self.weighting)
-        self.paired = np.allclose(p, p[::-1])
+        self.paired = is_symmetric(p)
 
         m = p[:-1] + p[1:]                           # m_s = p_s + p_{s+1}
         q_unscaled = np.array([math.comb(n, s) * m_s for s, m_s in enumerate(m, 1)])
@@ -104,7 +104,7 @@ class GELSEstimator(_GELSBase):
             return np.array([])
 
         p = get_p(n, self.weighting)
-        self.paired = np.allclose(p, p[::-1])
+        self.paired = is_symmetric(p)
         q_unscaled = np.array([math.comb(n + 1, s) * p_s for s, p_s in enumerate(p, 1)])
         q_prob = q_unscaled / q_unscaled.sum()
 

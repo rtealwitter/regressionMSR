@@ -3,7 +3,7 @@ from typing import Optional, Sequence
 import numpy as np
 
 from ..base_estimator import BaseEstimator
-from ..utils.p_generator import get_p
+from ..utils.p_generator import get_p, is_symmetric
 
 
 class _ARMBase(BaseEstimator):
@@ -54,7 +54,7 @@ class ARMEstimator(_ARMBase):
             return np.array([], dtype=float)
 
         p = get_p(n, self.weighting)
-        self.paired = np.allclose(p, p[::-1])
+        self.paired = is_symmetric(p)
 
         # size probabilities  P⁺(|S| = s)  for 1 ≤ s ≤ n
         w_plus_sizes = np.array([math.comb(n, s) * p[s - 1] for s in range(1, n + 1)],

@@ -12,7 +12,7 @@ from ..exact.enumeration import enumeration_prob
 from ..estimators.reg import UniversalRegression
 
 from ..base_estimator import BaseEstimator
-from ..utils.p_generator import get_p
+from ..utils.p_generator import get_p, is_symmetric
 from .est_utils import combination_generator
 import xgboost
 
@@ -99,7 +99,7 @@ class UniversalMSR(BaseEstimator):
         self.gen = np.random.Generator(np.random.PCG64())
         self.reg_model_class = reg_model_class
         self.valid_sizes = np.arange(self.n+1)
-        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+        self.pair_sampling = is_symmetric(self.p)
         self.v1 = self.v0 = None        
         self.adjust = 1 if (self.reg_model_class == 'linear' and self.weighting in ['shapley', 'beta_shapley_1_1']) else 0
 

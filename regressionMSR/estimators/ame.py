@@ -2,7 +2,7 @@ import numpy as np
 from math import log
 
 from ..base_estimator import BaseEstimator
-from ..utils.p_generator import get_p
+from ..utils.p_generator import get_p, is_symmetric
 
 def _extract_ab(weighting):
     parts = weighting.split("_")
@@ -70,7 +70,7 @@ class AMEEstimator(BaseEstimator):
                 "or shapley."
             )
         p_vec = get_p(self.n, weighting)
-        self.paired = np.allclose(p_vec, p_vec[::-1])
+        self.paired = is_symmetric(p_vec)
 
     def explain(self, explicand, num_samples: int):
         x = np.asarray(explicand, float).reshape(-1)
@@ -150,7 +150,7 @@ class ImprovedAMEEstimator(BaseEstimator):
             raise ValueError("Improved AME not implemented for this weighting.")
         
         p_vec = get_p(self.n, weighting)
-        self.paired = np.allclose(p_vec, p_vec[::-1])
+        self.paired = is_symmetric(p_vec)
 
     def explain(self, explicand, num_samples: int):
         x = np.asarray(explicand, float).reshape(-1)

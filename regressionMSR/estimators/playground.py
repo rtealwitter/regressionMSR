@@ -3,7 +3,7 @@ import scipy
 import sklearn.ensemble
 
 from ..base_estimator import BaseEstimator
-from ..utils.p_generator import get_p
+from ..utils.p_generator import get_p, is_symmetric
 from ..exact.treeprob import tree_prob
 from ..exact.enumeration import combination_generator
 from ..estimators.reg import UniversalRegression
@@ -47,7 +47,7 @@ class GeneralMonteCarloEstimator(BaseEstimator):
         self.use_median = use_median
         
         # pair sample if p is symmetric
-        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+        self.pair_sampling = is_symmetric(self.p)
         self.per_S = 2 if not self.pair_sampling else 4
 
         #self.sample_prob = np.ones(self.n)
@@ -210,7 +210,7 @@ class MSRAdjusted(BaseEstimator):
         self.use_median = use_median
         
         # pair sample if p is symmetric
-        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+        self.pair_sampling = is_symmetric(self.p)
         self.pair_sampling = False
 
         self.sample_prob = self.p * scipy.special.binom(self.n-1, np.arange(self.n))
@@ -373,7 +373,7 @@ class UniversalMSR(BaseEstimator):
         self.gen = np.random.Generator(np.random.PCG64())
         self.reg_model_class = reg_model_class
 
-        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+        self.pair_sampling = is_symmetric(self.p)
  
     def explain(self, explicand, num_samples):
         self.num_samples = num_samples // 2 * 2

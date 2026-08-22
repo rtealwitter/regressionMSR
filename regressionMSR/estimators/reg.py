@@ -8,7 +8,7 @@ import sklearn.linear_model
 from ..exact.treeprob import tree_prob
 
 from ..base_estimator import BaseEstimator
-from ..utils.p_generator import get_p
+from ..utils.p_generator import get_p, is_symmetric
 from .est_utils import combination_generator
 
 # Combined regression class that supports:
@@ -85,7 +85,7 @@ class UniversalRegression(BaseEstimator):
         self.gen = np.random.Generator(np.random.PCG64())
 
         # Check if self.p is symmetric
-        self.pair_sampling = np.allclose(self.p, self.p[::-1])
+        self.pair_sampling = is_symmetric(self.p)
 
         self.with_replace = with_replace
         self.constrain_reg = constrain_reg

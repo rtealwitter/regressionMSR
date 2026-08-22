@@ -192,6 +192,25 @@ def check_sum_is_one(p, n, tol=1e-8):
 
 
 # Test
+
+
+def is_symmetric(p, rtol=1e-5):
+    """True iff the weighting vector p is symmetric, p[s] == p[n-1-s] for every s, up to RELATIVE tolerance (plus an absolute cushion of 1e-12*max|p|).
+
+    Used to decide whether to draw every subset together with its complement (paired sampling), which
+    is only valid when S and its complement have the same weight.  ``np.allclose(p, p[::-1])`` with
+    numpy's default ``atol=1e-8`` is the wrong test: every entry of p is tiny once n is large (for
+    weighted_banzhaf_0.7 at n=60 the largest is 7e-10), so the absolute tolerance declares every
+    weighting symmetric and asymmetric weightings get paired with the wrong probabilities
+    (found 2026-08-22; the old test is wrongly True for weighted_banzhaf_0.6 from n=38, 0.7 from n=53, 0.8 from n=84,
+    0.9 from n=176; in the paper's grid that hits the with-replacement path for n=60/79 (0.6, 0.7) and n=101 (0.6, 0.7, 0.8)).
+    """
+    p = np.asarray(p, dtype=float)
+    # absolute tolerance scaled to p itself (a second, independent audit suggested 1e-12*max|p| as a cushion
+    # against one mirrored entry underflowing to 0.0 while its partner is a denormal); a fixed atol is the bug.
+    return bool(np.allclose(p, p[::-1], rtol=rtol, atol=1e-12 * np.max(np.abs(p))))
+
+
 if __name__ == "__main__":
     n = 5
 
