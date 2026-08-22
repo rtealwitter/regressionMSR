@@ -45,7 +45,9 @@ class WeightedSHAPEstimator(BaseEstimator):
                 mask[feat] = True
                 curr_pred = self.model.predict(self._mask_instance(x_vec, mask))
 
-                delta = curr_pred - prev_pred
+                # .item(): predict() returns a length-1 array; numpy>=2 refuses to
+                # store a 1-d array into a scalar slot (numpy<2 did so silently).
+                delta = np.asarray(curr_pred - prev_pred).item()
                 phi_acc[feat] += self.m_vec[k] * delta
                 prev_pred = curr_pred
 

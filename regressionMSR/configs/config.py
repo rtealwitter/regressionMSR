@@ -7,6 +7,7 @@ from ..utils.datasets import dataset_loaders, dataset_sizes
 # from ..estimators.kpu import KernelProbUEstimator
 from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
 from ..estimators.regMSR import TreeMSR, LinearMSR, MSR, Tree
+from ..estimators.regMSR_all import TreeMSRAll, LinearMSRAll  # all-samples variant (paper's 'Practical Simplification')
 from ..estimators.regMC import TreeMC, LinearMC, WeightedMC
 
 from ..estimators.ofa import OFA_S, OFA_A
@@ -39,6 +40,8 @@ ESTIMATOR_TRUE = {
 ESTIMATOR_ALL = {
     'LinearMSR': LinearMSR,
     'TreeMSR': TreeMSR,
+    'LinearMSRAll': LinearMSRAll,
+    'TreeMSRAll': TreeMSRAll,
     #
     'LinearMC': LinearMC,
     'TreeMC': TreeMC,
@@ -78,7 +81,7 @@ ESTIMATOR_FACTORY = {**ESTIMATOR_ALL, **ESTIMATOR_SHAPLEY, **ESTIMATOR_BANZHAF}
 DATASETS = {'small_n' : [], 'big_n' : []}
 
 for dataset in dataset_loaders:
-    if dataset_sizes[dataset] < 20:
+    if dataset_sizes[dataset] < 30:  # paper: small datasets are n < 30
         DATASETS['small_n'].append(dataset)
     else:
         DATASETS['big_n'].append(dataset)

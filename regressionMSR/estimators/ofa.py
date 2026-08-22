@@ -52,7 +52,9 @@ class OFAEstimator(BaseEstimator):
         # Evaluate helper
         def evaluate(mask):
             x = np.where(mask, explicand, self.baseline)
-            return self.model.predict(x.reshape(1, -1))
+            # scalar: predict() returns a shape-(1,) array, which numpy >= 2 refuses to assign
+            # to a scalar slot of v_singleton / v_remove
+            return float(np.asarray(self.model.predict(x.reshape(1, -1))).reshape(-1)[0])
 
         # Precompute constants
         subset_mask = np.zeros(num_features, dtype=bool)

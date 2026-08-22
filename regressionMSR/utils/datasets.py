@@ -164,7 +164,7 @@ def load_input(X, num_runs, is_synthetic=False):
         explicand = np.ones((1, X.shape[1]))
         return baseline, explicand
 
-    baseline = X.mean().values.reshape(1, -1)
+    baseline = X.mean().to_numpy(copy=True).reshape(1, -1)
 
     explicands = []
     for run_idx in range(num_runs):
@@ -172,7 +172,7 @@ def load_input(X, num_runs, is_synthetic=False):
         np.random.seed(seed)
 
         explicand_idx = np.random.choice(X.shape[0])
-        explicand = X.iloc[explicand_idx].values.reshape(1, -1)
+        explicand = X.iloc[explicand_idx].to_numpy(copy=True).reshape(1, -1)
         for i in range(explicand.shape[1]):
             while baseline[0, i] == explicand[0, i]:
                 explicand_idx = np.random.choice(X.shape[0])

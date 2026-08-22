@@ -178,8 +178,8 @@ class UniversalMC(BaseEstimator):
         cache = None
         if (self.regression_adjust == "linear"
                 and self.weighting in ["shapley", "beta_shapley_1_1"]):
-            v1 = float(self.model.predict(explicand))
-            v0 = float(self.model.predict(self.baseline))
+            v1 = float(np.asarray(self.model.predict(explicand)).reshape(-1)[0])
+            v0 = float(np.asarray(self.model.predict(self.baseline)).reshape(-1)[0])
             cache = {
                 "prob_sampled": self.prob_sampled.reshape(-1),
                 "v1": v1,
