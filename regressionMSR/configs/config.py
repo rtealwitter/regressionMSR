@@ -5,7 +5,6 @@ import yaml
 from ..utils.datasets import dataset_loaders, dataset_sizes
 # from ..estimators.kpc import KernelProbCEstimator
 # from ..estimators.kpu import KernelProbUEstimator
-from ..estimators.reg import UniversalConstrained, UniversalUnconstrained
 from ..estimators.regMSR import TreeMSR, LinearMSR, MSR, Tree
 from ..estimators.regMSR_all import TreeMSRAll, LinearMSRAll  # all-samples variant (paper's 'Practical Simplification')
 from ..estimators.regMC import TreeMC, LinearMC, WeightedMC
@@ -57,8 +56,6 @@ ESTIMATOR_ALL = {
 #    "ImprovedAME": ImprovedAMEEstimator,
 #    'Tree': Tree,
 #    "OFA_A": OFA_A, # Unfair comparison
-#    "LeverageSHAP+": UniversalConstrained,
-#    "KernelBanzhaf+": UniversalUnconstrained,
 }
 
 ESTIMATOR_SHAPLEY = {

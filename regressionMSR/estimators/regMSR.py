@@ -10,7 +10,6 @@ import sklearn.linear_model
 from ..exact.treeshap import tree_shap
 from ..exact.treeprob import tree_prob
 from ..exact.enumeration import enumeration_prob
-from ..estimators.reg import UniversalRegression
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p, is_symmetric
@@ -91,13 +90,15 @@ def get_fit(X_flat, y_flat, weighting, regression_adj, cache=None):
     return reg_model, phi
 
 class UniversalMSR(BaseEstimator):
-    def __init__(self, model, baseline, weighting, reg_model_class=False, return_direct=False):
+    def __init__(self, model, baseline, weighting, reg_model_class=False, return_direct=False, seed=None):
         super().__init__(model, baseline, weighting)
         self.n = self.baseline.shape[1]
         self.p = get_p(self.n, weighting)
         self.model = model
         self.baseline = baseline
-        self.gen = np.random.Generator(np.random.PCG64())
+        # seed=None draws the generator state from OS entropy (runs are then not replayable);
+        # pass an int to make the sampled subsets reproducible.
+        self.gen = np.random.Generator(np.random.PCG64(seed))
         self.reg_model_class = reg_model_class
         self.valid_sizes = np.arange(self.n+1)
         self.pair_sampling = is_symmetric(self.p)
@@ -423,17 +424,17 @@ class UniversalMSR(BaseEstimator):
         return phi
 
 class LinearMSR(UniversalMSR):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, reg_model_class='linear')
+    def __init__(self, model, baseline, weighting, seed=None):
+        super().__init__(model, baseline, weighting, reg_model_class='linear', seed=seed)
 
 class TreeMSR(UniversalMSR):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, reg_model_class='tree')
+    def __init__(self, model, baseline, weighting, seed=None):
+        super().__init__(model, baseline, weighting, reg_model_class='tree', seed=seed)
 
 class Tree(UniversalMSR):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, reg_model_class='tree', return_direct=True)
+    def __init__(self, model, baseline, weighting, seed=None):
+        super().__init__(model, baseline, weighting, reg_model_class='tree', return_direct=True, seed=seed)
 
 class MSR(UniversalMSR):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, reg_model_class=False)
+    def __init__(self, model, baseline, weighting, seed=None):
+        super().__init__(model, baseline, weighting, reg_model_class=False, seed=seed)

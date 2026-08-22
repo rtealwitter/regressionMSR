@@ -12,7 +12,6 @@ import sklearn.linear_model
 from ..exact.treeshap import tree_shap
 from ..exact.treeprob import tree_prob
 from ..exact.enumeration import enumeration_prob
-from ..estimators.reg import UniversalRegression
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p, is_symmetric
@@ -91,7 +90,7 @@ def get_fit(X_flat, y_flat, weighting, regression_adj, cache=None):
 
 class UniversalMC(BaseEstimator):
     def __init__(self, model, baseline: np.ndarray,
-                 weighting: str, regression_adjust=False, use_median=False):
+                 weighting: str, regression_adjust=False, use_median=False, seed=None):
         super().__init__(model, baseline, weighting)
 
         self.n = (self.baseline.shape[1] if self.baseline.ndim > 1 else self.baseline.size)
@@ -109,7 +108,7 @@ class UniversalMC(BaseEstimator):
 
         self.pair_sampling = is_symmetric(self.p)
         self.per_S         = 2 if not self.pair_sampling else 4
-        self.rng           = np.random.default_rng()
+        self.rng           = np.random.default_rng(seed)  # seed=None: fresh entropy, not replayable
     
     def add_sample(self, i, mean_idx, S_idx, indices):
         size = len(indices)
@@ -222,13 +221,13 @@ class UniversalMC(BaseEstimator):
         return phi
 
 class WeightedMC(UniversalMC):
-    def __init__(self, model, baseline: np.ndarray, weighting: str):
-        super().__init__(model, baseline, weighting, regression_adjust=False, use_median=False)
+    def __init__(self, model, baseline: np.ndarray, weighting: str, seed=None):
+        super().__init__(model, baseline, weighting, regression_adjust=False, use_median=False, seed=seed)
 
 class TreeMC(UniversalMC):
-    def __init__(self, model, baseline: np.ndarray, weighting: str):
-        super().__init__(model, baseline, weighting, regression_adjust="tree")
+    def __init__(self, model, baseline: np.ndarray, weighting: str, seed=None):
+        super().__init__(model, baseline, weighting, regression_adjust="tree", seed=seed)
 
 class LinearMC(UniversalMC):
-    def __init__(self, model, baseline: np.ndarray, weighting: str):
-        super().__init__(model, baseline, weighting, regression_adjust="linear")
+    def __init__(self, model, baseline: np.ndarray, weighting: str, seed=None):
+        super().__init__(model, baseline, weighting, regression_adjust="linear", seed=seed)

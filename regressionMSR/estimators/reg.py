@@ -1,7 +1,5 @@
 import numpy as np
-import scipy
 from scipy.special import comb
-import scipy.special
 
 import sklearn.ensemble
 import sklearn.linear_model
@@ -9,13 +7,17 @@ from ..exact.treeprob import tree_prob
 
 from ..base_estimator import BaseEstimator
 from ..utils.p_generator import get_p, is_symmetric
-from .est_utils import combination_generator
 
 # Combined regression class that supports:
 # Leverage score sampling
 # Paired sampling and non-paired sampling
-# Sampling without replacement and sampling with replacement
+# Sampling with replacement
 # Constrained regression problem and unconstrained regression problem
+#
+# Not used by any registered estimator (config.py); kept as a library class.
+# The sampling-without-replacement path (a Bernoulli-style per-size draw whose
+# constant was found by an absolute-tolerance bisection) was removed in August
+# 2026 together with playground.py; see the git history before that commit.
 
 def compute_weight_norm(w, p):
     # Faster implementation with vectorized operations
@@ -64,37 +66,34 @@ class UniversalRegression(BaseEstimator):
         model,
         baseline,
         weighting,
-        with_replace=False,
         constrain_reg=True,
+        seed=None,
     ):
         """
         Additional Parameters
         ----------
-        pair_sampling : bool
-            Whether to sample sets in pairs (S and its complement).
-        with_replace: bool
-            Whether to sample with replacement.
         constrain_reg:
             Whether to solve the constrained regression problem.
+        seed:
+            Seed for the sampling generator (None: fresh entropy, not replayable).
+        Subsets are sampled with replacement, in pairs (S and its complement)
+        whenever the probabilistic weights are symmetric.
         """
         super().__init__(model, baseline, weighting)
         self.n = self.baseline.shape[1] # Number of features
         self.p = get_p(self.n, weighting)
         self.model = model
         self.baseline = baseline
-        self.gen = np.random.Generator(np.random.PCG64())
+        self.gen = np.random.Generator(np.random.PCG64(seed))
 
         # Check if self.p is symmetric
         self.pair_sampling = is_symmetric(self.p)
 
-        self.with_replace = with_replace
         self.constrain_reg = constrain_reg
     
     def explain(self, explicand, num_samples, true_sum=None):
         self.explicand = explicand
         self.true_sum = true_sum
-
-        self.select_samples = self.sample_with_replacement if self.with_replace else self.sample_without_replacement
 
         if self.constrain_reg:
             self.num_samples = (num_samples -2 ) // 2 * 2 # Two used for v1,v0
@@ -102,7 +101,7 @@ class UniversalRegression(BaseEstimator):
             self.leverage_score = lambda s : (self.p[s] + self.p[s-1]) * s * (self.n - s)
 #            self.leverage_score = lambda s : np.ones_like(s)
 
-            self.select_samples()
+            self.sample_with_replacement()
             self.compute_constrained()
         else:            
             self.num_samples = num_samples//2 * 2
@@ -110,7 +109,7 @@ class UniversalRegression(BaseEstimator):
             ## Add dimension to p for faster operations
             #self.p = np.append(self.p, -1e10)
 
-            self.select_samples()
+            self.sample_with_replacement()
             self.compute_unconstrained()
 
         return self.phi
@@ -160,14 +159,8 @@ class UniversalRegression(BaseEstimator):
         self.leverage_score = lambda s : np.array([leverage_score(val) for val in s])
 
     def update_prob(self):
-        if self.with_replace:
-            self.prob = self.leverage_score(self.valid_sizes)
-            self.prob /= np.sum(self.prob)
-        else: # Sampling without replacement
-            lev = self.leverage_score(self.valid_sizes)
-            if self.pair_sampling:
-                lev += self.leverage_score(self.n - self.valid_sizes)
-            self.prob = np.minimum(self.C * lev, np.ones_like(lev))
+        self.prob = self.leverage_score(self.valid_sizes)
+        self.prob /= np.sum(self.prob)
         
     def get_probs(self, s):
         if self.constrain_reg: # Length 1 is first prob
@@ -179,7 +172,7 @@ class UniversalRegression(BaseEstimator):
             self.sampled[idx, indices] = 1
         else:            
             self.sampled[2*idx, indices] = 1
-            indices_complement = np.array([i for i in range(self.n) if i not in indices])
+            indices_complement = np.setdiff1d(np.arange(self.n), indices)  # int dtype even when empty (size n)
             self.sampled[2*idx+1, indices_complement] = 1
     
     def sample_with_replacement(self):
@@ -191,63 +184,6 @@ class UniversalRegression(BaseEstimator):
             indices = self.gen.choice(self.n, s, replace=False)
             self.add_one_sample(idx, indices)
              
-    def sample_without_replacement(self):
-        self.find_constant_for_bernoulli()
-        m_s_lookup = {}
-        for s in self.valid_sizes:
-            prob = self.get_probs(s)
-            # Sample from Binomial distribution with (n choose s) trials and probability min(1, 2*C*sample_weight(s) / (n choose s))
-            try:
-                m_s = self.gen.binomial(int(scipy.special.binom(self.n, s)), prob)
-            except OverflowError: # If the number of samples is too large, assume the number of samples is the expected number
-                m_s = int(prob * scipy.special.binom(self.n, s))
-            # DETERMINISTIC SAMPLING 
-            m_s = int(prob * scipy.special.binom(self.n, s))
-            if self.pair_sampling:
-                if s == self.n // 2: # Already sampled all larger sets with the complement                    
-                    if self.n % 2 == 0: # Special handling for middle set size if n is even
-                        m_s_lookup[s] = m_s // 2
-                    else: m_s_lookup[s] = m_s
-                    break
-            m_s_lookup[s] = m_s
-        sampled_m = np.sum([m_s for m_s in m_s_lookup.values()])
-        num_rows = sampled_m if not self.pair_sampling else sampled_m * 2
-        self.sampled = np.zeros((num_rows, self.n))
-        idx = 0
-        for s, m_s in m_s_lookup.items(): 
-            if self.pair_sampling and s == self.n // 2 and self.n % 2 == 0:
-                # Partition the all middle sets into two
-                # based on whether the combination contains n-1
-                combo_gen = combination_generator(self.gen, self.n - 1, s-1, m_s)
-                for indices in combo_gen:
-                    self.add_one_sample(idx, list(indices) + [self.n-1])
-                    idx += 1
-            else:
-                combo_gen = combination_generator(self.gen, self.n, s, m_s)
-                for indices in combo_gen:
-                    self.add_one_sample(idx, list(indices))
-                    idx += 1
-
-    def find_constant_for_bernoulli(self):
-        # Choose C so that sampling without replacement from min(1, C*prob) gives the same expected number of samples
-        self.C = 1/2**self.n # Assume at least n - 1 samples
-        self.update_prob() # self.C used to update self.prob
-        max_samples = 2**self.n
-        if self.constrain_reg:
-            max_samples -= 2 # Two for v0, v1
-        m = min(self.num_samples, max_samples) # Maximum number of samples is 2^n -2
-        # Find C with binary search
-        L = 1 / 100**self.n
-        R = 100 ** self.n
-        binoms = scipy.special.binom(self.n, self.valid_sizes)
-        expected = (binoms@self.prob).sum()
-        while round(expected) != m:
-            if expected < m: L = self.C
-            else: R = self.C
-            self.C = (L + R) / 2
-            self.update_prob() # self.C used to update self.prob
-            expected = (binoms@self.prob).sum()
-    
     def compute_unconstrained(self):
         # x* = (A^T A)^-1 A^T v
         # xt = (A^T S^T W S A)^-1 A^T S^T W S v
@@ -314,11 +250,3 @@ class UniversalRegression(BaseEstimator):
 
         self.phi = PZSSZP_inv_PZSSb 
         self.phi += sum_phi / self.n
-
-class UniversalConstrained(UniversalRegression):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, with_replace=False, constrain_reg=True)
-
-class UniversalUnconstrained(UniversalRegression):
-    def __init__(self, model, baseline, weighting):
-        super().__init__(model, baseline, weighting, with_replace=False, constrain_reg=False)

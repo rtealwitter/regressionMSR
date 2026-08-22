@@ -6,8 +6,6 @@ import seaborn as sns
 import os
 
 estimators = [
-    "UniversalUnconstrained",
-    "UniversalConstrained",
     "PermutationSHAP",
     # "KernelBanzhaf",
     "LeverageSHAP",

@@ -14,7 +14,8 @@ class LeverageSHAPEstimator(BaseEstimator):
         weighting,
         paired_sampling=True,
         leverage_sampling=True,
-        bernoulli_sampling=True
+        bernoulli_sampling=True,
+        seed=None,
     ):
         """
         Additional Parameters
@@ -25,13 +26,15 @@ class LeverageSHAPEstimator(BaseEstimator):
             If True, activates a special weighting scheme inside the sampling functions.
         bernoulli_sampling : bool
             If True, sample sets without replacement via a Bernoulli-like process.
+        seed : int or None
+            Seed for the sampling generator (None: fresh entropy, not replayable).
         """
         super().__init__(model, baseline, weighting)
         self.model = model
         self.baseline = baseline
         self.paired_sampling = paired_sampling
         self.n = self.baseline.shape[1] # Number of features
-        self.gen = np.random.Generator(np.random.PCG64())
+        self.gen = np.random.Generator(np.random.PCG64(seed))
         self.sample_weight = lambda s : 1 / (s * (self.n - s)) if not leverage_sampling else np.ones_like(s)
         self.reweight = lambda s : 1 / (self.sample_weight(s) * (s * (self.n - s)))
         self.kernel_weights = []
