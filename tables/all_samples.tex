@@ -1,0 +1,24 @@
+\sisetup{text-series-to-math=true}
+\resizebox{\linewidth}{!}{
+\begin{tabular}{llcccccc}
+\toprule
+ & & \multicolumn{4}{c}{Mean Relative Error ($m=40n$, no noise)} & \multicolumn{2}{c}{Runtime Ratio (Cross-fit / Shortcut)} \\
+\cmidrule(lr){3-6} \cmidrule(lr){7-8}
+\textbf{Weighting Family} & \textbf{Datasets} & \textbf{Linear MSR} & \textbf{Linear MSR All} & \textbf{Tree MSR} & \textbf{Tree MSR All} & \textbf{Linear} & \textbf{Tree} \\
+\midrule
+Symmetric Beta & Small ($n<30$) & \num{8.43e-04} & \textbf{\num{7.96e-04}} & \textbf{\num{2.08e-04}} & \num{3.08e-04} & $2.1\times$ & $8.5\times$ \\
+Symmetric Beta & Big ($n\geq 30$) & \textbf{\num{2.18e-04}} & \num{2.23e-04} & \textbf{\num{7.55e-05}} & \num{1.90e-04} & $2.3\times$ & $7.6\times$ \\
+\midrule
+Asymmetric Beta & Small ($n<30$) & \num{9.45e-04} & \textbf{\num{8.61e-04}} & \textbf{\num{1.26e-04}} & \num{1.88e-04} & $2.6\times$ & $8.7\times$ \\
+Asymmetric Beta & Big ($n\geq 30$) & \textbf{\num{1.27e-03}} & \num{1.43e-03} & \textbf{\num{1.92e-04}} & \num{3.25e-04} & $2.5\times$ & $7.7\times$ \\
+\midrule
+Weighted Banzhaf & Small ($n<30$) & \num{1.51e-03} & \textbf{\num{1.31e-03}} & \textbf{\num{1.55e-04}} & \num{2.34e-04} & $2.5\times$ & $8.2\times$ \\
+Weighted Banzhaf & Big ($n\geq 30$) & \textbf{\num{9.10e-04}} & \num{9.32e-04} & \textbf{\num{1.72e-04}} & \num{2.16e-04} & $1.9\times$ & $6.9\times$ \\
+\midrule
+Shapley & Small ($n<30$) & \num{7.72e-04} & \textbf{\num{4.83e-04}} & \textbf{\num{1.67e-04}} & \num{2.95e-04} & $1.4\times$ & $7.7\times$ \\
+Shapley & Big ($n\geq 30$) & \textbf{\num{2.98e-04}} & \num{3.02e-04} & \textbf{\num{1.03e-04}} & \num{2.20e-04} & $3.7\times$ & $5.5\times$ \\
+\midrule
+Banzhaf & Small ($n<30$) & \num{8.49e-04} & \textbf{\num{8.08e-04}} & \textbf{\num{2.33e-04}} & \num{3.08e-04} & $1.2\times$ & $7.9\times$ \\
+Banzhaf & Big ($n\geq 30$) & \num{1.49e-04} & \textbf{\num{1.41e-04}} & \textbf{\num{6.78e-05}} & \num{1.87e-04} & $1.4\times$ & $6.8\times$ \\
+\bottomrule
+\end{tabular}}
