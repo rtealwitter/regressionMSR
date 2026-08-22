@@ -1,3 +1,4 @@
+import math
 import numpy as np
 import scipy
 from scipy.special import comb
@@ -191,7 +192,16 @@ class UniversalMSR(BaseEstimator):
         return int(min(population, max(1, round(x_units))))
 
     def find_bernoulli_constant(self, num_samples):
-        """Constant C for which the design of _strata(C) has about num_samples rows."""
+        """Constant C for which the design of _strata(C) has about num_samples rows.
+
+        Bisection in log C with a RELATIVE tolerance.  (Until 2026-08-22 the bisection ran on C
+        itself over [100^-n, 100^n] with an ABSOLUTE tolerance of 1e-6.  The solution is
+        C ~ num_samples / binom(n, n/2), so that tolerance is of the order of C itself already at
+        n = 30 (the returned C was off by up to ~3%, i.e. the realised row count moved by a few
+        rows) and from n >= 60 the loop stopped at a C up to 1e19 times too large, i.e. at a
+        design with up to 2^n rows.  The paper's experiments never reached the broken regime:
+        they use the with-replacement path for n >= 50.)
+        """
         rows_per_unit = 2 if self.pair_sampling else 1
         m = min(num_samples, 2**self.n - 2 * self.adjust)
 
@@ -199,16 +209,15 @@ class UniversalMSR(BaseEstimator):
             return rows_per_unit * sum(min(population, max(1.0, x_units))
                                        for _, _, population, x_units in self._strata(C))
 
-        C = 1 / 2**self.n
-        L = 1 / 100**self.n
-        R = 100**self.n
-        expected = rows(C)
-        while round(expected) != m and R - L > 1e-6:
-            if expected < m: L = C
-            else: R = C
-            C = (L + R) / 2
-            expected = rows(C)
-        return C
+        log_L, log_R = -self.n * math.log(100), self.n * math.log(100)
+        log_C = -self.n * math.log(2)
+        expected = rows(math.exp(log_C))
+        while round(expected) != m and log_R - log_L > 1e-9:
+            if expected < m: log_L = log_C
+            else: log_R = log_C
+            log_C = (log_L + log_R) / 2
+            expected = rows(math.exp(log_C))
+        return math.exp(log_C)
 
     def sample_without_replacement(self, num_samples):
         """Stratified-by-size sample of DISTINCT subsets, about num_samples rows in total.
