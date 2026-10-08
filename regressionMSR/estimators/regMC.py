@@ -43,9 +43,10 @@ def leverage_shap(X, y, cache):
     n = X.shape[1]
     sizes = X.sum(axis=1).astype(int)
     Sv = y - v0
-    sum_weighting = - p[sizes] * (n - sizes) + p[sizes-1] * sizes
-    sum_phi = prob_sampled * sum_weighting @ Sv
-    sum_phi = sum_phi + (v1 - v0) * p[-1] * n
+    # This fitting path is Shapley-only. p has an appended zero for full-set
+    # indexing, so p[-1] is not the last Shapley weight. Enforce efficiency
+    # directly, including when Monte Carlo rows contain the two endpoints.
+    sum_phi = v1 - v0
 
     Sb = Sv - sizes * sum_phi / n
     P = np.eye(n) - 1/n
@@ -206,8 +207,10 @@ class UniversalMC(BaseEstimator):
             means = []
             for mean_idx in range(self.num_means):
                 means.append(((
-                    y[i, mean_idx, :] * self.sign[i, mean_idx, :] 
-                    - reg_pred[i, mean_idx, :] * self.sign[i, mean_idx, :]
+                    # Each marginal contribution uses two signed rows; their
+                    # row mean must be doubled to recover the marginal mean.
+                    2 * (y[i, mean_idx, :] - reg_pred[i, mean_idx, :])
+                    * self.sign[i, mean_idx, :]
                     + reg_phi[i]
                 ) * self.weights[i, mean_idx, :]
                 ).mean()
